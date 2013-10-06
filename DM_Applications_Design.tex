@@ -13,6 +13,7 @@
 \usepackage[usenames]{color} 
 
 \newcommand{\vstretch}[1]{\vspace*{\stretch{#1}}}
+\newcommand{\code}[1]{\texttt{#1}}
 
 \newcommand{\DIASource}{\code{DIASource}\xspace}
 \newcommand{\DIASources}{\code{DIASources}\xspace}
@@ -274,7 +275,7 @@ image data unit processed by the rest of the DM system.
 The logical flow of Level 1 processing is shown in the Use Case diagram presented in Figure~\ref{fig:level1}. For every observation, the following sequence of events will unfold:
 %
 \begin{enumerate}
-\item A visit is acquired (\uc{Prepare for Observing}) and reduced (\uc{Process Raw Exposures to Calibrated Exposure}) to a single {\em visit image}. This includes cosmic ray rejection, instrumental signature removal\footnote{E.g., subtraction of bias and dark frames, flat fielding, bad pixel/column interpolation, etc.}, combining of snaps}, etc.
+\item A visit is acquired (\uc{Prepare for Observing}) and reduced (\uc{Process Raw Exposures to Calibrated Exposure}) to a single {\em visit image}. This includes cosmic ray rejection, instrumental signature removal\footnote{E.g., subtraction of bias and dark frames, flat fielding, bad pixel/column interpolation, etc.}, combining of snaps, etc.
 
 \item The visit image is differenced against the appropriate template and \DIASources are detected (\uc{Detect and Characterize DIA Sources}). If necessary, deblending is performed at this stage.
 
@@ -878,7 +879,7 @@ In areas of significant stellar crowding (i.e., Galactic plane, star clusters), 
 
 We baseline the star/galaxy separation algorithm based on the ratio of PSF and model fluxes. We use the extendedness criterion as defined by the HSC (Furosawa et al., 2013):
 \begin{equation}
-{\rm extendedness} = (0.95\times {\rm flux.gaussian} \lt {\rm flux.psf})\, ?\, 0.0 : 1.0 \nonumber
+{\rm extendedness} = (0.95\times {\rm flux.gaussian} < {\rm flux.psf})\, ?\, 0.0 : 1.0 \nonumber
 \end{equation}
 
 \paragraph{Variability Characterization}
