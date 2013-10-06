@@ -1,27 +1,125 @@
-\documentclass[11pt, preprint]{aastex}
-\usepackage{amsmath}
+\documentclass[12pt]{article}
+
+% \setcitestyle{numbers}
 \usepackage{natbib}
-\setcitestyle{numbers}
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage[]{hyperref}
+\usepackage{comment}
+\usepackage{xspace}
+\usepackage[usenames]{color} 
+
+\newcommand{\vstretch}[1]{\vspace*{\stretch{#1}}}
+
+\newcommand{\DIASource}{\code{DIASource}\xspace}
+\newcommand{\DIASources}{\code{DIASources}\xspace}
+\newcommand{\DIAObject}{\code{DIAObject}\xspace}
+\newcommand{\DIAObjects}{\code{DIAObjects}\xspace}
+\newcommand{\DB}{{Level 1 database}\xspace}
+\newcommand{\DR}{{Level 2 database}\xspace}
+\newcommand{\Object}{\code{Object}\xspace}
+\newcommand{\Objects}{\code{Objects}\xspace}
+\newcommand{\Source}{\code{Source}\xspace}
+\newcommand{\Sources}{\code{Sources}\xspace}
+\newcommand{\ForcedSource}{\code{ForcedSource}\xspace}
+\newcommand{\ForcedSources}{\code{ForcedSources}\xspace}
+\newcommand{\CoaddSource}{\code{CoaddSource}\xspace}
+\newcommand{\CoaddSources}{\code{CoaddSources}\xspace}
+\newcommand{\SSObject}{\code{SSObject}\xspace}
+\newcommand{\SSObjects}{\code{SSObjects}\xspace}
+\newcommand{\VOEvent}{\code{VOEvent}\xspace}
+\newcommand{\VOEvents}{\code{VOEvents}\xspace}
+\newcommand{\transSNR}{5\xspace}
+
+% Command to link to a document in Docushare. Pass an LSST document handle as argument, or a document number
+\newcommand{\ds}[2]{{\color{blue} \href{https://docushare.lsstcorp.org/docushare/dsweb/Get/#1}{#2}}\xspace}
+
+\newcommand{\SRD}{\ds{LPM-17}{SRD}}
+\newcommand{\DPDD}{\ds{LSE-163}{DPDD}}
+\newcommand{\LSR}{\ds{LSE-29}{LSR}}
+\newcommand{\OSS}{\ds{LSE-30}{OSS}}
+\newcommand{\DMSR}{\ds{LSE-61}{DMSR}}
+\newcommand{\appsUML}{\ds{LDM-134}{LDM-134}}
+\newcommand{\SUI}{\ds{LDM-131}{SUID}}
+\newcommand{\DMSD}{\ds{LDM-148}{DMSD}}
+\newcommand{\MOPSD}{\ds{LDM-156}{MOPSD}}
+\newcommand{\DMMD}{\ds{LDM-152}{DMMD}}
+\newcommand{\DMOps}{\ds{LDM-230}{DM OpsCon}}
+\newcommand{\SDQAP}{\ds{LSE-63}{LSE-63}}
+\newcommand{\PCP}{\ds{Document-8123}{PCP}}
+\newcommand{\UCAL}{\ds{Document-15125}{UCAL}}
+
+\newcommand{\wbsSFM}{WBS 02C.03.01}
+\newcommand{\wbsAssocP}{WBS 02C.03.02}
+\newcommand{\wbsAP}{WBS 02C.03.03}
+\newcommand{\wbsDiffim}{WBS 02C.03.04}
+\newcommand{\wbsMOPS}{WBS 02C.03.06}
+\newcommand{\wbsSDQAP}{WBS 02C.01.02.01}
+\newcommand{\wbsSDQAT}{WBS 02C.01.02.02}
+\newcommand{\wbsSPT}{WBS 02C.01.02.03}
+\newcommand{\wbsPSF}{WBS 02C.04.03}
+\newcommand{\wbsCoadd}{WBS 02C.04.04}
+\newcommand{\wbsDeepDet}{WBS 02C.04.05}
+\newcommand{\wbsObjChar}{WBS 02C.04.06}
+\newcommand{\wbsAFW}{WBS 02C.03.05, 02C.04.07}
+\newcommand{\wbsCPP}{WBS 02C.01.02.04}
+\newcommand{\wbsPhotoCal}{WBS 02C.04.01}
+\newcommand{\wbsAstroCal}{WBS 02C.04.02}
+
+\newcommand{\uc}[1]{{\tt #1}}
+
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{5}
+
+\title{Large Synoptic Survey Telescope \\
+Data Management Applications Design \\
+{\author{
+    Mario Juri\'c\footnote{Please direct comments to \textless\href{mailto:mjuric@lsst.org}{mjuric@lsst.org}\textgreater.},
+    R.H. Lupton, J.F. Bosch, T. Axelrod, P. Price, \\
+    G.P. Dubois-Felsmann, \v{Z}. Ivezi\'c, A.C. Becker, J. Becla,  \\ 
+     A.J. Connolly, J. Kantor, K-T Lim, D. Shaw, \\
+    {\em for the LSST Data Management}
+}}}
 
 \begin{document}
-\title{Data Management Applications Design}
-\slugcomment{Aug 4, 2011}
-\author{Tim Axelrod}
-\author{Jacek Becla}
-\author{Gregory Dubois-Felsmann}
-\author{Jeff Kantor}
-\author{Kian-Tat Lim}
-\author{Robert Lupton}
+\maketitle
+\pagestyle{headings}
+
+\begin{abstract}
+The LSST Science Requirements Document (the LSST \SRD) specifies a set of
+data product guidelines, designed to support science goals envisioned to be enabled by the LSST observing program. Following these guidlines, the details of these data products have been described in the LSST Data Products Definition Document (\DPDD), and captured in a formal flow-down from the \SRD via the LSST System Requirements (\LSR), Observatory System Requirements (\OSS), to the Data Management System Requirements (\DMSR).
+LSST Data Management subsystem has the responsibility for design, implementation, deployment and execution of software pipelines necessary to generate these data products. This document, in conjunction with the UML Use Case model (\appsUML), describes the design of the scientific aspects of those pipelines.
+\end{abstract}
+
+\clearpage
+
+\tableofcontents
+
+\clearpage
+
+\section{Preface}
+
+The purpose of this document is to describe the design of pipelines belonging to the Applications Layer of the Large Synoptic Survey Telescope (LSST) Data Management system. These include most of the core astronomical data processing software that LSST employs.
+\\
+
+The intended audience of this document are LSST software architects and developers. It presents the baseline architecture and algorithmic selections for core DM pipelines. The document assumes the reader/developer has the required knowledge of astronomical image processing algorithms and solid understanding of the state of the art of the field, understanding of the LSST Project goals and concepts, and has read the LSST Science Requirements (\SRD) as well as the LSST Data Products Definition Document (\DPDD).
+\\
+
+This document should be read in conjunction with the LSST DM Applications Use Case Model (\appsUML). They are intended to be complementary, with the Use Case model capturing the detailed (inter)connections between individual pipeline components, and this document capturing the overall goals, pipeline architecture, and algorithmic choices.
+\\
+
+Though under strict change control\footnote{LSST Docushare handle for this document is {\tt LDM-151}.}, this is a {\bf \em living document}. Firstly, as a consequence of the ``rolling wave" LSST software development model, the designs presented in this document will be refined and made more detailed as particular pipeline functionality is about to be implemented. Secondly, the LSST will undergo a period of construction and commissioning lasting no less than seven years, followed by a decade of survey operations. To ensure their continued scientific adequacy, the overall designs and plans for LSST data processing pipelines will be periodically reviewed and updated.
+
+\clearpage
 
 \section{Introduction}
 
-The LSST Science Requirements Document \citep{SRD} specifies a set of
-science goals to be achieved from the LSST observing program.  To
-enable the achievement of these goals, the LSST Data Management System
-(``DMS'') is required to generate, or enable the generation of, a set
-of data products, and to make them available to scientists and the
-public. To carry out this mission the DMS performs the following major
-functions:
+\subsection{LSST Data Management System}
+
+To carry out this mission the Data Management System (DMS) performs the following major functions:
 
 \begin{itemize}
 \item Processes the incoming stream of images generated by the camera
@@ -32,8 +130,8 @@ functions:
   which is a static self-consistent collection of data products
   generated from all survey data taken from the date of survey
   initiation to the cutoff date for the Data Release. The data
-  products include optimal measurements of the properties (shapes,
-  positions, fluxes, motions) of all
+  products (described in detail in the \DPDD), include measurements of 
+  the properties (shapes, positions, fluxes, motions, etc.) of all detected
   objects, including those below the single visit sensitivity limit,
   astrometric and photometric calibration of the full survey object
   catalog, and limited classification of objects based on both their
@@ -42,7 +140,7 @@ functions:
 
 \item Periodically creates new calibration data products, such as bias
   frames and flat fields, that will be used by the other processing
-  functions.
+  functions, as necessary to enable the creation of the data products above.
 
 \item Makes all LSST data available through an interface that
   utilizes, to the maximum possible extent, community-based standards
@@ -51,1216 +149,1000 @@ functions:
   data products at Data Access Centers (``DAC'') and at external sites.
 \end{itemize}
 
-The overall architecture of the DMS is shown in Fig. 1.  This document
-discusses the role of the Applications layer in the first three
-functions listed above.  The fourth is discussed separately in the SUI
-Conceptual Design \citep{SUI}.  The overall architecture of the DMS is
-discussed in more detail in the Data Management System Design document
-\citep{DMSSystem}. The DMS requirements are described in detail in the
-Data Management Subsystem Requirements document \citep{DMSFRS}.
+The overall architecture of the DMS is discussed in more detail in the Data Management System Design (\DMSD) document. The overall architecture of the DMS is shown in Figure~\ref{fig:DMS}.
+\\
+
+This document discusses the role of the Applications layer in the first three functions listed above (the functions involving {\em science pipelines}).  The fourth is discussed separately in the SUI Conceptual Design Document (\SUI).
 
 \begin{figure}
-\includegraphics[angle=0,scale=0.40]{LDM148_Fig8.eps}
-\caption{Architecture of the Data Management System}
+\centering
+\includegraphics[angle=90,scale=0.70]{DMS-Architecture.pdf}
+\caption{Architecture of the Data Management System\label{fig:DMS}}
 \end{figure}
 
 \begin{figure}
-\includegraphics[angle=90,scale=0.70]{ApplicationLayerProductionsandPipelines.eps}
-\caption{Organization of DMS Pipelines and Productions}
+%\includegraphics[angle=90,scale=0.70]{ApplicationLayerProductionsandPipelines.eps}
+\centering
+\includegraphics[angle=90]{DataProductDelivarables.png}
+\caption{Organization of LSST Data Products\label{fig:DP}}
 \end{figure}
 
-\section{LSST Data Product Overview}
+\subsection{Data Products}
 
-\subsection{Level 1, 2, and 3 Data Products}
-
- The LSST data products are organized into three groups, based largely on
- where and when they are produced.
+The LSST data products are organized into three groups, based on their intended use and/or origin. The full description is provided in the Data Products Definition Document (\DPDD); we summarize the key properties here to provide the necessary context for the discussion to follow. 
 
 \begin{itemize}
-\item Level 1 products are generated by pipeline processing the stream
-  of data from the camera system during normal observing.  Level 1
-  data products are therefore continuously generated and / or
+\item {\bf Level 1} products are intended to support timely detection and follow-up
+  of time-domain events (variable and transient sources). They are generated by
+  near-real-time processing the stream of data from the camera system during 
+  normal observing.  Level 1 products are therefore continuously generated and / or
   updated every observing night. This process is of necessity highly
   automated, and must proceed with absolutely minimal human
-  interaction.  In addition to science data products, a number of
-  Level 1 ``SDQA'' data products are generated to assess quality and to provide
-  feedback to the Observatory Control System.
+  interaction.  In addition to science data products, a number of related
+  Level 1 ``SDQA''\footnote{Science Data Quality Analysis} data products are generated
+  to assess quality and to provide feedback to the Observatory Control System (OCS).
 
-\item Level 2 products are generated as part of a Data Release, which
-  is required to be performed at least yearly, and will be performed
-  more frequently during the first year of the survey.  Level 2
-  products use Level
-  1 products as input, and include data products for which extensive
+\item {\bf Level 2} products are generated as part of a Data Release, generally
+  performed 
+  yearly, with an additional data release for the first 6 months of survey data. 
+  Level 2 includes data products for which extensive
   computation is required, often because they combine information from
   many exposures.  Although the steps that generate Level 2 products
   will be automated, significant human interaction may be required at
   key points to ensure the quality of the data.
 
-% where will these humans come from?
-
-\item Level 3 data products are derived from Level 1 and / or Level 2
-  data products to support particular science goals, often requiring
-  the combination of LSST data across significant areas on the sky.
-  The DMS is required to facilitate the creation of Level 3 data
-  products, for example by providing suitable ``API''s and computing
-  infrastructure, but is not itself required to create any Level 3
-  data product. Instead these data products are created externally to
-  the DMS, using software written by, eg, science collaborations. Once
-  created, Level 3 data products may be associated with Level 1 and
-  Level 2 data products through database federation \citep{WikiFedDB}.
-  In rare cases, the LSST Project, with the agreement of the Level 3
-  creators, may decide to incorporate Level 3 data products into the
-  DMS production flow, thereby promoting them to Level 2 data products.
+\item {\bf Level 3} products will be generated by the users of LSST, using LSST 
+  software and/or hardware.  LSST DM is required to facilitate the creation of 
+  Level 3 data products by providing suitable APIs, software components, and
+  computing infrastructure, but will not by itself create any Level 3
+  data product. Once created, Level 3 data products may be associated with 
+  Level 1 and Level 2 data products through database federation.
+  Where appropriate, the LSST Project, with the agreement of the Level 3
+  creators, may incorporate user-contributed Level 3 data product pipelines
+  into the DMS production flow, thereby promoting them to Level 1 or 2.
 
 \end{itemize}
-
+%
+The organization of LSST Data Products is shown in Figure~\ref{fig:DP}.
 
 Level 1 and Level 2 data products that have passed quality control
-tests are required to be accessible to the public without restriction.
+tests will be accessible to the public without restriction.
 Additionally, the source code used to generate them will be made
 available, and LSST will provide support for builds on selected
-platforms. The access policies for Level 3 data products will be
-product- and source-specific, and in some cases will be proprietary.
+platforms.
 
-% Michael's section
-\subsection{Overview of Pipeline Processing}
-The overall organization of the DMS pipelines and productions is
-shown in Fig. 2.  Note that ``production'' in this context has a
-particular meaning: it is a coordinated group of pipelines that
-together carry out a large-scale DMS function.
+\subsection{Science Pipelines Overview}
 
-\subsubsection{Alert Production - WBS 02C.03}
-The Alert Production is directly fed by the output data stream from
-the Camera SDS during observing. This data stream contains both
-unprocessed (raw) camera images, and images that have been corrected
-for crosstalk by the SDS on the mountain.  The normal observing
+We recognize four major groups of science pipelines residing in the Applications layer:
+\begin{itemize}
+    \item {\bf Level 1 Science Pipelines} are designed to generate Level 1 data products. These include:
+    \begin{itemize}
+    \item {\bf \em Image Differencing Pipeline} (\wbsDiffim), to create difference images, and detect and characterize sources in them.
+    \item {\bf \em Association Pipeline} (\wbsAssocP), to associate detected sources with known objects.
+    \item {\bf \em Alert Generation Pipeline} (\wbsAP), to generate and transmit alerts to time-domain events (e.g. transients) to the astronomical community, and
+    \item {\bf \em Moving Object Pipeline} (\wbsMOPS), to identify, link and compute orbits for Solar System objects detected in difference images.
+%    \item SDQA Pipeline (\wbsSDQA)
+    \end{itemize}
+Level 1 pipelines run as the data are being acquired. They primarily focus on image differencing, and the reduction of information extracted from difference images. The algorithms they employ are designed and chosen to complete processing on minute (alert production) to day (Solar System object pipelines) time scales. They are also rerun as a part of Data Release Production (DRP), potentially in somewhat different configurations to achieve greater precision at the expense of increased runtime.
+    
+    \item {\bf Level 2 Science Pipelines} run annually or semi-annualy (for the first year of data), and are designed to generate deep co-adds and catalogs stemming from analysis of direct image data.  These include:
+    \begin{itemize}
+        \item {\bf \em Single Frame Processing (``SFM'') Pipeline}, (\wbsSFM) to reduce acquired visits and detect and characterize astrophysical sources present in these visits. Though having its own WBS element, {\bf \em PSF Estimation}, (\wbsPSF) is functionally a part of the SFM pipeline.
+        \item {\bf \em Image Coaddition Pipeline}, (\wbsCoadd), to generate and characterize coadded images of the sky, as well as create templates for image differencing.
+        \item {\bf \em Deep Detection Pipeline}, (\wbsDeepDet), to detect sources in coadded images of the sky.
+        \item {\bf \em Object Characterization Pipeline}, (\wbsObjChar), to characterize (perform measurements of) astrophysical objects detected in LSST imaging (both in single frames and coadds).
+    \end{itemize}
+    
+    \item {\bf Calibration Pipelines} process the collected calibration data and perform calibration of LSST instruments and data products. These include:
+    \begin{itemize}
+        \item {\bf \em Calibration Products Pipeline}, (\wbsCPP), that generates the necessary calibration data products (e.g., master flats, biases, atmospheric models, etc.). It is run periodically as new calibration data are acquired.
+        \item {\bf \em Photometric Calibration Pipeline}, (\wbsPhotoCal), that performs global photometric self-calibration of the Level 2 dataset.
+        \item {\bf \em Astrometric Calibration Pipeline}, (\wbsAstroCal), that performs global astrometric self-calibration of the Level 2 dataset.
+    \end{itemize}
+    The calibration products pipeline is also rerun as a part of Data Release Processing. Global self-calibration steps run in DRP only.
+
+       \item {\bf Science Data Quality Analysis (SDQA) pipelines and toolkits}, to enable collection, computation, visualization, monitoring and analysis of data quality metrics across all pipelines. These are divided into:
+       \begin{itemize}
+           \item {\bf \em SDQA Pipeline}, (\wbsSDQAP), that provides low-level data collection functionality for SDQA and
+           \item {\bf \em SDQA Toolkit}, (\wbsSDQAT), that provides the visualization, analysis and monitoring capabilities for SDQA.
+       \end{itemize}
+
+\end{itemize}
+
+In addition to these four, we recognize two other, cross-cutting, elements of DMS functionality:
+
+\begin{itemize}
+       \item {\bf Common Image and Catalog Processing framework}, known as the {\bf Application Framework (afw)}, (\wbsAFW), that collects base classes and algorithms used by the DM Applications layer. The framework is split in two WBS elements, to reflect the multi-institutional nature of the work, but is functionally viewed as a single, integrated, component (class library).
+       \item The {\bf Science Pipeline Toolkit}, (\wbsSPT), a collection of software components (and design principles) designed to enable construction of Level 3 pipelines relying on reusable lower-level components produced in support of other LSST DM software.
+\end{itemize}
+
+\subsubsection{Level 1 Science Pipelines Overview}
+The production of Level 1 products is generally performed nightly, directly fed by 
+the output data stream from the Camera SDS\footnote{Science Array Data Acquisition (DAQ) Subsystem} during observing. This data stream
+contains both unprocessed (raw) camera images, and images that have been corrected
+for crosstalk by the SDS on the Summit.  The normal observing
 pattern is to take two 15 second exposures of the same field in immediate
-succession.  These two exposures together form a Visit, which is the
-data unit processed by the Alert Production.  Its principal
-responsibilities are to:
-
-\begin{itemize}
-\item Acquire the raw science images from the Camera, and move them to
-  the Archive Center for permanent storage.
-\item Process the crosstalk-corrected images from the Camera to detect
-  transient events within 60 seconds of shutter closure for the second
-  exposure in a Visit.
-\item Package information about detected transients as
-  Alerts, and distribute them to the community as VOEvents.
-\item Continuously assess the data quality of the data stream.
-\end{itemize}
-
-The major steps in the processing flow, shown in Fig. 3,  are:
-
-\begin{itemize}
-\item Image processing of the Raw Exposures to remove the instrumental
-  signature. (WBS 02C.03.01)
-\item The two images from the Visit (which are termed ``Snaps'') are
-  subtracted.  The difference image is scanned for cosmic rays, and
-  affected pixels initialize a Mask plane in a new Visit Exposure.  The image
-  and variance of the Visit Exposure are summed from the two Snaps.
-  These processing steps are encapsulated in the CR Split Handling Pipeline.
-  From this point forward, all processing is done with the resulting
-  Visit Exposure. (WBS 02C.03.01)
-\item Determination of the WCS, PSF, and initial photometric
-  zeropoint. This produces Calibrated Science Exposures (Exposures are
-  discussed in Section 2.4) (WBS 02C.03.01)
-\item Subtraction of a registered and PSF-matched Template Exposure
-  from the Calibrated Science
-  Exposure, producing a Difference Exposure.  The Template Exposure is
-  a coadd created by the Data Release Production (discussed in Section
-  4) (WBS 02C.03.07)
-\item Detection of sources of either polarity in the Difference
-  Exposure, producing DiaSources (discussed in Section 2.3) (WBS 02C.03.01)
-\item ForcedDiaSources (Section 2.3), abbreviated measurements of low SNR detections,
-  are produced for Objects of particular interest, eg predicted
-  positions for Solar System objects, or objects that have previously
-  produced Alerts. (WBS 02C.03.01)
-\item Comparison of positive flux DiaSources with predictions from
-  NightMOPS, the Alert Production component of the Moving Object
-  System (MOPS), for already known Solar System objects, as contained in the
-  MovingObject table (Section 2.3) (WBS 02C.03.06)
-\item The Association Pipeline is run to match DiaSources to already
-  known astronomical objects, as contained in the Object table
-  (Section 2.3) (WBS 02C.03.02)
-\item Generation of Alerts.  DiaSources that are not matched to a known Solar System
-  object,  will produce an Alert (Section 2.4) (WBS 02C.03.03)
-\item SDQA is performed at every pipeline stage, stored in database
-  tables, and fed to the OCS as required. (WBS 02C.01.02.01)
-\item DayMOPS, the track detection and orbit fitting component of
-  MOPS, is run during the day to interpret each new detection of a
-  moving object as a new measurement of a Solar System object already
-  in the MovingObject table, or as a previously unknown object, which
-  will be added to the MovingObject table.  All orbits are refined
-  based on the new measurements from the night. (WBS 02C.03.06)
-\end{itemize}
-
-As the raw images arrive at the Archive Center, the same processing
-flow is performed there, with the consistency of the databases at the
-Base and Archive Centers being periodically checked.  The duplication
-of processing is carried out to reduce the data bandwidth required
-between the Base and Archive Centers.
-
-\subsubsection{Alert Production Prototypes}
-Most components of the Alert Production have been prototyped in the
-Data Challenges.  In most cases, algorithmic functionality is close to
-LSST requirements, but with data flows at greatly reduced scale. The
-prototype status is as follows:
-\begin{itemize}
-\item WBS 02C.03.01:  Has been completely prototyped, with the
-  exception of the CR Split Handline Pipeline, which has been
-  partially prototyped.
-\item WBS 02C.03.02: Completely prototyped
-\item WBS 02C.03.03: Not prototyped
-\item WBS 02C.03.06: Prototyped and functional, but outside of DMS software framework
-\item WBS 02C.03.07: Completely prototyped
-\end{itemize}
+succession.  These two exposures together form a {\em visit}, which is the typical
+image data unit processed by the rest of the DM system.
+\\
 
 \begin{figure}
-\includegraphics[angle=0,scale=0.40]{AlertProduction.eps}
-\caption{Alert Production Processing Flow}
+\includegraphics[angle=0,scale=0.44]{process_nightly_observing_run.png}
+\caption{Level 1 Processing Flow Diagram\label{fig:level1}}
 \end{figure}
 
-\subsubsection{Data Release Production - WBS 02C.04 }
-At yearly intervals (more often during the first year of the survey) a
-new Data Release is produced.  A DR includes all data taken by the
-survey from day one to the cutoff date for the DR, and is a
-self-contained set of data products, all produced with the same
-pipeline software and processing parameters.  The major steps in the
-processing flow, shown in Fig. 4,  are:
+The logical flow of Level 1 processing is shown in the Use Case diagram presented in Figure~\ref{fig:level1}. For every observation, the following sequence of events will unfold:
+%
+\begin{enumerate}
+\item A visit is acquired (\uc{Prepare for Observing}) and reduced (\uc{Process Raw Exposures to Calibrated Exposure}) to a single {\em visit image}. This includes cosmic ray rejection, instrumental signature removal\footnote{E.g., subtraction of bias and dark frames, flat fielding, bad pixel/column interpolation, etc.}, combining of snaps}, etc.
+
+\item The visit image is differenced against the appropriate template and \DIASources are detected (\uc{Detect and Characterize DIA Sources}). If necessary, deblending is performed at this stage.
+
+The flux and shape of the DIASource are measured on the difference image. PSF photometry is performed on the visit image at the position of the \DIASource to obtain a measure of the absolute flux.
+
+\item The \DB is searched for a \DIAObject or an \SSObject with which to positionally associate the newly discovered \DIASource. If no match is found, a new \DIAObject is created and the observed \DIASource is associated to it.
+
+If the \DIASource has been associated to an \SSObject (a known Solar System object), it will be flagged as such and an alert will be issued. Further processing will occur in daytime (\uc{Process Moving Objects}).
+
+\item Otherwise, the associated \DIAObject measurements will be updated with new data (\uc{Update DIA Object Properties}). All affected columns will be recomputed, including proper motions, centroids, light curves, nearest Level 2 \Objects, etc.
+
+\item An alert is issued (\uc{Generate and Distribute Alerts}) that includes all required components, as described in the \DPDD.
+
+\item For all \DIAObjects overlapping the field of view to which a \DIASource from this visit has {\em not} been associated, forced photometry will be performed (\uc{Perform Difference Image Forced Photometry}).  No alerts will be issued for these measurements.
+
+\end{enumerate}
+
+Within 24 hours of discovery, LSST DM system will perform {\em precovery} PSF forced photometry on any prior difference image overlapping the position of new \DIAObjects taken within the past 30 days (\uc{Perform Precovery Forced Photometry}).
+\\
+
+Similarly, in daytime after the nightly observing run, atmospheric models from the calibration telescope spectra will be calculated (\uc{Calculate Atmospheric Models from Calibration Telescope Spectra}) and made available to the users.
+\\
+
+In addition to these, the Moving Object Pipeline (MOPS; \wbsMOPS; \uc{Process Moving Objects}) will also be run in daytime. It is described in its own section of this document, with a detailed design in a separate Moving Object Pipeline Design Document (\MOPSD).
+
+\subsubsection{Level 2 Science Pipelines Overview}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[scale=0.5]{Level_2_Processing_Flowchart}
+    \caption{Level 2 Processing Overview\label{fig:level2dp}}    
+\end{figure}
+
+Figure~\ref{fig:level2dp} presents a high-level overview of the Level 2 data processing workflow. Logically\footnote{The actual implementation may parallelize these steps as much as possible; see LDM-230, the Automated DM Operations Document (\DMOps).}, the processing begins with single-frame (visit) image reduction and source measurement, followed by global astrometric and photometric calibration, coadd creation, detection on coadds, association and deblending, object characterization, and forced photometry measurements. The UML Use Case model (\appsUML) captures these activities in the \uc{Produce a Data Release} diagram.
+\\
+
+The following is a high-level description of steps which occur during regular Level 2 data processing:
+\begin{enumerate}
+    \item {\em Single Frame Processing}: Raw exposures are reduced to {\em calibrated visit exposures}, and \Sources are independently detected, deblended, and measured on all visits. Their measurements (instrumental fluxes and shapes) are stored in the \Source table. This step is performed by the {\bf \em Single Frame Processing Pipeline} (\wbsSFM).
+    \item {\em Relative calibration}: The survey is internally calibrated, both photometrically and astrometrically using the {\bf \em Astrometric} (\wbsAstroCal) and {\bf \em Photometric Calibration Pipelines} (\wbsPhotoCal). Relative zero point and astrometric corrections are computed for every visit.
+    \item {\em Coadd creation}: Deep, seeing optimized, and short-period per-band coadds are created in $ugrizy$ bands, as well as deeper, multi-color, coadds. This task is performed by the {\bf \em Image Coaddition Pipeline} (\wbsCoadd). Transient sources (including Solar System objects, explosive transients, etc), will be rejected from the coadds.
+    \item {\em Coadd source detection and characterization}. Sources will be detected on all coadds generated in the previous step. The source detection algorithm will detect regions of connected pixels, known as {\em footprints}, above the nominal $S/N$ threshold in the {\em PSF-likelihood image} of the visit. Each footprint may have one or more {\em peaks}, and the collection of these peaks (and their membership in the footprints) are the output of this stage. This information will be stored in a catalog of \CoaddSources. The detection is performed by the {\bf \em Deep Detection Pipeline} (\wbsDeepDet), while object characterization is a part of the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
+    \item {\em Association and deblending}. The next stage in the pipeline, which we will for simplicity just call {\em the deblender}, will synthesize a list of unique objects. In doing so it will consider the catalogs of \Sources and \CoaddSources, catalogs of \DIASources, \DIAObjects and \SSObjects detected on difference images, and objects from external catalogs. Association will be performed by the software that is functionally part of the {\bf \em Association Pipeline} (\wbsAssocP), while the deblender component a part of the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
+
+    \item {\em Multi-epoch object characterization}. A set of predefined model fits and measurements will be performed on each of the \Objects identified in the previous step, taking all available multi-epoch data into account. Model fits will be performed using {\em MultiFit}-type algorithms. Rather than coadding a set of images and measuring object characteristics on the coadd, MultiFit simultaneously fits PSF-convolved models to the objects multiple observations. This reduces systematic errors, improves the overall $S/N$, and allows for fitting of time-dependent quantities degenerate with shape on the coadds (for example, the proper motion). The models we plan to fit will {\em not} allow for flux variability. Object characterization is a part of the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
+    \item {\em Forced Photometry}. Source fluxes will be measured on every visit, with the position, motion, shape, and the deblending parameters characterized in the previous step kept fixed. This process of {\em forced photometry}, will result in the characterization of the light-curve for each object in the survey. Forced photometry is functionally a part of the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
+\end{enumerate}
+
+
+% \subsubsection{Calibration Pipelines}
+
+\subsubsection{Enabling Level 3 Pipelines}
+
+Level 3 capabilities are envisioned to enable science cases requiring further custom user-specified processing, especially the kind that would greatly benefit from co-location within the LSST Data Access Center. The high-level requirement for Level 3 is established in ¬ß 3.5 of the LSST SRD.
+
+To enable Level 3 use cases, LSST Data Management pipelines will be designed in a modular fashion to maximize the potential for reusability and synergy between Level 3 and Levels 1 and 2.
+
+For example, a typical Level 3 use case will be to perform a different kind measurement on objects detected in the course of Level 2 processing. A user will be able to do this by reusing the desired components of Level 2 processing, plugging in (via Python {\tt import} directives in the appropriate configuration file) the modules for their custom measurement, and executing the pipeline. The {\bf \em Science Pipeline Toolkit} (\wbsSPT) will provide the necessary components to support user-driven construction and execution of custom pipelines.
+
+\subsubsection{Science Data Quality Analysis Pipeline and Toolkit}
+
+Science Data Quality Analysis requirements are described in the Data Quality Assurance Plan (\SDQAP) document. They will be implemented by the {\bf \em SDQA Pipeline} (\wbsSDQAP; the data collection backend) and the {\bf \em SDQA Toolkit} (\wbsSDQAT; the data analysis front-end).
+\\
+
+LSST QA will include four main components, which to some extent reflect the Level 1-3 structure of LSST data products. Level 0 QA is software development related, Level 1 QA relates to nightly operations, Level 2 QA relates to data releases, and Level 3 QA is science based.
 
 \begin{itemize}
-\item As in the Alert Production, all Raw Exposures from the camera
-  are processed to remove the instrumental signature, and to determine
-  the WCS and PSF, producing Calibrated Science Exposures.  This is done with
-  the best available calibration products, which in general will not
-  be those available when the processing was initially done.  Unlike
-  the Alert Production, which uses images corrected for crosstalk by
-  the Camera System, the Data Release Production will do its own
-  crosstalk production, since the crosstalk correction matrix may be
-  updated since the image was collected. (WBS 02C.03.01)
-\item The Astrometric Calibration Pipeline is run on the full set of
-  measurements in the Source catalog.  This generates astrometric
-  models, including proper motion, parallax, and possibly binary
-  parameters, for all Objects which are bright enough to be above the
-  single Exposure detection limit.  Additionally, the relative astrometric
-  calibration of each ccd is known at all pixel positions to a few
-  milli-arcsec, making the subsequent production of coadds more
-  accurate. (WBS 02C.04.02)
-\item The survey region is tessellated into a set of sky patches, and
-  several Coadded Exposures are produced for each patch from the
-  Calibrated Science Exposures.  These are a per-band Template Coadd used for image
-  subtraction; a Detection Coadd used in the Deep Detection Pipeline,
-  possibly per-band; and a RGB Coadd used for visualization. (WBS 02C.04.04)
-\item The Deep Detection and Object Characterization Pipelines are run (see Section 6), populating the
-  Object, Source, and ForcedSource tables.  Object Characterization uses a
-  combination of the
-  stackfit and multifit algorithm (discussed in Section 6.2) to fit object
-  models to the entire stack of Exposures which contain
-  the Object. This results in a set of measurements of the Object
-  attributes over the full time span of the survey, including
-  astrometric parameters such as proper motion and parallax. (WBS
-  02C.04.05, 02C.04.06)
-\item The Image Subtraction Pipeline is run, as in the Alert
-  Production, yielding DiaSources and ForcedSources (see Section 6),
-  for transient objects (WBS 02C.03.07)
-\item The Moving Object Pipeline is run on DiaSources, to yield a
-  complete set of orbits for Solar System Objects in the MovingObject
-  table. (WBS 02C.03.06)
-\item The Photometric Calibration Pipeline is run on the full set of
-  measurements in the Source, DiaSource, and ForcedSource catalogs,
-  incorporating measurements from the Calibration Telescope and other
-  sources of data about the atmosphere to perform a global photometric
-  calibration of the survey.  In addition to accurate photometry for
-  every measurement, this yields an atmosphere model for every
-  Exposure. (WBS 02C.04.01)
+    \item {\bf Level 0 QA} includes the extensive and thorough testing of the DM subsystem during the pre- commissioning phase, as well as the tests of software improvements during the commissioning and operations phases (regression tests based on pipeline outputs and input truth). A common feature of Level 0 QA is the use of LSST simulations products, or any other dataset where the truth is sufficiently well known (e.g., the use of high-resolution observations from space telescopes to test star/galaxy separation algorithms). The main goal of Level 0 QA is to quantify the software performance against these known expected outputs (e.g., to measure the completeness and false positive rate for an object finder; to measure the impact of blended sources on pipeline outputs; to measure the performance of calibration pipelines and MOPS), and to test for algorithm implementation problems (a.k.a. ‚Äúcoding bugs‚Äù).
+    
+    \item {\bf Level 1 QA} assesses the system status and data quality in real time during commissioning and operations. Its main difference compared to other observatory, telescope, and camera status reporting tools will be heavy reliance on the massive science imaging data stream (in addition to various telemetry and metadata generated by the subsystems). This level is tasked with nightly reporting of the overall data quality, including the nightly data products (difference images and transient source event stream) and calibration products. Real-time information about observing conditions, such as sky brightness, transparency, seeing, and the system performance, such as the achieved faint limit, will be delivered by Level 1 QA. Because the actual science data stream will be analyzed, Level 1 QA tools will be in a better position to discover and characterize subtle deterioration in system performance that might not be easily caught by tools employed by the telescope and the camera subsystems for self- reporting purposes.
+
+    \item {\bf Level 2 QA} assesses the quality of data products scheduled for the Data Releases, and provides quantitative details about data quality for each release (including the co-added image data products, and the properties of astrometrically and photometrically variable objects). This level also performs quality assessment for astrometric and photometric calibration, as well as for derived products, such as photometric redshifts for galaxies and various photometric estimators for stars. Subtle problems with the image processing pipelines and systematic problems with the instrument will be discovered with Level 2 QA.
+    
+    \item {\bf Level 3 QA} quality assessment will be based on science analysis performed by the LSST user community. LSST will not develop Level 3 QA tools, but Level 0-2 visualization and data exploration tools will be made available to the community to form a basis on which Level 3 tools can be built. Common features expected for tools at this level are sensitivity to subtle systematic issues not recognized by Level 2 QA, and feedback about data quality to the project by external teams. It is envisioned that especially useful Level 3 QA tools would be migrated to Level 2 QA.
 
 \end{itemize}
 
-\subsubsection{Data Release Production Prototypes}
-About 50\% of the components of the Data Release Production have been prototyped in the
-Data Challenges.  The
-prototype status is as follows:
-\begin{itemize}
-\item WBS 02C.03.01: As for Alert Production
-\item WBS 02C.03.02: Completely prototyped
-\item WBS 02C.03.03: Not yet prototyped
-\item WBS 02C.03.06: Prototyped and functional, but outside of DMS software framework
-\item WBS 02C.03.07: As for Alert Production
-\item WBS 02C.04.02: Prototyped and functional, but outside of DMS
-  software framework
-\item WBS 02C.04.01: Set up and solution of self calibration system
-  has been prototyped outside of DMS software framework
-\item WBS 02C.04.03: Prototyped, but galaxy model measurements not yet
-  to LSST requirements
-\item WBS 02C.04.04: Detection coadd prototyped.
-\item WBS 02C.04.05: Not yet prototyped
-\item WBS 02C.04.06: Not yet prototyped
+\clearpage
 
+\section{Shared Software Components}
+
+\subsection{Applications Framework (\wbsAFW)}
+
+\subsubsection{Key Requirements}
+
+The {\bf \em LSST Applications Framework} ({\tt afw}) is to provide the basic functionality needed by an image processing system. In particular, it shall provide:
+%
+\begin{itemize}
+    \item Classes to represent and manipulate coordinates
+    \item Classes to represent and manipulate images and exposures (images with associated metadata)
+    \item Classess to represent and estimate backgrounds on images
+    \item Classess to represent the geometry of the camera
+    \item Base classes to represent and manipulate the point spread function (PSF)
+    \item Routines to perform detection of sources on images, and classes to represent these detections ({\em ``footprints"})
+    \item Classes to represent astronomical objects
+    \item Classes to represent and manipulate tables of astronomical objects
+    \item Other low-level operations as needed by LSST science pipelines 
 \end{itemize}
+
+\subsubsection{Baseline design}
 
 \begin{figure}
-\includegraphics[angle=0,scale=0.40]{DataReleaseProduction.eps}
-\caption{Data Release Production Processing Flow}
+\includegraphics[angle=0,scale=0.54]{domain_model_-_exposures.png}
+\caption{Exposure class diagram\label{fig:exposureUML}}
 \end{figure}
 
-\subsubsection{Calibration Products Production - WBS 02C.03}
-A variety of calibration products are required by both the Alert
-Production and Data Release Production.  The Calibration Products
-Production is run as required (intervals TBD, dependent on experience with
-system stability) to produce them, as listed in Section 4.  As shown
-in Fig. 5, the
-activities contained within the Calibration Products Production are:
+The baseline design calls for a library of C++ classes and functions, exposed to Python callers as a Python module named {\tt lsst.afw}. The classes required are captured in the UML Domain Model model (\appsUML), with an example of the Exposure class shown in Figure~\ref{fig:exposureUML}.
+\\
 
+This library will form the basis for all image processing pipelines and algorithms used for LSST so special attention will be paid to performance.
+
+% \subsubsection{Constituent Use Cases and Diagrams}
+
+\subsubsection{Prototype Implementation}
+
+A prototype implementation of the baseline design has been completed in LSST Final Design Phase, including prototype GPU (CUDA) support for major image processing functions (e.g., warping). We expect it will be possible to transfer a significant fraction of the existing code into Construction.
+\\
+
+Needs for future improvement have been identified in three areas:
 \begin{itemize}
-\item Produce Master Dark Current Exposure 
-\item Produce Master Flat Exposure 
-\item Produce Atmospheric Models from Calibration Telescope Spectra
-\item Produce Pupil Ghost Exposure
-\item Produce Crosstalk Matrix
-\item Produce Master Bias Exposure
-\item Produce Illumination Correction Exposure
-\item Produce Master Fringe Exposure
+    \item The current design of classes that represent the Camera geometry is suboptimal. Redesign will be needed in Construction.
+    \item The current design of classes that represent the PSF does not allow for color-dependent PSF terms. These will need to be added in construction.
+    \item Design of sky background and geometry classes was found to be insufficiently flexible. This will need to be rectified in Construction.
 \end{itemize}
 
-\subsubsection {Calibration Products Production Prototypes}
-The Calibration Products Production has not yet been prototyped.
-Calibration products needed for testing the Alert Production and Data
-Release Production have been generated by hand with the usual
-astronomical tools.
+Prototype code is available at \url{https://dev.lsstcorp.org/cgit/LSST/DMS/afw.git}. The documentation for the prototype is located at \url{http://ls.st/w3o} and \url{http://ls.st/6i0}.
+
+\clearpage
+
+\section{Level 1 Science Pipelines}
+
+\subsection{Image Differencing Pipeline (\wbsDiffim)}
+
+\subsubsection{Key Requirements}
+
+The image differencing pipeline shall difference a visit image against a deeper template, and detect and characterize sources in the difference image in the time required to achieve the 60 second design goal for Level 1 alert processing (current timing allocation: 24 seconds). The algorithms employed by the pipeline shall result in purity and completeness of the sample as required by the \DMSR. Image differencing shall perform equally well in crowded as in uncrowded fields.\subsubsection{Baseline design}
 
 \begin{figure}
-\includegraphics[angle=0,scale=0.40]{CalibrationProductsProduction.eps}
-\caption{Calibration Products Production Processing Flow}
+\includegraphics[angle=0,scale=0.44]{detect_and_characterize_dia_sources.png}
+\caption{Image Differencing Pipeline Use Case Diagram\label{fig:diffimUML}}
 \end{figure}
 
-\subsection{Contents of Principal Database Tables}
+The Image Differencing pipeline will difference, detect, and deblend objects in the resulting image using ``preconvolution'' algorithm as described in Becker et al. (\url{http://ls.st/x9f}). Differencing will be performed against a deeper template, and differential chromatic refraction (DCR) will be handled by having templates at multiple bins of airmass.
 
-All catalog data is stored in tables within a relational
-database, the ``Science Database''.  The current Science Database
-schema, which continues to evolve, is always available at \newline
-\verb+http://dev.lsstcorp.org/schema/+. This narrative does not
-explain this schema in detail, but instead focuses on the contents of
-a few key tables and the logic by which that content is generated.
+All \DIASource measurements described in the \DPDD, including post-processing such as variability characterization, will be performed for all sources detected in this manner. The measurements will be performed on the pre-convolved likelihood image. The measurement code will reside in a separate module in the Object Characterization Pipeline (\wbsObjChar).
+\\
 
-Two important definitions that underly the design of the database are
-those for ``Object'' and ``Source''.  An ``Object'' (or, when confusion is
-possible, an ``AstroObject'') is a representation of an astrophysical
-object:  a star; a galaxy; a Solar System object.   A ``Source'' is the
-representation of a measurement of an Object's properties from a
-single image that contains its footprint on the sky.  As we discuss in the
-remainder of this section, both Objects and Sources come in a few
-different flavors that are specialized for particular situations that
-frequently arise.
+A {\em spuriousness metric} using machine-learning techniques (Bloom et al. 2010) if needed will be developed to assist the discrimination of real sources and those caused by artifacts.
+\\
 
-The relationships of the central tables of the Science Database are
-shown in Fig. 6.  The highest level tables are Object and
-MovingObject, which together organize on a per-astrophysical-object
-basis all information from the survey.  An entry in either of these
-tables links to all the individual measurements of the Object,
-contained in the DiaSource, ForcedSource, and Source tables.  Each of
-these measurements, in turn, links to the metadata for each telescope
-exposure in the Exposure table.
+Details of this baseline design have been captured in the \uc{Detect and Characterize DIA Sources} and related diagrams, presented in Figure~\ref{fig:diffimUML}.
 
-\paragraph{Object Table}
+\subsubsection{Constituent Use Cases and Diagrams}
 
-% Rob wants a definition of ``found'' - means coadd + DIA; ZI scheme
-% goes here
-% Note that an Object can changes tables
-The Object Table has a row for every non-Solar-System astrophysical
-object found in the LSST images.  Each Object Table row has a set of
-columns which together summarize what has been measured for the object
-over the history of the survey.  The information falls into two
-categories:
+Subtract Calibrated Exposure from Template Exposure;Identify DIA Sources caused by Artifacts;Perform Precovery Forced Photometry;Measure DIA Sources;Detect DIA Sources in Difference Exposure;Measure Snap Difference Flux;Perform Difference Image Forced Photometry;Calculate DIA Object Flux Variability Metrics;Fit DIA Object Position and Motion;
 
-\begin{itemize}
-\item Band-independent information
-\begin{itemize}
-\item Object identification and naming information
-\item Bounding box on sky
-\item Astrometric parameters - mean position, proper motion, parallax
-\item Photometric redshift
-\item Extendedness probability
-\item Variability probability
-\item Data quality flags
-\end{itemize}
-\item Per-band information
-\begin{itemize}
-\item Model parameters and covariances for each model fit to the Object (see Section 6.2.3)
-\item Light curve summary parameters
-\item Photometric redshift
-\item Data quality flags
-\end{itemize}
-\end{itemize}
+\subsubsection{Prototype Implementation}
 
-% can first two digits of Id = DR# for human readability?
-\paragraph{MovingObject Table}
+A prototype implementation partially implementing the baseline design has been completed in the LSST Final Design Phase. It includes detection, centroiding, aperture and PSF photometry, and adaptive shape measurement. This implementation was used to benchmark the speed of the image differencing code and examine the expected levels of false positives. Deblending on difference images, fits to trailed sources, and dipole fits were not prototyped. The final report on prototype design and performance can be found in Becker et al. (\url{http://ls.st/x9f}).
+\\
 
-% ref PS-MOPS?
-Solar system objects are detected in difference images as DiaSources
-with positive flux.  These sources are then processed by the Moving
-Object Pipeline (MOPS), which links sources together into tracks of
-individual objects and determines orbits for them.  The LSST MOPS is
-derived from PanSTARRS MOPS \citep{MOPS} The information includes:
+The prototype code is available at \url{https://dev.lsstcorp.org/cgit/LSST/DMS/ip_diffim.git}. The current prototype, while functional, will require a partial redesign to be transfered to construction to address performance and extensibility concerns.
 
-\begin{itemize}
-\item MovingObject identification
-\item Orbital elements
-\item Average photometric properties in each band
-\item Data quality flags
-\end{itemize}
+\clearpage
 
-Note that there will be occasions during nightly alert processing in
-which an Object with only a single associated measurement is
-subsequently found to be a measurement of a MovingObject.  In these
-relatively rare cases, the original Object will be deleted.
-% -----------------------------------------------------------------------------------------------------------------
-\paragraph{Source Table}
+\subsection{Association Pipeline (\wbsAssocP)}
 
-An entry in the Source Table is made in conjunction with Single
-Exposure Measurement of an Object.  These measurements have relatively
-high signal-to-noise, and include the following information:
+\subsubsection{Key Requirements}
+
+The Association Pipeline has two key responsibilities: i) it shall be able to associate newly discovered \DIASources with previously known \DIAObjects and \SSObjects, and ii) it shall be able to associate \DIAObjects with known \Objects from the Level 2 catalogs.
+
+\subsubsection{Baseline design}
+
+The baseline design for \DIASources to \DIAObject association and \DIAObject to \Object association is to use simple nearest-neighbor search while taking proper motions and positional errors ellipses into account.
+
+For matches to \SSObjects, the \SSObject's ephemeris are to be computed by NightMOPS (functionally a part of the Moving Object Pipeline, \wbsMOPS). Matching to computed ephemeris is to be performed as if they were \DIAObjects.
+
+When Level 1 data is reprocessed, a more accurate clustering algorithm (OPTICS; Ankerst et al. 1999) will be employed.
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Create Instance Catalog for Visit;Associate with Instance Catalog;
+Perform DIA Object Association;Perform DIA Source Association;
+
+\subsubsection{Prototype Implementation}
+
+Prototype implementation of the baseline design has been completed in LSST Final Design Phase. The nearest-neighbor matching has been implemented as a part of the Application Framework, while clustering using OPTICS resides in the database-related ingest modules.
+\\
+
+The prototype code is available at \url{https://dev.lsstcorp.org/cgit/LSST/DMS/ap.git}. The current prototype, while functional, will require a partial redesign in Construction to address scalability and performance.
+
+\clearpage
+
+\subsection{Alert Generation Pipeline (\wbsAP)}
+
+\subsubsection{Key Requirements}
+
+Alert Generation Pipeline shall take the newly discovered \DIASources and all associated metadata as described in the \DPDD, and generate alert packets in \VOEvent format. It will transmit these packets to VO Event Brokers, using standard IVOA protocols (eg., VOEvent Transport Protocol; VTP. End-users will primarily use these brokers to classify and filter events for subsets fitting their science goals.
+
+To directly serve the end-users, the Alert Generation Pipeline shall provide a basic, limited capacity, alert filtering service. This service will run at the LSST U.S. Archive Center (at NCSA). It will let astronomers create simple filters that limit what alerts are ultimately forwarded to them. These {\em user defined filters} will be possible to specify using an SQL-like declarative language, or short snippets of (likely Python) code.
+
+\subsubsection{Baseline design}
+
+The baseline design is to adopt and upgrade for performance and functionallity the Skyalert package (\url{http://lib.skyalert.org/skyalert/}).
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Distribute to Subscribed Brokers;Distribute to Subscribed Users;Generate Alerts;
+Generate and Distribute Alerts;
+
+\subsubsection{Prototype Implementation}
+
+No prototype implementation has been developed by LSST, as the Skyalert package (\url{http://lib.skyalert.org/skyalert/}) was found to be mature enough to baseline the architecture and estimate costs.
+
+\clearpage
+
+\subsection{Moving Object Pipeline (\wbsMOPS)}
+
+\subsubsection{Key Requirements}
+
+The Moving Object Pipeline System (MOPS) has two responsibilities within LSST Data Management:
 
 \begin{itemize}
-\item Source identification
-\item Associated Object identification
-\item Set of position measurements and their covariances
-\item Set of flux measurements and their variances
-\item Set of shape measurements and their variances
-\item Sky level and its variance
-\item Photometric calibration corrections
-\item Data quality flags
+    \item First, it is responsible for generating and managing the Solar System\footnote{Also sometimes referred to as 'Moving Object'} data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% of all Solar System objects that meet the findability criteria as defined in the \OSS. The software components implementing this function are known as {\bf \em DayMOPS}.
+    \item The second responsibility of the MOPS is to predict future locations of moving objects in incoming images so that their sources may be associated with known objects; this will reduce the number of spurious transient detections and appropriately flag alerts to detections of known Solar System objects.  The software components implementing this function are known as {\bf \em NightMOPS}.
 \end{itemize}
 
-\paragraph{DiaSource Table}
-An entry in the DiaSource Table is made as a result of a high SNR
-measurement of an Object in a difference Exposure. The information
-contained in the DiaSource Table is a simplified form of the Source
-table quantities.
+\subsubsection{Baseline design}
 
-\paragraph{ForcedSource Table}
-An entry in the ForcedSource Table is made in conjunction with a low
-SNR measurement of an Object either with Multifit or in a difference
-Exposure. The information contained in the ForcedSource Table is:
+The baseline NightMOPS design is to adopt and adapt an existing ephemeris computation pipeline such as OrbFit (Milani et al.) or OpenOrb (Granvik et al.). The baseline DayMOPS design uses Kubica et al. (2005) algorithms to identify and link Solar System object candidates.
+\\
+
+The design of these components are explained in detail in the MOPS Design Document (\MOPSD).
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Process Moving Objects;
+Fit Orbit;Prune Moving Object Catalog;Perform Precovery;Recalculate Solar System Object Properties;Link Tracklets into Tracks;Find Tracklets;
+
+\subsubsection{Prototype Implementation}
+
+A prototype implementation implementing the key components of DayMOPS baseline design has been completed in LSST Final Design Phase. NightMOPS has not been extensively prototyped, as it is understood not to be an area of significant uncertainty and risk. An extensive report on MOPS prototyping and performance is available as a part of the MOPS Design Document (\MOPSD).
+\\
+
+Prototype MOPS codes are available at \url{https://dev.lsstcorp.org/cgit/LSST/DMS/mops_daymops.git/} and \url{https://dev.lsstcorp.org/cgit/LSST/DMS/mops_nightmops.git/}. We expect it will be possible to transfer a significant fraction of the existing code into Construction. Current DayMOPS prototype already performs within the computational envelope envisioned for LSST Operations, though it does not yet reach the required completeness requirement.
+
+\clearpage
+
+\section{Level 2 Science Pipelines}
+
+\subsection{Single Frame Processing Pipeline (\wbsSFM)}
+
+\subsubsection{Key Requirements}
+
+Single Frame Processing (SFM) Pipeline is responsible for reducing raw image data to {\em calibrated exposures}, and detection and measurement of \Sources (using the components functionally a part of the Object Characterization Pipeline).
+\\
+
+SFM pipeline functions include:
+%
+\begin{itemize}
+    \item Assembly of per-amplifier images to an image of the entire CCD.
+    \item Cosmic ray rejection and snap combining
+    \item Instrumental Signature Removal
+    \item Determination of zeropoint and aperture corrections
+    \item PSF determination (per-CCD)
+    \item WCS determination and astrometric registration of images
+    \item Sky Background determination
+    \item Source detection
+\end{itemize}
+
+Calibrated exposure produced by the SFM pipeline must possess all information necessary for measurement of source properties by single-epoch Object Characterization algorithms.
+
+\subsubsection{Baseline design}
+
+Single Frame Processing pipeline will be implemented as a flexible framework where different data can be easily treated differently, and new processing steps can be added without modifying the stack code.
+\\
+
+It will consist of three primary components:
+%
+\begin{itemize}
+    \item A library of useful methods that wrap a small number of atomic operations (e.g. {\tt interpolateFromMask}, {\tt overscanCorrection}, {\tt biasCorrection}, etc.)
+    \item A set of classes ({\tt Task}s) that perform higher level jobs
+    (e.g., {\tt AssembleCcdTask}, or {\tt FringeTask}), and a top level class to apply corrections to the input data in the proper order. This top level class can be overridden in the instrument specific {\tt obs\_*} packages, making the core SFM pipeline camera agnostic.
+    \item A topl-level Task to run the SFM pipeline.
+\end{itemize}
+
+In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS {\em Photo} pipeline (Lupton et al.).
+
+\paragraph{Instrumental Signature Removal:}
+
+The adopted pipeline design allows for straightforward addition of correction for instrumental effects that will be discovered in the as-built Camera. The effects currently baselined to be corrected are:
 
 \begin{itemize}
-\item ForcedSource identification
-\item Associated Object or MovingObject identification
-\item Pixel coordinates where the flux was measured
-\item Measured flux and its variance
-\item Data quality flags
+\item Bias: A master bias frame, created from a set of overscan corrected zero length exposures, is subtracted from the image to correct for 2D structure in the bias level. For each exposure, overscan columns will be averaged and fit with a 1D function and subtracted row by row to account for time variable bias level.
+
+\item Assembly: CCDs will be assembled by trimming the prescan and/or overscan rows and columns from amplifier images and storing them into a Image object.
+
+\item Dark current: A master dark frame created from a set of bias corrected exposures taken with the shutter closed is scaled to the science image exposure time and subtracted to correct for 2D structure in the dark current.
+
+\item Cross-talk: Cross talk is generated by interaction of fields produced by the current in physically proximate electronic components. This results in bright features from one amp showing up in other. Correction is to subtract each aggressor amp (possibly flipped) modulated by a measured coefficient from the victim amp. The implementation may assume the cross-talk is small enough to be correctable by first order correction only.
+
+\item Non-linearity: CCDs do not have perfectly linear response. At both almost empty and almost full well the response can become non-¬≠linear. Given a measurement of the linearity of the CCD response, along with any temperature dependence, the data values will be corrected to linear response by simple mapping and interpolation.
+
+\item Flat-field: The correction is a division by the normalized master flat. The master flat will be generated assuming a nominal flat spectrum for all sources. Photometric corrections will be applied downstream on a source by source basis given an SED for each source.
+
+\item Fringing: Fringe parerns are an interference effect that result from the sharp emission lines in the night sky spectrum. This effect is the strongest in redder bands. The best fit modeled fringe pattern, constructed from monochromatic flats assuming a low-dimensional parametrization of the night sky emission spectrum, will be subtracted from the image.
+
+\item Cosmic ray rejection and snap combining: Exposures will be taken in pairs separated by the readout time. The two images and the expected statistics on those images are used to reject pixels that are significant outliers. Once cosmic rays are flagged the two snaps will be added to produce an image with a longer effective exposure.
 \end{itemize}
 
-\paragraph{Exposure Table}
-The Exposure Table contains the most frequently needed metadata for an
-Exposure.  Additional metadata can be obtained from the Engineering
-and Facility Database, which can be queried together with the Science
-Database. The information contained in the Exposure Table includes:
+\paragraph{PSF determination:} We will run separate algorithms to select candidate stars and determine the point-spread function (PSF, the light distribution for a point source, a critical ingredient to understanding the data and measuring accurate shapes).  Both the star selector and PSF determiner algorithms will be pluggable Python modules, so that different algorithms can be run as desired for different analysis needs.
+
+Three selectors will be implemented. The ``second-moment'' star selector will builds a histogram of the X and Y second moments of flux, search for a peak, and select sources in the peak as point source candidates.  The ``catalog'' star selector, in contrast, will make use of an external catalog of point sources and use astrometric matching to select point source candidates.  The ``objectSize'' star selector will identify point source candidates from the cluster of sources with similar sizes regardless of magnitude.  When selecting point source candidates by size (i.e., for the ``second-moment'' and ``objectSize'' algorithms), the sizes will be corrected by the known optical distortion of the camera.
+\\
+
+Given the irregularly sampled grid of PSFs represented by selected stars, the variation of the PSF across the CCD will be determined. The baselined ``principle-components'' PSF (pcaPsf) determiner performs a singular value decomposition (also known as a principal components analysis, or PCA) on the point-source candidates in pixel space to produce a set of eigen-images.  From a subset of the dominant eigen-images, it constructs polynomial interpolants for their relative weights.  This produces a spatially-varying PSF model that captures the most important changes in the PSF over the CCD.
+\\
+
+These algorithms are intended to be sufficient to enable Level 1 processing. More advanced PSF determination algorithms will be developed in the PSF Estimation Pipeline (\wbsPSF).
+
+\paragraph{Sky Background Determination:}
+
+We will estimate the smooth sky background by measuring the background level in cells (typically 256 or 512 pixels square) using (by default) a clipped mean, and ignoring pixels that are part of detected sources.  An interpolating spline (Akima spline, by default) will be constructed to estimate the background level in each pixel. Backgrounds will be possible to estimate simultaneously over multiple sensors, including the full focal plane.
+
+Background models will be saved, for later subtraction or restoration (e.g., in background matching, as implemented by the Coaddition Pipeline, \wbsCoadd).
+
+\paragraph{WCS determination and image registration}
+
+The absolute World Coordinate System (WCS) will be determined using an {\em astrometry.net} type algorithm (Lang et al. 2009), seeded with the approximate position of the boresite.
+
+This module will also include the capability to perform relative registration of a set of images to enable coaddition and image differencing, using the {\em meas\_mosaic} registration algorithm of Furosawa et al. (2013) as the baseline.
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Assemble CCD; Determine Aperture Correction; Determine PSF; Remove Instrument Signature; Detect Sources; Determine Photometric Zeropoint; Measure Single Visit Sources; Determine WCS; Sum Exposures, Combine Raw Exposures, Remove Exposure Artifacts; Determine Sky Background Model; Calibrate Exposure; Process Raw Exposures to Calibrated Exposure; Perform Single Visit Processing; \subsubsection{Prototype Implementation}
+
+A prototype implementation of all major components of SFM baseline design has been completed in LSST Final Design Phase. The achieved accuracy is at the level of state-of-the art codes today (e.g., SDSS, SExtractor). We expect it will be possible to transfer a significant fraction of the existing code into Construction, for continued improvement to meet LSST accuracy requirements.
+\\
+
+WCS determination and image registration modules are an exception, and will require extensive redesign and rewrite. Sky determination module will have to be enhanced to support multi-CCD fitting capability.
+\\
+
+The prototype codes are available in the following repositories: \url{https://dev.lsstcorp.org/cgit/LSST/DMS/ip_isr.git/}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_algorithms.git}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_astrom.git}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_mosaic.git}, , \url{https://dev.lsstcorp.org/cgit/LSST/DMS/pipe_tasks.git}.
+
+\clearpage
+
+\subsection{Image Coaddition Pipeline (\wbsCoadd)}
+
+\subsubsection{Key Requirements}
+
+Image Coaddition Pipeline shall produce PSF-matched and non-PSF-matched coadds given a stack of input calibrated exposures. Generated coadds must be characterized, at a pixel level, for validity and variance (i.e., have a Mask plane and a Variance plane).
+
+When non-PSF-matched coadds are produced, the effective PSF and its variation across the full coadd must be determined and retained. Outliers appearing in a small subset of input images (e.g., transients or moving objects) must not appear in the final co-adds.
+
+The Image Coaddition Pipeline shall make it possible to generate the coadds with astrophysical backgrounds removed or retained, depending on runtime configuration directives.
+
+The pipeline must be capable of generating coadds in varying geometries and tesselations of the sky, plugged in at runtime via Python modules and configuration directives. To reduce its memory footprint, it shall be capable of generating the coadds in small patches set by the operator at runtime via configuration directives.
+
+For performance reasons, the pipeline shall be able to simultaneously generate multiple coadds from the same input stack, avoiding unnecessary rewarping of inputs to generate each coadd.
+
+\subsubsection{Baseline design}
+
+\paragraph{Coaddition} The Coaddition Pipeline will apply the results of the relative astrometric solution (developed as a part of Single Frame Pipeline, \wbsSFM) to the input images, warp (\S\ref{alg:warp}) them to a common coordinate system
+(``sky map''; \S\ref{alg:skymap}) and coadd the pixels. The warped images will be kept in memory. Using those images, multiple coadds will be created, each consisting of a subset of input images defined explicitly by the operator or algoritmically by quality cuts.
+\\
+
+Production of multi-band coadds will be supported by implementing the Szalay, Connolly, Szokoly (1999) algorithm.
+\\
+
+Determining the background from individual visits separately is problematic (because different choices can be made in each, especially at the edge of a CCD; and because extended, faint astrophysical flux is misinterpreted as background), commonly manifesting as dark rings around bright stars and galaxies. Therefore, the pipeline will include the capability to perform ``background matching'' (\S\ref{alg:backgroundMatching}) to produce a coadd with a high signal-to-noise realization of the background in a single reference exposure.  This background will be measured over large scales and be possible to subtract with a high degree of accuracy. Background matching will be the default mode of operation. Nevertheless, it will also be possible to produce coadds by subtracting the background first using Sky Background determination and substraction components developed in the Single Frame Processing Pipeline (\wbsSFM).
+\\
+
+If the seeing is not constant it becomes impossible to produce a coadd with a PSF varying in a continuous fashion over the field, unless the data is deliberately degraded by convolving the inputs to a common PSF (known as ``PSF matching").  In order to enable dealing with the discontinuous PSF, the Coaddition Pipeline will construct a ``CoaddPsf'' (\S\ref{alg:coaddPsf}) PSF model, which is a sum of the PSFs of the input images at each point of interest. The baseline algorithm is also known as StackFit (Jee and Tyson, 2012).
+\\
+
+To accurately measure the colors of galaxies (e.g., for photometric redshifts) in the presence of intra-object color gradients, seeing changes and imperfect galaxy models, the baseline implementation will be capable of producing ``PSF-matched coadds'' using well known PSF-matching algorithms.
+
+\paragraph{Warping}
+\label{alg:warp}
+To warp an image from the detector frame to the sky frame, a resampling kernel will be used. The kernel is set according to the sub-pixel position on the input image of the centre of the corresponding output pixel.  The code will support using Lanczos (of configurable order), bilinear or nearest-neighbour kernels, with the default being a 3rd-order Lanczos (with $10^6$ cache realizations), as a compromise between the infinite {\em sinc} function and the need for speed.
+
+\paragraph{Background Matching}
+\label{alg:backgroundMatching}
+
+Background matching will be implemented to enable reaching the maximum depth in the coadds and preserve the astrophysical backgrounds.  We adopt as our baseline the algorithm of Huff et al. (2011), extended to two-dimensional data.
+
+The common practice of subtracting the background from each input individually removes features on moderate scales (such as the outer haloes of galaxies, and Galactic cirrus) and can be unstable (especially when the features appear at the edge of a frame) causing increased noise.
+
+Instead, the following algorithm (following Huff et al. 2011) will be implemented: the pipeline will choose one or more reference exposures, and match the backgrounds of each of the other exposures to the reference.  This will be done by subtracting the reference from each of the other exposures (which mostly removes astrophysical sources, especially the extended sources which normally contaminate background measurement) and fitting a background model to the difference between the backgrounds\footnote{It is anticipated this code will be shared with the Sky Background determination modules from the Single Frame Processing pipeline.}. These models will then be subtracted from the other inputs, so that all exposures have the same large-scale background as the reference exposure. 
+
+The coadd produced with the above algorithm will retain the extended astrophysical features at high signal-to-noise, and the background can be carefully removed over multiple patches at once. The subtracted image also provides an opportunity to identify sharp features such as optical ghosts, glints and other contaminants that can be masked.
+
+\paragraph{Sky Tesselation and Coadd Projections\label{alg:skymap}} 
+
+The ``skymap'' is a tessellation of the sky, providing suitable pre-defined coordinate systems for operations on the sky such as coaddition.  The sky map divides the sky into ``tracts''.  For convenience and parallelism, each tract is sub-divided into ``patches''.  Tracts and patches may overlap, so that sources are not lost in the gaps. Tessellations will be pluggable Python modules.
+\\
+
+The baseline tessellation is one using a stereographic dodecahedron. The sky will be subdivided into 12 overlapping\footnote{We're planning for 3.5 degrees of overlap, roughly accommodating a full LSST focal plane.} {\em tracts}, spanning approximately $75 \times 72$ degrees. The sky will be stereographically projected onto the tracts\footnote{See \url{https://dev.lsstcorp.org/trac/wiki/DM/SAT/SkyMap} for details.}, and pixelized into (logical) images 2.0 x 1.9 megapixels in size (3.8 terapixels in all). Physically, these large images will be subdivided into smaller, approximately $2{\rm k} \times 2{\rm k}$ pixel, non-overlapping, {\em patches}, though that subdivision is to be transparent to clients. Clients will be able to request arbitrarily chosen regions in each tract\footnote{Up to some reasonable upper limit, defined by available memory}, and receive them back as afw {\tt Exposure} objects.
+
+\paragraph{CoaddPsf}
+\label{alg:coaddPsf}
+
+One of the main challenges in producing quality measurements from
+non-PSF-matched coadds is the complexity of the effective point-spread
+function on the coadd.  Because the PSF has discontinuities at the
+location of chip boundaries, modeling approaches based on
+interpolating with smooth functions cannot be used.  Instead, when
+creating a coadd image, we also combine the PSF models of all the
+input exposures, using an approach similar to that devised by
+Jee and Tyson (2011).  This combination is lazy, in that we simply store the
+PSF models, their bounding boxes, and the coordinate transforms that
+relate them to the coadd pixel grid.  Then, when measuring an object
+on the coadd, we obtain the coadd PSF model at that location by coadding the
+PSF models of all exposures that contributed to the relevant part of
+the coadd, after warping them by the appropriate coordinate
+transform.  We approximate the PSF as spatially constant in the region
+of an individual object.
+
+%This approach is not exact in the presence of missing data.  When a
+%particular exposure pixel does not contribute to the coadd, the
+%associated PSF should not contribute as well, but the cost of storing
+%a mask mapping these rejected pixels along with the PSF is currently
+%prohibitively expensive, so the PSF combination algorithm does not
+%consider rejected or masked pixels.  More importantly, when only
+%certain pixels that contribute to an object are rejected, the PSF
+%model on the coadd is not well-defined for that object; we cannot
+%represent the coadd as the convolution of an idealized astrophysical
+%object with any convolution kernel.  This is a particular problem for
+%stars that are near the saturation limit: if they are saturated in
+%some frames, but not others, accurate coadd measurements become
+%essentially impossible.  Cosmic rays will also contribute to this
+%effect for many more objects, but at a lower level, and objects whose
+%isophotes cross a chip boundary in one or more input exposures will
+%also be affected.  It is worth noting that this requires coaddition to be 
+%based on a straightforward mean with as little clipping as possible; both median
+%stacking and aggressive clipping will cause the PSF of the coadd to be
+%poorly-defined, and a poor match to the model produced by the CoaddPsf
+%approach.
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Create Deep Coadd Exposures;Create Short Period Coadd Exposures;Coadd Calibrated Exposures;Create Best Seeing Coadd Exposures;Create PSF-matched Coadd Exposures;
+Create Template Exposures;
+
+\subsubsection{Prototype Implementation}
+
+A prototype implementation of all major components of the Coaddition Pipeline baseline design has been completed in LSST Final Design Phase. We expect it will be possible to transfer a significant fraction of the existing code into Construction, for continued improvement to meet LSST performance and accuracy requirements.
+\\
+
+The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82). Using Stripe 82 data, it demonstrated the benefits of background matching and CoaddPsf approaches.
+\\
+
+The design and performance of the current prototype pipeline is described in the Summer 2012 Data Challenge (\url{http://ls.st/vho}) and Winter 2013 Data Challenge Report (\url{http://ls.st/ofk}). The prototype codes are available in the {\tt coadd\_*} git repositories browsable through the LSST git repository browser at \url{dev.lsstcorp.org/cgit}.
+
+\clearpage
+
+\subsection{Deep Detection Pipeline (\wbsDeepDet)}
+
+\subsubsection{Key Requirements}
+
+The Deep Detection Pipeline is responsible for detection of objects on coadds produced by the Coaddition Pipeline.
+
+\subsubsection{Baseline design}
+
+The baseline is the SDSS detection algorithm (Lupton et al.).
+\\
+
+Object detection is performed by correlating the deep coadd image with the CoaddPsf PSF and searching for peaks above the preset threshold. Multiple adjacent peaks will be detected and merged to reduce spuriously detected objects due to noise or object substructure.
+\\
+
+To enable detection of extended objects, the Pipeline will perform detection on recursively binned coadds.
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Detect and Characterize AstroObjects;
+Detect Sources on Coadds;
+
+\subsubsection{Prototype Implementation}
+
+A fully functional prototype implementation of the Deep Detection Pipeline baseline design has been completed in LSST Final Design Phase and extensively tested with image simulation inputs as well as real data (SDSS Stripe 82). We expect it will be possible to transfer a significant fraction of the existing code into Construction, for continued improvement to meet LSST performance and accuracy requirements.
+\\
+
+The detection functionallity is a part of the {\tt afw} git repository browsable through the LSST git repository browser at \url{dev.lsstcorp.org/cgit}.
+
+\clearpage
+
+\subsection{Object Characterization Pipeline (\wbsObjChar)}
+
+\subsubsection{Key Requirements}
+
+Given one or more cutouts of a detected object, observed in one or more epochs, the Object Characterization Pipeline will perform all measurements required by the \DPDD, within the computational budget allotted by the LSST sizing model.
+\\
+
+Functionally, the components of this pipeline may be incorporated into or invoked by other pipelines.
+
+\subsubsection{Baseline design}
+
+\paragraph{Single-epoch Characterization}
+
+Single-epoch (including coadd) object characterization will primarily rely on forward-modeling. Models will be convolved with the independently estimated PSF and compared with the pixel data until $\chi^2$ is minimized.
+
+%Multi-epoch object characterization will follow the single-epoch prescription, with the data and model vectors being extended to simultaneously fit observations at multiple epochs. We term this fitting method {\em MultiFit}. At its core, MultiFit a relatively
+%straightforward observation that it is better to fit a PSF-convolved
+%model to individual epochs, than generate a (potentially PSF-matched)
+%coadd and fit the model to the resultant image. Assuming Gaussian
+%errors, MF is exactly equivalent to least squares. If the PSF is known (which is a
+%separate problem solved by the PSF Estimation pipeline, \wbsPSF), implementation is straightforward and easy to write. This is, however, computationally challenging as each iteration of the model fitter requires a convolution of potentially hundreds of models (one for each epoch), on a grid that oversamples the pixel grid by a factor of few.
+
+\paragraph{Multifit}
+
+For multi-epoch characterization and some science measurements --- particularly shape measurement for weak
+lensing --- measurement on a coadd image may not provide the necessary
+precision and control of systematics.  To perform these measurements,
+we baseline the ``MultiFit'' approach (Bosch 2010, Bosch et al. 2013), in which a
+parametrized model for each astronomical object is fit simultaneously
+to all of the data in which that object appears.  Rather than
+transform and combine the data, we instead transform the model to the
+coordinate system of each exposure, convolve it by the appropriate
+PSF, and compare it to the data from that exposure.  Measurements from
+the coadd will be used as a starting point, so the multifit processing
+will proceed by iterating over the catalog generated from the coadd,
+loading postage stamps from the original images, and fitting to these
+data.  Note that the output measurements will generally have the same
+form as the coadd-based measurements - one set of measurements per
+astronomical object. There is a single set of the
+parameters that describe each object, not a different set of parameters
+for each exposure in which it appears.
+
+Because it does not involve transforming noisy data (which is usually
+lossy in some sense), and instead transforms analytic models, a
+multifit approach is theoretically optimal for measurements that can
+be framed as the results of model-based fits to the data (note that
+not all measurements can be framed in such a way, but those that
+cannot usually do not properly account for the PSF).  While it may be
+possible to construct an optimal coadd that would also be
+theoretically optimal, we expect that the difficulty in creating such
+a coadd (i.e. perfectly tracking the covariances between pixels
+introduced by resampling to a common pixel grid) would be prohibitively
+complex.  On the other hand, for many measurements a non-optimal coadd
+may be practically
+sufficient, in the sense that the improvement produced by a
+multifit-based measurement of the same would be negligible.  In these
+cases, the coadd measurement is likely to be far more efficient
+computationally.  Whenever possible, then, we will do as much work as
+possible on the coadd first, and only use a multifit approach to ``tune up''
+the final result.  And when this final tuning is determined to be
+unnecessary, it can be skipped entirely.
+
+To further make the multifit approach computationally tractable, we baseline use the multi-shapelet multifit algorithm implementation, as described in Bosch et al. 2013 (\url{http://ls.st/grd}).
+
+\paragraph{Point source model fit} To satisfy the point-source model fit requirements, we model each observed object as a point source with finite proper motion and parallax and constant flux (allowed to be different in each band). This model is a good description for stars and other unresolved sources. Its 11 parameters will be simultaneously constrained using information from all available observations in all bands. The fitting procedure will account for differential chromatic refraction. Multifit will be used to perform the fit.
+
+\paragraph{Bulge-disk model fit} To satisfy the bulge-disk model fit requirements, the pipeline will be capable of modelling objects as a sum of a de Vaucouleurs (Sersic $n=4$) and an exponential (Sersic $n=1$) component. This model is a reasonable description of galaxies. The object is assumed not to move (i.e., have zero proper motion). The components share the same ellipticity and center. The model is independently fit to each band. There are a total of 8 free parameters, which will be simultaneously constrained using information from all available epochs for each band. Where there's insufficient data to constrain the likelihood (eg., small, poorly resolved, galaxies, or very few epochs), the pipeline will have the capability to take into account priors that limit the range of its sampling.
+
+In addition to the maximum likelihood values of fitted parameters and their covariance matrix, the pipeline shall be capable of sampling independent samples from the likelihood function (or posterior). Multifit will be used to perform the fit.
+
+\paragraph{Trailed model fit}
+
+The pipeline shall be capable of fitting a trailed object model, as described in the \DPDD. The baseline algorithm is analogous to that employed by the bulge-disk model fit, but with the model being a line segment instead of a mixture of Sersic profiles.
+
+\paragraph{Dipole model fit}
+
+The pipeline shall be capable of fitting a dipole object model, as described in the \DPDD. The baseline algorithm is analogous to that employed by the bulge-disk model fit, but with the model being a mixture of positive and negative point sources, instead of Sersic profiles.
+
+\paragraph{Centroids} Centroids will be computed independently for each band using an algorithm similar to that employed by SDSS (Lupton et al.). Information from all epochs will be used to derive the estimate. These centroids will be used for adaptive moment, Petrosian, Kron, standard color, and aperture measurements.
+
+\paragraph{Adaptive moments} Adaptive moments will be computed using information from all epochs, independently for each band, using the algorithm of Bernstein \& Jarvis (2002).
+
+\paragraph{Petrosian and Kron fluxes} Petrosian and Kron radii and fluxes will be measured in standard seeing using self-similar elliptical apertures computed from adaptive moments. The apertures will be PSF-corrected and {\em homogenized}, convolved to a canonical circular PSF. This is in order to derive a definition of elliptical apertures that does not depend on seeing. For example, for a large galaxy, the correction to standard seeing will introduce little change to measured ellipticity. Corrected apertures for small galaxies will tend to be circular (due to smearing by the PSF). In the intermediate regime, this method results in derived apertures that are relatively seeing-independent. Note that this is only the case for {\em apertures}; the measured flux will still be seeing dependent and it is up to the user to take this into account.
+
+The radii will be computed independently for each band. Fluxes will be computed in each band, by integrating the light within some multiple of {\em the radius measured in the canonical band}. The shape of the aperture in all bands will be set by the profile of the galaxy in the canonical band alone. This procedure ensures that the color measured by comparing the flux in different bands is measured through a consistent aperture. See \url{http://www.sdss.org/dr7/algorithms/photometry.html} for details. The pipeline shall be capable of computing radii enclosing 50\% and 90\% of light.
+
+The baseline for both Petrosian and Kron flux implementation is to derive these as an a mathematical transformation of aperture surface brightness measurements (see below).
+
+\paragraph{Aperture surface brightness}. Aperture surface brightness will be computed in a variable number, depending on the size of the source, of concentric, logarithmically spaced, PSF-homogenized, elliptical apertures, convolved to standard seeing.
+
+\paragraph{Deblender}
+\label{alg:deblender}
+
+At the depths probed by LSST images, many of the sources are superimposed on each other on the sky (``blended''), which makes detecting and measuring such sources difficult.  Often this blending is not severe, but the $5\sigma$ contours overlap (and therefore merge together) slightly.  In other cases, distinct objects will be superimposed directly on more extended objects (e.g., a star on a resolved galaxy). 
+
+In order to disentangle the multiple objects, we adopt a baseline for the ``deblender'' based on the algorithms used in SDSS (Lupton and Ivezic, 2005; \url{http://adsabs.harvard.edu/abs/2005ASPC..338..151L}).
+
+The baseline deblender assumes that discrete sources generally have twofold
+rotational symmetry.  When one side of a source is blended, we can
+recover its appearance by examining the symmetric side.  The deblender
+begins by building these symmetric templates for each source.  Next,
+the flux in each pixel is split among the blended source in proportion
+to their templates.  The deblender produces cutouts of each
+source in a blended group, so that the measurement algorithms (fluxes,
+galaxy shapes, etc) need not know that the source was blended. This deblending algorithm works well in practice for moderately crowded fields (as demonstrated by SDSS).
+\\
+
+This SDSS-style deblender will be run on the set of single-band coadds, then a set of PSF-convolved models will be fit to the deblended the children. The initial templates with then be replaced by these models, convolved with the appropriate PSF, and flux assigned as before. The use of physically-motivated templates will help with identification and reduction of non-physical deblends, generalization to multi-epoch data, and data with very different image quality.
+\\
+
+In areas of significant stellar crowding (i.e., Galactic plane, star clusters), this approach lends itself to imposition of apropriate template priors (i.e., the correct template being that of a point source convolved with the PSF). This, effectively, makes the deblender into a crowded field code, allowing this baseline to satisfy the requirements for crowded field photometry.
+
+\paragraph{Star/galaxy separation}
+\label{alg:star-galaxy}
+
+We baseline the star/galaxy separation algorithm based on the ratio of PSF and model fluxes. We use the extendedness criterion as defined by the HSC (Furosawa et al., 2013):
+\begin{equation}
+{\rm extendedness} = (0.95\times {\rm flux.gaussian} \lt {\rm flux.psf})\, ?\, 0.0 : 1.0 \nonumber
+\end{equation}
+
+\paragraph{Variability Characterization}
+
+       Two groups of parameters are required to be provided (see {\tt lcPeriodic} and {\tt lcNonPeriodic} in the \DPDD), designed to characterize periodic and aperiodic variability features. We baseline the metrics and algorithms described in Richards et al. (2011) for production of these data products.
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Measure AstroObjects;Exposure Stack Measurements;
+Create Sky Coverage Maps;Perform Deblending and Association;Perform Forced Photometry;Characterize AstroObject Flux Variability;
+
+\subsubsection{Prototype Implementation}
+
+A prototype implementation of all major components of the Object Characterization Pipeline baseline design has been completed in LSST Final Design Phase. The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82). We expect it will be possible to transfer a significant fraction of the existing code into Construction, for continued improvement to meet LSST performance and accuracy requirements.
+\\
+
+Missing from the current prototypes are the moving point source fit (implemented algorithms assume the source does not move), the trailed source fit, and the aperture, Kron and Petrosian magnitudes using elliptical apertures (implemented algorithms assume the apertures are circular).
+\\
+
+The design and performance of the current prototype pipeline is described in the Summer 2012 Data Challenge (\url{http://ls.st/vho}), Winter 2013 Data Challenge Report (\url{http://ls.st/ofk}), and Summer 2013 Data Challenge Report (\url{http://ls.st/grd}). The codes are available in the {\tt meas\_*} git repositories browsable through the LSST git repository browser at \url{http://dev.lsstcorp.org/cgit}.
+
+\clearpage
+
+\subsection{PSF Estimation (\wbsPSF)}
+
+\subsubsection{Key Requirements}
+
+PSF Estimation algorithms must enable the estimation of the point spread function with residual ellipticity correlations at the levels required by LSR-REQ-0097.
+
+\subsubsection{Baseline design}
+
+LSST's PSF models will be implemented as a plugin. Simple PSF estimation algorithms (e.g., {\tt pcaPsf}) will be implemented by the Single Frame Processing pipeline (\wbsSFM). CoaddPsf ({\tt stackfitPsf}) algorithm will be implemented in the Image Coaddition Pipeline (\wbsCoadd).
+\\
+
+Current state-of-the-art PSF estimation methods typically use some basis functions (e.g. $\delta$-functions, PCA) and a spatial model (e.g. polynomials) to estimate the PSF. This is not expected to be sufficient to reach LSST requirements. We've therefore adopted a baseline algorithm as follows:
 \begin{itemize}
-\item Exposure identification
-\item Time of Exposure midpoint
-\item Exposure time
-\item Filter Id
-\item WCS
-\item Camera metadata
-\item Telescope metadata
+    \item Decompose the PSF into a component due to the atmosphere and a component due to the telescope and camera system.
+    \item Estimate the telescope+camera component using the wavefront sensor information (the reconstructed wavefront) and camera metrology (the laboratory or on-sky measurement of $z$ offsets of individual sensors)
+    \item Estimate the atmospheric contribution by modelling the PSF from bright, isolated, stars, and interpolating using PCA decomposition or Kriging.
 \end{itemize}
+This estimation will be performed on the full focal plane, and use the per-CCD estimates of the PSF and cutouts of bright stars (PSF estimation candidates) as inputs.
+\\
+The PSF of thick deep depletion devices such as LSST's is known to be intensity dependent. We will estimate the zero-intensity PSF by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same algorithm will be used to estimate PSF in undersampled imaging (best quartile of seeing).
 
+\subsubsection{Constituent Use Cases and Diagrams}
 
-% -----------------------------------------------------------------------------------------------------------------
+Perform Full Focal Plane PSF Estimation;
+
+\subsubsection{Prototype Implementation}
+
+Prototype code for wavefront reconstruction has been developed by the LSST Telescope and Site group. We expect this code will be rewritten in Construction to follow LSST Data Management standards and be straightforward to incorporate into the PSF Estimation pipeline.
+\\
+
+The remaining components of the PSF Estimation pipeline have not been prototyped at this time.
+
+\clearpage
+
+\section{Calibration Pipelines}
+
+\subsection{Calibration Products Pipeline (\wbsCPP)}
+
+\subsubsection{Key Requirements}
+
+The Calibration Products Pipeline shall generate the calibration data products as required by the Photometric Calibration Plan (\PCP). This includes the telescope/camera calibration products derived from the in-dome aparatus of the LSST observatory, as well as the atmospheric models derived from the spectra taken by the Auxilliary Telescope.
+
+\subsubsection{Baseline design}
+
 \begin{figure}
-\includegraphics[angle=90,scale=0.50]{ObjectSourceExp.eps}
-\caption{Key tables in the LSST database schema}
+\includegraphics[angle=0,scale=0.44]{produce_calibration_data_products.png}
+\caption{Calibration Products Pipeline Use Case Diagram\label{fig:cppUML}}
 \end{figure}
 
-\subsection{Common Data Objects}
-Level 1 and 2 data products are both built from common data objects that
-are also used throughout the pipeline systems.  These may be utilized for
-Level 3 data products as well.  This is the list of the top level data objects:
-
-\paragraph{MaskedImages}
-A ``MaskedImage'' contains pixel data.
-A MaskedImage may cover a whole focal plane, a
-single CCD, or a CCD segment. The pixel data, which is all on the same
-grid, consists of:
-\begin{itemize}
-\item the Science image, with the pixel data type being either 16-bit
-  integers or 32-bit floats.
-\item the Mask image, typically 16 bits deep, with each plane representing
-  a particular logical statement about the corresponding science image pixel, eg ``this pixel is
-  saturated''.
-\item the Variance image, which represents the expected variance in the
-  corresponding science pixel values
-\end{itemize}
-
-\paragraph{Exposures}
-An ``Exposure'' is a MaskedImage associated with a variety
-of image metadata.  The types of image metadata contained in an
-Exposure depends on the processing steps applied to the Exposure, so
-that a Raw Exposure will have relatively basic metadata that comes
-directly from the OCS, while a Calibrated Science Exposure may have in addition
-a WCS, a PSF, and a model of atmospheric transmission as a function of
-field position.
-
-\paragraph{Coadded Exposures}
-A Coadded Exposure results from combining multiple overlapping
-Exposures, potentially from multiple filters. In the combination
-process, the images are reprojected to a common coordinate system.
-The pixel data has the same components as a MaskedImage.  The image
-metadata differs, however, and will be stored in its own table (still
-TBD).
-
-\paragraph{Alerts}
-An Alert is a notification to the community that a transient event has
-been observed by the LSST. The community has strongly expressed the
-preference that Alerts not be significantly filtered prior to
-distribution so that science opportunities are not closed off.  We
-have therefore adopted very simple criteria for issuing an Alert: A
-5-sigma (operational choice TBD) DiaSource was seen in both
-Exposures of a Visit which are not consistent with cosmic ray
-events. 
-
-The data bundled with the Alert includes:
-\begin{itemize}
-\item The rows from the Exposure table for the two Exposures in the
-  Visit
-\item The rows from the DiaSource table for the two relevant
-  DiaSources
-\item The row from the Object table for the associated Object.
-\item A postage stamp image centered on the DiaSource from each of the
-  two Difference Exposures, and from the Template Exposure
-\end{itemize}
-
-Note that no explicit classification of an Alert is provided, but
-users can readily construct classifiers and filters based on information in the
-Science Database.  This includes past time dependence, colors, and
-shape information for the associated Object.  Additionally, database
-queries can readily be formulated which will identify Exposures that
-have generated anomalously large numbers of Alerts, presumably due to
-image artifacts or processing problems.
-
-\section{Level 1 Data Products}
-
-\paragraph{Exposures}
-The following Level 1 Exposures will be available
-\begin{itemize}
-\item Raw Exposures
-\item Calibrated Science Exposures (trimmed, debiased, flattened, etc)
-\item Difference Exposures
-\end{itemize}
-Note that the Raw Exposures are sent to the
-Archive Center, where they are immediately made available for
-retrieval.  Calibrated Science and Difference Exposures are recreated on-the-fly
-at the Archive Center as needed.
-\paragraph{Catalogs}
-The following catalogs are updated through the nightly running of the
-Alert production.  With the exception of Exposure, they are all
-recreated from scratch during the production of each Data Release.
-\begin{itemize}
-\item Exposure
-\item Object
-\item MovingObject
-\item DiaSource
-\item ForcedSource
-\end{itemize}
-\paragraph{Alerts}
-Alerts are distributed as VOEvents, and archived at the Archive Center
-
-\paragraph{Nightly Summary Products}
-A variety of reports will be generated every night to summarize the
-performance of the DMS and the SDQA metrics on the Level 1 data. The
-contents of these is TBD.
-\paragraph{Engineering and Facility Database Archive}
-Every 24hrs, the DMS synchronizes the Engineering and Facility
-Database, which is generated by the Observatory Control System (OCS),
-with the copy at the Archive Center. This Level 1 product contains
-comprehensive metadata for the entire LSST observatory, and can be
-queried together with the Science Database.
-\section{Level 2 Data Products}
-\paragraph{Coadded Exposures}
-The following Coadded Exposures are Level 2 Data products
-\begin{itemize}
-\item Template Coadd for creating Difference Exposures.   This Coadd
-  is optimized for a narrow PSF, so that during image differencing the
-  Template is never narrowed by the matching kernel, even in the best seeing of the
-  survey. A Template is specific to a filter band.
-\item Detection Coadd for object detection.  This Coadd is optimized
-  so that the peaks from faint objects have the highest
-  signal-to-noise. The Detection Coadd may combine information from
-  multiple filter bands.
-\item RGB Coadd for visualization.  This Coadd will be formed by
-  combining the Template Coadds for the individual filter bands to
-  give a visually pleasing and useful color image.
-\end{itemize}
-\paragraph{Calibration Products}
-The Calibration Products Production generates the full range
-of calibration products necessary for the functioning of the Alert and
-Data Release Productions.  The products include, on a
-per-filter basis when required:
-\begin{itemize}
-\item Bias Exposures
-\item Monochromatic Dome Flats
-\item Broadband Dome Flats
-\item Pupil Ghost Image
-\item Crosstalk Correction Matrix
-\item Fringe Images
-\item Illumination Correction
-\item A variety of products required for the Calibration Telescope (TBD) 
-\end{itemize}
-\paragraph{Catalogs}
-With the exception of Exposure, the following catalogs are created
-from scratch during the production of each Data Release. Exposure is
-updated with the latest derived metadata, such as WCS and PSF.
-\begin{itemize}
-\item Exposure
-\item Object
-\item MovingObject
-\item Source
-\item DiaSource
-\item ForcedSource
-\end{itemize}
-
-\section{Level 3 Data Products}
-Level 3 data products are derived from Level 1 and
-Level 2 data products, usually requiring the use of LSST data across
-significant areas on the sky. ¬†These may be the results of large
-queries, or derived catalogs which require pixel-level reprocessing of
-some quantity of image data.  Examples include:
-
-\begin{itemize}
-\item phase-folded light curves for periodic variables
-\item catalogs of specific subsets of objects
-\item maps of derived properties such as lensing shear
-\item catalogs of clusters
-\item catalogs of morphologically analyzed galaxies
-\end{itemize}
-
-An essential feature of Level 3 data products is that their creation
-is not a responsibility of the DMS.  They will arise from user
-analysis projects. †The generation of Level 3 data products may thus
-involve the use of code and query definitions from outside the LSST
-project, and that is not part of the project's open-source code base.
-When Level 3 data products are created as the output of analysis of 
-LSST data, whether with the basic interactive user tools or via
-custom pipelines, tools will be provided so that they may be federated
-with the Level 1 and Level 2 datasets, so that 
-joins may easily be made between data-release and user-provided tables.
-
-It is anticipated that certain of the Level 3 data products will be
-archived by the DMS, using project resources provided for this
-purpose.  The allocation of these resources to archiving, and the
-duration of storage, will be determined by the LSST Project based on
-the value of the data to the community and the cost of recomputing the
-data versus persisting it.  The DMS is further required to facilitate
-the archiving of Level 3 data products using external resources, 
-by providing data import and export tools, and tools to assist 
-external users in maintaining the consistency of large multi-file
-datasets.
-
-It is anticipated that some, but not all, Level 3 data products will
-be generated using the physical resources of the Data Access Centers
-(DACs) provided as part of the LSST project; others will be
-generated using external resources. †These may be in the form of additional DACs
-externally funded, but configured and managed much like the internal
-ones, or may be truly external computing facilities brought to bear on
-specific LSST data analysis challenges. †The DMS is thus required to
-facilitate the production of Level 3 data products by clients external
-to the DMS, both at LSST-controlled DACs and at external sites.
-This will be done by providing stable and well-documented APIs and
-libraries based on open-source software, freely downloadable to 
-external sites, and by providing a modest level of user support
-from the project.  This is further discussed in Section 8.2 below.
-
-\section{Detection and Measurement of Objects by the DMS}
-
-A detailed understanding of how the DMS detects and measures Objects
-is a prerequisite to using the LSST data products for science.  The
-Object Table is created ab initio during the production of every Data
-Release, and the following discussion takes place in the Data Release
-context.  In producing a Data Release new Objects are created both by
-Deep Detection Processing and by Difference Imaging Processing. The
-Alert Production context is similar, but limited to Difference
-Exposure Processing.
-
-\begin{figure}
-\includegraphics[angle=0,scale=0.75]{ObjectMeasurement.eps}
-\caption{Processing flow for Object detection and measurement}
-\end{figure}
-
-\subsection{Object Detection}
-
-% size of patches? what happens at edges? do patches need to overlap?
-% note that patch size sets an upper limit to object size in the DB
-
-\subsubsection{Single Exposure Measurement}
-Objects that are bright enough to be detected at reasonable
-signal-to-noise ratio in a single LSST Exposure are detected and
-measured on a single Exposure basis. This processing utilizes traditional
-crowded photometry techniques such as found in Dophot, DaoPhot, or
-Sextractor.  This results in a set of Sources for each Exposure, which
-are not initially associated with an Object.   This association is
-performed subsequently by the Association Pipeline.
-
-\subsubsection{Deep Detection}
-The LSST science drivers depend on detecting and measuring Objects at
-the full survey depth, approximately 3 mag fainter than the single
-exposure depth.  To achieve this, the survey region is organized into
-overlapping sky patches, and two types of deep coadded images are
-created for each patch (see Section 6.3 for discussion of patch
-size). The first, the ``chisquared'' coadd is formed from all
-Exposures which contain the patch, regardless of filter band. It
-measures each pixel's deviation from the local sky in a chi-squared
-sense, and is used for object detection.  The second type is a coadd
-of all overlapping exposures in a single filter band.  Care will be
-taken to ensure that rapidly moving objects, such as Solar System
-objects, do not appear in these coadds.  An object detection algorithm
-is then run on the chisquared coadd, generating an initial Object
-catalog.  An Object at this stage is nothing more than a pixel
-footprint on the sky.  Measurements of object properties are still to
-be performed, as discussed below.  At the end of the detection and
-measurement process, an Object may have links to related Objects in a
-segmentation tree that has been created by segmenting (deblending)
-overlapping Objects.  The tree will be organized so that the root node
-is the largest Object in the hierarchy, with the leaf nodes being the
-smallest.  The segmentation algorithm to be employed is TBD, with
-Sextractor or SDSS photo being examples of the kind of processing
-involved.  The properties of the Objects that are segmented in this
-way are then determined as discussed in the Measuring section below.
-Note that later versions of the DMS may incorporate some aspects of
-deblending into the measurement process, where better performance can
-in principal be achieved.
-
-\subsubsection{Difference Exposure Detection}
-% include forced photometry on subset of objects
-% note that DC part of AGN point source will not be separated from
-% galaxy
-% Have an example box here for AGN case?  and/or SN? explains the
-% complex interplay between the three source types
-
-New Objects may also be found during Difference Exposure processing. A
-new Object will be created whenever a transient source which is detected in
-the Difference Exposure from a Visit does not match any
-Object already in the table.  The match will
-take account of extendedness as well as position on the sky, so that a
-new point source at the location of a galaxy already in the catalog
-(for example, due to a supernova or variable AGN) will result in a new
-Object.  This process is discussed further in the Example section below.
-
-Note that this process cannot be perfect, since measuring the
-extendedness of objects near the PSF size will always be uncertain.
-Consequently, there will be cases where flux from a supernova or AGN
-point source will be incorrectly added to the underlying galaxy rather
-than to a new point source.  Between successive Data Releases,
-however, these errors will decrease in number: as the survey goes
-deeper, and accumulates images in better seeing, extendedness will be
-better measured by the Object masurement procedure, as discussed in the
-following sections.
-
-\subsection{Object Characterization}
-
-The DMS uses two separate approaches for measuring the properties of
-faint Objects.  They are both model based, and the parameters of the
-best fit model become the measured properties of the Object.  The two
-approaches differ in how the models are fit to the pixels.  The
-simpler approach, which we refer to as ``stackfit'', fits an Object
-model to the single band coadd discussed in the previous section.  The
-more sophisticated approach, which we refer to as ``multifit'' fits the
-model simultaneously to all individual exposures of the Object in that
-band.  The multifit approach will yield more accurate measurements,
-particularly for more complex models, such as those which involve
-motion.  It is far more expensive computationally, however, and cannot
-be utilized for all Objects.  The DMS, therefore, will utilize
-stackfit to measure \emph{all} Objects, while multifit will measure a subset of Objects that will
-benefit the most from it, while keeping the computational cost within bounds. 
-
-A high level view of the processing flow which generates Object
-measurements from Exposures is shown in Fig. 7.  Note that both the
-stackfit and multifit branches of the flow have the same end product:
-For a given type of Object model, the parameters of the best fit model
-become properties of the Object.  The model flux of the Object, and
-its uncertainty, is determined for each individual Exposure in the
-Exposure Stack which contains the Object pixels, resulting in a
-ForcedSource for that Object in that Exposure.
-
-We first discuss the two strategies for fitting Object models
-to the pixels, and then the details of the models we employ.
-
-\subsubsection{The Stackfit Algorithm}
-
-The Stackfit algorithm follows the general approach laid out in Jee
-and Tyson \citep{JeeTyson11}.  The PSF for each Exposure in the
-Exposure Stack is carefully determined on an individual ccd basis.
-This is necessary because the discontinuities in height and tilt
-between ccds leads to discontinuities in the PSF which cannot be
-accurately described by a smooth spatial model.  Note that the modeled
-PSF is spatially varying within a given ccd.  For each Object, its PSF
-is determined in the single band coadd by combining the PSFs measured
-in the individual Exposures.  This allows an Object model, convolved
-with that PSF, to be fit to the pixels in the single band coadd.
-Then, for each Exposure in the Exposure Stack, the
-best-fit model is convolved with the Object PSF for that Exposure, and
-used to measure the Object flux in that Exposure, output as a ForcedSource. 
-
-\subsubsection{The Multifit Algorithm}
-
-The multifit approach is described in \citep{TysonAdass07}. The PSF is
-determined on a per-Object, per-Exposure basis as with stackfit.
-Instead of the Object model being fit to the single band coadd,
-however, it is fit simultaneously to its pixel footprint in all
-Exposures in the Exposure Stack for a given band, each Exposure being
-convolved with its own PSF. Particularly for Objects with strongly
-time-varying flux and/or significant motion on the sky, use of
-multifit will result in more accurate models, and better flux
-measurements at each epoch, at the expense of significantly greater
-computational cost.  The choice of when to use multifit will be based
-on heuristics that will evolve as the survey proceeds.
-
-\subsubsection{Object Models}
-
-Every Object is measured in the context of one or more object
-models. Its measured properties include the model parameters which
-generate the best fit of the model to the image pixels containing
-the Object, and a covariance matrix
-which quantifies the uncertainty in the fit.  When more than one model
-can potentially apply to an Object, a fit for each model will be
-determined.   In some
-cases the correct model may not be clear from the fit results. For
-example, a faint star with a significant proper motion may not be readily
-distinguishable in the coadd from a galaxy with size slightly greater than the PSF
-size.  This example, and numerous others, will be disambiguated as the
-survey progresses, but some level of ambiguity will always remain. As
-a further example, a small galaxy with a tidal tail will be poorly fit by
-any of the models that we will employ.  For this reason, the DMS does
-not choose between competing models, but makes all relevant results
-available to science users. We anticipate that our initial set of
-model types will evolve between data releases to take advantage of new
-modeling approaches and our improving understanding of LSST data.  
-
-Our choice of models for Objects is driven by astrophysics, by characteristics of
-the LSST system, and by computing practicalities, as follows:
-
-\begin{itemize}
-\item Within the context of the LSST survey, clearly extended objects
-  do not have measurable proper motion or parallax.  Comets are an
-  exception, but they are processed only within difference
-  exposures, not through Deep Detection. Supernova light echoes might also
-  be an exception, and they deserve further thought.
-\item While coadded exposures largely erase the effects of the gaps
-  between the individual CCDs, individual exposures are strongly
-  affected by them.  Processing of objects in individual exposures
-  that extend across CCD gaps creates a significant overhead of
-  programming complexity and computational cost, and will not
-  initially be implemented in the DMS.  This capability can be
-  incorporated in later versions of the DMS if it is warranted by the
-  science gain.
-\item Given the above constraint, model fitting is only useful if the
-  object being fit is wholly contained within a single CCD field for
-  the majority of the exposures in which it appears. Note that this
-  does \emph{not} mean that an object needs to appear in the same CCD
-  in different exposures!  This will rarely occur, given the survey's
-  dithering pattern. If we want the object containment probability to
-  be at least 0.8, the object size, $d$ can be no larger than $0.1~D$,
-  where $D$ is the angular size of the CCD on the sky, 13 arcmin in
-  the case of LSST.  This sets a natural upper limit on object size to
-  be processed of approximately 1 arcmin.  We note that
-  this size comfortably encompasses the objects required for the SRD's
-  science drivers.
-\end{itemize}
-
-With that context, the initial model types are as follows:
-
-\paragraph{Slowly Moving Point Source Model}
-
-The Slowly Moving Point Source (SMPS) Model is intended to account for
-the time varying fluxes and motion on the sky of point sources
-(usually stars) with proper motions between zero and roughly 10
-arcsec/yr. The model accounts for motion with respect to the local
-astrometric reference frame that is generated by proper motion,
-parallax, and possibly orbital motion with respect to a binary
-companion.  When utilized by multifit, this model has the potential to
-generate high quality astrometric models for faint sources. A similar
-modeling and measurement approach has been successfully used by Lang,
-Hogg, and Rix \citep{Lang08}.
-
-The SMPS Model will be fit only to objects which are leaf nodes in the
-segmentation tree.
-
-\paragraph{Small Object Model}
-
-The Small Object (SO) Model is intended to provide a robust
-parameterization of small (diameter $<$ 1 arcmin) galaxy images for weak
-lensing shear measurement and determination of photometric redshifts.
-The final definition of ``diameter'' is TBD, but could plausibly be the 20
-mag/arcsec$^2$ isophotal diameter, determined from the Detection Coadd.
-The definition of the model flux profile is still TBD, but should
-be driven by the needs of Photo-Z.  The measurement of the elliptical
-shape parameters will be driven by the needs of weak lensing.  As with
-the Point Source Model, each individual exposure generates either a
-Source or a ForcedSource depending on the SNR.
-
-The SO Model will be fit only to objects which are leaf nodes in the
-segmentation tree.
-
-\paragraph{Large Object Model}
-
-A ``large'' object is one for which the 20 mag/arcsec$^2$ isophotal
-diameter is greater than 1 arcmin, and less than 80\% of the patch
-size (provisionally 13 arcmin, the CCD size).  This includes, for
-example, the majority of NGC galaxies.  It is expected that the vast
-majority of the science laid out in the SRD's four science drivers
-will be accomplished with measurements made using the SMPS Model and
-the SO Model.  But it is also recognized that there is much valuable
-science, and numerous EPO applications, which will be based on larger
-objects found in LSST images.  To at least partially satisfy this
-need, large objects will have entries in the Object table, but will
-not have any model fitting performed.  Thus, only some
-columns of the Object table will contain measured properties of large
-objects:
-
-A typical large object will be segmented into smaller component
-objects.  The leaf objects in the resulting segmentation tree will be
-measured as described above, providing they qualify as ``small''.  The
-large object itself, the root of the segmentation tree, will be
-represented only by its ``Footprint'', with the following attributes: 
-
-\begin{itemize}
-\item Ellipse equivalent to Object footprint (same moments through second
-order)
-\item Footprint bounding box
-\item Flux within footprint
-\end{itemize}
-
-Parameters resulting from model fitting, and from analysis of time
-dependent properties, will be absent.  Fits of morphological models
-(eg bulge/disk) to large objects must be created as Level 3 data
-products.
-
-Objects larger than ``large'' will not be represented in the DMS.
-
-\paragraph{Solar System Object Model}
-The predicted ephemerides from the orbit for a MovingObject
-constitutes an object model which is used to measure the Object
-in each exposure that contains the object, resulting in a ForcedSource.  
-The details of the measurement process for Solar System Objects are not yet completely
-defined. In particular, it is unclear if the measurements should be at
-a position entirely fixed by the orbit prediction, or should be
-allowed to compensate for prediction error by "peaking up" within some
-error bound around the prediction.
-
-
-\subsection{Model Residuals}
-
-The measurement process can produce, in conjunction with every
-Source or ForcedSource, a residual image that is the difference of the associated
-image pixels and the pixels predicted from the model over the
-footprint of the model.  Characterizing these residuals is important
-for science such as strong lensing and merging galaxies, that will
-identify interesting candidates for detailed analysis through their
-residuals.  Selecting the most useful statistical measures of the residuals will
-be the outcome of effort during the continuing design and development
-phase of the project.
-
-\subsection{An Example: Supernova in a Visible Galaxy}
-As an example of the Object detection and maasurement process
-discussed above, suppose that a supernova explodes in a ``small'' galaxy that is
-clearly resolved in LSST imagery, and is already listed in the Object
-table from a previous Data Release.  Suppose further that the
-supernova is bright enough that it will be above the detection
-threshold in at least one difference exposure.  The following sequence
-of events will occur during the nightly Alert Production processing:
-
-\begin{itemize}
-\item The first time the supernova is detected above threshold in both
-  difference exposures from a Visit, the Association Pipeline (AP) will
-  attempt to match the resulting DiaSources to an Object in the Object
-  table.  In this case, it will find that each DiaSource is contained
-  within the footprint of its host galaxy, but based on the fact that
-  the galaxy is extended, and the DiaSources are not, the AP will
-  create a new Object (``SN'') at the position of the supernova
-\item An Alert will be issued for the supernova.
-\item On subsequent Visits, as long as the supernova remains above the
-  detection threshold, new DiaSources will be created from each
-  Exposure, and the AP will associate them to the SN object.   A query
-  to the science database will readily retrieve all difference image
-  photometry for SN from the DiaSources linked to the SN Object entry.
-\item A likely policy for the survey to follow will be to add every
-  Object that results in an Alert to a list of Objects to be force
-  photometered in Difference Exposures. If this is done, the SN will
-  result in ForcedSource entries even after it has dropped below the
-  detection threshold above which it would generate DiaSources.   This
-  will allow a query to the science database to retrieve this
-  photometry as well.
-\end{itemize}
-
-When it is time to create a new Data Release, a new, empty, science
-database is created.  It is populated with the Raw Exposures from the
-survey extending from the inception of the survey up until the cutoff
-date for the DR, but nothing else.  Note in particular that none of
-the other Level 1 data products created by the Alert Production are
-imported into the DR.  Processing always begins from scratch.  The
-following sequence of events involving the supernova will thenoccur
-during Data Release processing:
-
-\begin{itemize}
-\item As with all sky patches, a subtraction template coadd for each
-  filter is created for the patch of sky containing the supernova by
-  combining all the survey exposures that cover that patch. The
-  combination algorithm strongly discriminates against transient flux,
-  eg with a median.  The template coadd will therefore contain an
-  image of the galaxy uncontaminated by the supernova.
-\item A chisquared detection coadd is created for the patch of sky containing the
-  supernova as discussed previously. The detection coadd contains
-  floux from both the galaxy and
-  the superimposed supernova.  The brightness of the supernova in the
-  coadd depends on the fraction of the total coadd duration where the
-  supernova has significant flux (so it becomes progressively fainter
-  in subsequent DRs).
-\item Object detection and deblending is run on the detection coadd.
-  There are two cases to consider:
-\begin{itemize}
-\item The supernova is bright enough in the coadd to trigger
-  deblending into a galaxy plus a point source (Case A). Three entries
-  are made in the Object table: Gal+SN, Gal, and SN.  The Gal+SN
-  object is the root of the segmentation tree, while Gal and SN are
-  the deblended leaves.
-\item The supernova is faint enough in the coadd that deblending is
-  not triggered.  A single object is detected, with the galaxy flux
-  slightly distorted by the supernova flux (Case B).  A single entry
-  is made in the Object table: Gal*.  Gal* is not deblended, so it is
-  a leaf node in the segmentation tree.
-\end{itemize}
-\item We will assume that the presence of a previous Alert has caused
-  the DMS to choose this object for measurement by multifit.  Multifit
-  is run on the exposure stack for the Objects entered into the table
-  that are leaf nodes in the segmentation tree, two objects for Case
-  A, one for Case B.  Given that Gal is ``small'', both the SO and
-  SMPS models will be fit for these objects.  Let us consider Case A
-  and B separately:
-\begin{itemize}
-\item For Case A, multifit is run separately on Gal and SN, fitting
-  the SO and SMPS models for each.  The model residuals should clearly
-  favor the SO model for Gal and the SMPS for SN, but note that the
-  model parameters for both Gal and SN will be distorted by the
-  presence of the other.  For example, the position of the SN/SMPS
-  will appear to vary with time, since at low flux levels its profile
-  will be significantly affected by the galaxy, but less so at high
-  flux levels.  The Gal/SO position is not allowed to vary with time,
-  by definition of the SO model, but its flux will vary due to the
-  presence of the SN. [This argues that it is desirable to run
-    multifit simultaneously on all models that overlap, or at least
-    iteratively, subtracting models from the images. See Section 6.7]
-  As a result of running multifit, ForcedSource entries will be generated
-  for Gal at each epoch in the stack.  ForcedSource entries will also be
-  generated for SN at each epoch.
-\item For Case B, multifit fits both the SO and SMPS models to Gal*.
-  The model residuals for the individual exposures will likely vary
-  greatly with time.  If the Gal* was not deblended simply because the
-  supernova occupied only a small fraction of the coadd time range,
-  both SO and SMPS models will show large residuals, and in the case
-  of SMPS, spurious motion as well.  Both Source and ForcedSource
-  entries will be generated for Gal* at every epoch. 
-\end{itemize}
-\item With the multifit procedure complete, the difference exposures
-  are formed by psf-matching and subtracting the template exposure
-  from each exposure in the exposure stack.  By hypothesis, the
-  supernova exceeds the detection threshold in at least some of these
-  exposures.  For each exceedance, a DiaSource is created, and an
-  attempt is then made to match it with an object already in the
-  Object table just created by multifit.  Again, the outcome is
-  different for Case A and Case B:
-\begin{itemize}
-\item For Case A, the DiaSources will match the SN object, and will be
-  given that Object Id.
-\item For Case B, the first DiaSource will not match Gal* because the supernova is a
-  point source, while Gal* (by hypothesis) is measurably extended (it
-  is also unlikely to match in position, but it may).  Therefore, a new
-  Object is created for that DiaSource, call it SN*.  All subsequent
-  DiaSources will then be associated to SN*.  
-\end{itemize}
-For both Case A and B, ForcedSource entries will be created for every
-epoch in the stack by forced photometry on the difference exposures
-%Note: this means that some ForcedSources will come from difference
-%  exposures, some from science exposures
-\end{itemize}
-
-When the processing of the Data Release is complete, the following
-information will be available for the supernova and its underlying
-galaxy:
-\begin{itemize}
-\item Entries in the Object table for both the supernova and the
-  galaxy.  For Case A, the model parameters reported for the supernova
-  and the galaxy may each be significantly biased by the presence of
-  the other
-\item A full lightcurve for the supernova measured in difference
-  exposures and reported in the ForcedSource entries associated with
-  the supernova object
-\item A full set of ForcedSources for the galaxy, each of which quantifies
-  the residual between the model and the exposure from which the
-  Source was measured
-\item For Case A, a full set of ForcedSources for the supernova, each of
-  which quantifies the residual between the model and the exposure
-  from which the Source was measured
-\item A partial set of DiaSources for the supernova, limited to those
-  epochs where it is brighter than the detection limit
-\end{itemize}
-Note that the case of a time variable AGN embedded in a small galaxy
-is broadly parallel to the supernova case considered above. Unlike the
-supernova case, however, where the ForcedSources from difference
-exposures give a nearly optimal extraction of the full light curve, in
-the AGN case, only the ``AC'' part of the AGN light curve will be so
-measured.  Some ``DC'' part of the AGN lightcurve will be part of the
-flux associated with the galaxy.
-
-\section{Inserting Synthetic Objects into the DMS Pipelines}
-Many LSST science programs will need to determine their detection
-efficiency for particular classes of objects.  For example, a program
-to determine the SNIa rate in various types of galaxies will need a
-quantitative understanding of the probability that a SNIa will be
-detected by LSST as a function of redshift, the probability that the
-supernova will be correctly classified, and the probability that the
-host galaxy will be correctly classified.  To achieve this, there is
-little alternative to inserting at the pixel level synthetic supernova
-events in sythethic galaxies, processing these through the DMS
-pipeline, and then performing the appropriate science on the resulting
-database.  This must be done in a way that ensures that the Science
-Database rigorously isolates synthetic from real objects.
-
-The outline of this capability is:
-\begin{itemize}
-\item LSST DM will provide a general facility to add synthetic objects
-  to existing LSST exposures, fully taking into account the observed PSF
-  and sky background for each exposure.  This will be done by making
-  use of the LSST image simulator, ImSim, which will be provided the
-  existing Exposure to use as a background, the PSF model, and a model
-  for the Object to be added.  
-\item Science teams that wish to ascertain their detection efficiency
-  for a particular class of objects will supply a model for the object class.
-\item One or more ``mini-DR''s will be created using the normal Data
-  Release procedures, with appropriate synthetic objects added to the
-  input exposures. Separate tables describing the synthetic objects
-  will be maintained within the Science Database.  A mini-DR will span a limited
-  area of sky and/or time so that the computational requirements are
-  tractable.
-\item The Science Database for each mini-DR will be maintained as a
-  completely separate database from those of any other DR.
-\end{itemize}
-
-
-
-
-\section{Incorporation of User Analysis Modules}
-
-Over time, we expect that certain user-developed analysis modules
-or pipelines may be found to be of such
-broad interest and utility to LSST community users that their 
-authors may be willing to contribute them to the public LSST code repository.
-The code will then be available for any LSST user to incorporate in their personal analyses.
-The project will welcome such contributions. 
-
-It would be beneficial to LSST and all its users to streamline the process 
-of code contribution, with special attention given to low-level basic tools 
-that might be used by many groups.  Data Management will work to 
-facilitate this by providing well-documented open-source interfaces, 
-programming standards, and software quality metrics that external users can 
-rely on in constructing their own pipelines and tools. 
-Contributions which meet these standards will be eligible for 
-inclusion in the project's code base. 
-Data Management will provide a modest level of user support to assist users 
-in meeting these requirements. 
-
-There are some constraints, however: 
-for instance, if contributed code brings in new external libraries or otherwise 
-expands the dependencies of the code base, it may not be possible to include it. 
-In addition, LSST may not be able to provide staff to support
-non-trivial external code contributions in the long term.
-We will encourage user groups to provide such support 
-for their code, and will generally be willing to assist in this by making 
-available the same support tools (such as for documentation and problem tracking) 
-that we use in-house. 
-User groups will be expected to produce documentation of the use and science data 
-quality of contributed data products and code, 
-and to take responsibility for its robustness when applied at LSST scales.
-
-A possible final stage of the incorporation of contributed code would be for it 
-to become part of the standard LSST data production and used to generate 
-public data products centrally. 
-We expect that this will turn out to be desirable at some point in the life of 
-the project for some subset of contributed code.
-There are important caveats: this will not be possible if it significantly increases 
-the CPU, memory, or archival storage requirements of the system beyond its baseline, 
-unless those costs are covered in some way at the time of the decision. 
-It will also require an explicit agreement on the part of the contributors to 
-support their code for the long term or find funding to increase the central support 
-resources. 
-Finally, any contributed code incorporated into production will have to be 
-demonstrated to be highly reliable and must be integrated in the standard SDQA system, 
-with the contributor responsible for defining and implementing the necessary metrics. 
-For non-trivial contributions a peer review of the quality assurance plan would be 
-advisable.
-
-%suck in glossary text from UML
+The baseline Calibration Products Pipeline will implement all algorithms described in the Photometric Calibration Plan (\PCP). Its logical design is further described in the Calibration Processing package of the UML model (\appsUML; see also Figure~\ref{fig:cppUML} for the high-level overview).
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Produce Master Fringe Exposures;Produce Master Bias Exposure;Produce Master Dark Exposure;Calculate System Bandpasses;Calculate Telescope Bandpasses;Construct Defect Map;Produce Crosstalk Correction Matrix;Produce Optical Ghost Catalog;Produce Master Pupil Ghost Exposure;Determine CCOB-derived Illumination Correction;Determine Optical Model-derived Illumination Correction;Create Master Flat-Spectrum Flat;Determine Star Raster Photometry-derived Illumination Correction;Create Master Illumination Correction;Determine Self-calibration Correction-Derived Illumination Correction;Correct Monochromatic Flats;Reduce Spectrum Exposure;Prepare Nightly Flat Exposures;
+
+\subsubsection{Prototype Implementation}
+
+While parts of the Calibration Products Pipeline have been prototyped by the LSST Calibration Group (see the \PCP for discussion), these have not been written using LSST Data Management software framework or coding standards. We therefore expect to transfer the know-how, and rewrite the implementation.
+
+\clearpage
+
+\subsection{Photometric Calibration Pipeline (\wbsPhotoCal)}
+
+\subsubsection{Key Requirements}
+
+The Photometric Calibration Pipeline is required to internally calibrate the relative photometric zero-points of every observation, enabling the Level 2 catalogs to reach the required SRD precision.
+
+\subsubsection{Baseline design}
+
+The adopted baseline algorithm is a variant of ``ubercal", as described in Padmanabhan et al (2008) and Schlafly et al (2013). This baseline is described in detail in the Photometric Self Calibration Design and Prototype Document (\UCAL).
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Perform Global Photometric Calibration;
+
+\subsubsection{Prototype Implementation}
+
+Photometric Calibration Pipeline has been fully prototyped by the LSST Calibration Group to the required level of accuracy and performance (see the \UCAL document for discussion).
+\\
+
+As the prototype has not been written using LSST Data Management software framework or coding standards, we assume a non-negligible refactoring and coding effort will be needed to convert it to production code in LSST Construction.
+
+\clearpage
+
+\subsection{Astrometric Calibration Pipeline (\wbsAstroCal)}
+
+\subsubsection{Key Requirements}
+
+The Astrometric Calibration Pipeline is required to calibrate the relative and absolute astrometry of the LSST survey, enabling the Level 2 catalogs to reach the required SRD precision.
+
+\subsubsection{Baseline design}
+
+Algorithms developed for the Photometric Calibration Pipeline (\wbsPhotoCal) will be repurposed for astrometric calibration by changing the relevant functions to minimize. This pipeline will further be aided by WCS and local astrometric registration modules developed as a component of the Single Frame Processing pipeline (\wbsSFM).
+\\
+
+Gaia standard stars will be used to fix the global astrometric system. It is likely that the existence of Gaia catalogs may make a separate Astrometric Calibration Pipeline obsolete.
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Perform Global Astrometric Calibration;
+
+\subsubsection{Prototype Implementation}
+
+No prototype implementation exists at this time.
+
+\clearpage
+
+\section{Level 3 Pipelines}
+
+\subsection{Science Pipeline Toolkit (\wbsSPT)}
+
+\subsubsection{Key Requirements}
+
+The Science Pipeline Toolkit shall provide the software components, services, and documentation required to construct Level 3 science pipelines out of components built for Level 1 and 2 pipelines. These pipelines shall be executable on LSST computing resources or elsewhere.
+
+\subsubsection{Baseline design}
+
+The baseline design assumes that Level 3 pipelines will use the same {\tt Tasks} infrastructure (see the Data Management Middleware Design document; \DMMD) as Level 1 and 2 pipelines\footnote{Another way of looking at this is that, functionally, there will be no fundamental difference between Level 2 and 3 pipelines, except for the level of privileges and access to software or hardware resources.}. Therefore, Level 3 pipelines will largely be automatically constructible as a byproduct of the overall design.
+\\
+
+The additional features unique to Level 3 involve the services to upload/download data to/from the LSST Data Access Center. The baseline for these is to build them on community standards (VOSpace).
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Configure Pipeline Execution;Execute Pipeline;Incorporate User Code into Pipeline;Monitor Pipeline Execution;Science Pipeline Toolkit;Select Data to be Processed;Select Data to be Stored;
+
+\subsubsection{Prototype Implementation}
+
+While no explicit prototype implementation exists at this time, the majority of LSST pipeline prototypes have successfully been designed in modular and portable fashion. This has allowed a diverse set of users to customize and run the pipelines on platforms ranging from OS X laptops, to 10,000+ core clusters (e.g., BlueWaters).
+
+\clearpage
+
+\section{Science Data Quality Analysis Pipelines}
+
+\subsection{SDQA Pipeline (\wbsSDQAP)}
+
+\subsubsection{Key Requirements}
+
+SDQA Pipeline shall provide low-level data collection functionality for science data quality analysis of Level 1, 2, and Calibration Processing pipelines.
+\\
+
+In addition, SDQA Pipeline shall provide low-level data collection functionallity to support software development in Construction and Operations.
+
+\subsubsection{Baseline design}
+
+SDQA Pipeline implementation will monitor and harvest the outputs and logs of execution of other science pipelines, computing user-defined metrics.
+
+The metrics will be defined by extending appropriate SDQA Pipeline base classes, and configuring them in the SDQA Pipeline configuration file and/or on the command line.
+
+The outputs of SDQA Pipeline runs will be stored into a SDQA repository (RDBMS or filesystem based).
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Assess Data Quality for Nightly Processing;Assess Data Quality for Calibration Products;Assess Data Quality for Data Release;
+Assess Data Quality for Nightly Processing at Archive;
+
+\subsubsection{Prototype Implementation}
+
+Prototype implementation of the SDQA Pipeline baseline design has been completed in LSST Final Design Phase. The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82). The existing prototype will be refactored to enhance performance and flexibility in Construction.
+\\
+
+The prototype code is available in the \url{https://dev.lsstcorp.org/cgit/LSST/DMS/testing_pipeQA.git/} git repository.
+
+\clearpage
+
+\subsection{SDQA Toolkit (\wbsDiffim)}
+
+\subsubsection{Key Requirements}
+
+SDQA Toolkit shall.provides the visualization, analysis and monitoring capabilities for science quality data analysis. Its inputs will be provided by the SDQA Pipeline.
+\\
+
+The toolkit capabilities shall be made flexible, to provide the analyst with the ability to easily construct custom tests and analyses, and ``drill down" into various aspects of the data being analyzed.
+\\
+
+The toolkit will enable automation of tests and monitoring, and issuance of warnings when alerting thresholds are met.
+
+\subsubsection{Baseline design}
+
+The core of the toolkit will be designed around IPython notebooks (\url{http://ipython.org/notebook.html}), web-based interactive computational environments that can combine code execution, text, mathematics, plots and rich media into a single document.
+
+Standard data visualization {\em aspects} will be realized with predefined set of notebooks with tests/analyses executed on a given SDQA repository. These aspects will allow the browsing and drill-down of data collected in Data Release Production runs, or monitoring of live data (for Level 1).
+
+Data analysts and users will be able to create new notebooks to examine particular anomalies discovered in the data. It will be possible to add these notebooks to the library of predefined aspects, to be executed or monitored in Level 1 and Level 2 productions.
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Analyze SDQA Metrics;Correlate SDQA metric with other data;Correlate SDQA metrics;Display SDQA Metrics;
+
+\subsubsection{Prototype Implementation}
+
+Prototype implementation of the SDQA Toolkit has been implemented in LSST Final Design Phase. The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82).
+\\
+
+The existing prototype uses a set of statically and dynamically generated pages (written in php) to display the results of data production runs. While proving invaluable for data analysis, the prototype design was found it to be difficult to extend with new analyst-developed tests. The current baseline has been defined based on this experience and will be implemented in Construction.
+\\
+
+The prototype code is available in the \url{https://dev.lsstcorp.org/cgit/LSST/DMS/testing_displayQA.git/} git repository.
+
+\clearpage
+
 \section{Glossary}
 
-\paragraph{API}
-Applications Programming Interface  
-\paragraph{DAC}
-Data Access Center
-\paragraph{DAQ}
-Data Acquisition
-\paragraph{DMS}
-Data Management System
-\paragraph{DR}
-Data Release.
-\paragraph{EPO}
-Education and Public Outreach
-\paragraph{Footprint}
-The set of pixels that contains flux from an object. Footprints of multiple objects may have pixels in common.
-\paragraph{FRS}
-Functional Requirements Specification
-\paragraph{MOPS}
-Moving Object Pipeline System
-\paragraph{OCS}
-Observatory Control System
-\paragraph{Production}
-A coordinated set of pipelines
-\paragraph{PSF}
-Point Spread Function
-\paragraph{RGB}
-Red-Green-Blue image, suitable for color display.
-\paragraph{SDS}
-Science Array DAQ Subsystem.  The system on the mountain which reads
+\begin{description}
+\item[API] Applications Programming Interface  
+\item[DAC] Data Access Center
+\item[DAQ] Data Acquisition
+\item[DMS] Data Management System
+\item[DR] Data Release.
+\item[EPO] Education and Public Outreach
+\item[Footprint] The set of pixels that contains flux from an object. Footprints of multiple objects may have pixels in common.
+\item[FRS] Functional Requirements Specification
+\item[MOPS] Moving Object Pipeline System
+\item[OCS] Observatory Control System
+\item[Production] A coordinated set of pipelines
+\item[PSF] Point Spread Function
+\item[RGB] Red-Green-Blue image, suitable for color display.
+\item[SDS] Science Array DAQ Subsystem.  The system on the mountain which reads
 out the data from the camera, buffers it as necessary, and supplies it
 to data clients, including the DMS.
-\paragraph{SDQA}
-Science Data Quality Assessment.
-\paragraph{SMPS}
-Slowly Moving Point Source model
-\paragraph{SNR}
-Signal-to-Noise Ratio
-\paragraph{SO}
-Small Object model
-\paragraph{SQL}
-Structured Query Language, the common language for querying relational databases.
-\paragraph{TBD}
-To Be Determined
-\paragraph{Visit}
-A pair of exposures of the same area of the sky taken in immediate
+\item[SDQA] Science Data Quality Assessment.
+\item[SNR] Signal-to-Noise Ratio
+\item[SQL] Structured Query Language, the common language for querying relational databases.
+\item[TBD] To Be Determined
+\item[Visit] A pair of exposures of the same area of the sky taken in immediate
 succession.  A Visit for LSST consists of a 15 second exposure, a 2
 second readout time, and a second 15 second exposure.
-\paragraph{VO}
-Virtual Observatory
-\paragraph{VOEvent}
-A VO standard for disseminating information about transient events.
-\paragraph{WCS}
-World Coordinate System.  A bidirectional mapping between pixel- and sky-coordinates.
+\item[VO] Virtual Observatory
+\item[VOEvent] A VO standard for disseminating information about transient events.
+\item[WCS] World Coordinate System.  A bidirectional mapping between pixel- and sky-coordinates.
+\end{description}
+
+\clearpage
 
 \begin{thebibliography}{10}
 
 \bibitem{DMSSystem} \textbf{Data Management System Design}, 
-https://www.lsstcorp.org/docushare/dsweb/Get/LDM-148, 2011
+https://www.lsstcorp.org/docushare/dsweb/Get/LDM-148, 2013
 
 \bibitem{DMSFRS}  \textbf{Data Management Subsystem Requirements},
-  https://www.lsstcorp.org/docushare/dsweb/Get/LSE-61, 2011
+  https://www.lsstcorp.org/docushare/dsweb/Get/LSE-61, 2013
 
 \bibitem{JeeTyson11} M. J. Jee and J. A. Tyson,  \textbf{Toward
   Precision LSST Weak-Lensing Measurement. I. Impacts of Atmospheric
@@ -1285,9 +1167,6 @@ https://www.lsstcorp.org/docushare/dsweb/Get/LDM-148, 2011
   Dark Sector: Image Processing Challenges}, Astronomical Data
   Analysis Software and Systems XVII O5.3, ASP Conference Series,
   Vol. 394 (2007)
-
-\bibitem{WikiFedDB} Wikipedia,  \textbf{Federated database
-  system}, http://en.wikipedia.org/wiki/Federated\_database, 2009.
 
 \end{thebibliography}
 
