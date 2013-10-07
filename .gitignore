@@ -2,3 +2,7 @@
 *.log
 *.out
 *.toc
+*-eps-converted-to.pdf
+*.bbl
+*.blg
+*.synctex.gz
