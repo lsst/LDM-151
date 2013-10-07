@@ -11,6 +11,7 @@
 \usepackage{comment}
 \usepackage{xspace}
 \usepackage[usenames]{color} 
+\usepackage{datetime}
 
 \newcommand{\vstretch}[1]{\vspace*{\stretch{#1}}}
 \newcommand{\code}[1]{\texttt{#1}}
@@ -86,6 +87,7 @@ Data Management Applications Design \\
 }}}
 
 \begin{document}
+\date{\today, \currenttime hrs}
 \maketitle
 \pagestyle{headings}
 
@@ -428,7 +430,6 @@ The image differencing pipeline shall difference a visit image against a deeper 
 \end{figure}
 
 The Image Differencing pipeline will difference, detect, and deblend objects in the resulting image using the ``preconvolution'' algorithm as described in Becker et al. (\url{http://ls.st/x9f}).
-% RHL it's painful to give Becker implicit credit for something he doesn't understand. But we have no choice
 Differencing will be performed against a deeper template, and differential chromatic refraction (DCR) will be handled by having templates in several bins of airmass.
 
 All \DIASource measurements described in the \DPDD, including post-processing such as variability characterization, will be performed for all sources detected in this manner. The measurements will be performed on the pre-convolved likelihood image. The measurement code will reside in a separate module in the Object Characterization Pipeline (\wbsObjChar).
