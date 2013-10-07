@@ -1064,7 +1064,7 @@ While no explicit prototype implementation exists at this time, the majority of 
 SDQA Pipeline shall provide low-level data collection functionality for science data quality analysis of Level 1, 2, and Calibration Processing pipelines.
 \\
 
-In addition, SDQA Pipeline shall provide low-level data collection functionallity to support software development in Construction and Operations.
+In addition, SDQA Pipeline shall provide low-level data collection functionality to support software development in Construction and Operations.
 
 \subsubsection{Baseline design}
 
@@ -1102,12 +1102,11 @@ The toolkit will enable automation of tests and monitoring, and issuance of warn
 
 \subsubsection{Baseline design}
 
-The core of the toolkit will be designed around IPython notebooks (\url{http://ipython.org/notebook.html}), web-based interactive computational environments that can combine code execution, text, mathematics, plots and rich media into a single document.
-% RHL I'm a bit nervous about making this the baseline -- we have no experience of using IPython notebooks for this application
+The core of the toolkit will be designed around a pluggable Python framework generating, a web-based, interactive, visualization interface. This framework has already been implemented in the final design phase as ``pipeQA".
 
-Standard data visualization {\em aspects} will be realized with predefined set of notebooks with tests/analyses executed on a given SDQA repository. These aspects will allow the browsing and drill-down of data collected in Data Release Production runs, or monitoring of live data (for Level 1).
+Standard data visualization {\em aspects} will be realized with predefined set of web pages with tests/analyses executed on a given SDQA repository. These aspects will allow the browsing and drill-down of data collected in Data Release Production runs, or monitoring of live data (for Level 1).
 
-Data analysts and users will be able to create new notebooks to examine particular anomalies discovered in the data. It will be possible to add these notebooks to the library of predefined aspects, to be executed or monitored in Level 1 and Level 2 productions.
+Data analysts and users will be able to create new QA tests to examine particular anomalies discovered in the data. It will be possible to add these tests to the library of predefined aspects, to be executed or monitored in Level 1 and Level 2 productions.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
