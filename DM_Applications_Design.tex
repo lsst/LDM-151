@@ -218,19 +218,19 @@ platforms.
 
 We recognize four major groups of science pipelines residing in the Applications layer:
 \begin{itemize}
-    \item {\bf Level 1 Science Pipelines} are designed to generate Level 1 data products. These include:
+    \item {\bf Level 1 Science Pipelines}, grouped under the {\bf Alert Production} element of the WBS, are designed to generate Level 1 data products. These include:
     \begin{itemize}
     \item {\bf \em Image Differencing Pipeline} (\wbsDiffim), to create difference images, and detect and characterize sources in them.
     \item {\bf \em Association Pipeline} (\wbsAssocP), to associate sources detected in the difference images with known objects.
     \item {\bf \em Alert Generation Pipeline} (\wbsAP), to generate and transmit alerts to time-domain events (e.g. transients) to the astronomical community, and
     \item {\bf \em Moving Object Pipeline} (\wbsMOPS), to identify, link and compute orbits for Solar System objects detected in difference images.
-%    \item SDQA Pipeline (\wbsSDQA)
     \end{itemize}
 Level 1 pipelines run as the data are being acquired. They primarily focus on image differencing, and the reduction of information extracted from difference images. The algorithms they employ are designed and chosen to complete processing on minute (alert production) to day (Solar System object pipelines) time scales. They are also rerun as a part of Data Release Production (DRP), potentially in somewhat different configurations to achieve greater precision at the expense of increased runtime.
     
     \item {\bf Level 2 Science Pipelines} run annually or semi-annualy (for the first year of data), and are designed to generate deep co-adds and catalogs stemming from analysis of direct image data.  These include:
     \begin{itemize}
-        \item {\bf \em Single Frame Processing (``SFM'') Pipeline}, (\wbsSFM) to reduce acquired visits and detect and characterize astrophysical sources present in these visits. Though having its own WBS element, {\bf \em PSF Estimation}, (\wbsPSF) is functionally a part of the SFM pipeline.
+        \item {\bf \em Single Frame Processing (``SFM'') Pipeline}, (\wbsSFM) to reduce acquired visits and detect and characterize astrophysical sources present in these visits.
+        \item {\bf \em PSF Estimation Pipeline}, (\wbsPSF), to estimate the PSF properties and variation across the focal plane for each visit, to the degree of precision required by the \SRD. Note that the work of this pipeline goes beyond the typical single-CCD PSF estimation present in the SFM pipeline.
         \item {\bf \em Image Coaddition Pipeline}, (\wbsCoadd), to generate and characterize coadded images of the sky, as well as create templates for image differencing.
         \item {\bf \em Deep Detection Pipeline}, (\wbsDeepDet), to detect sources in coadded images of the sky.
         \item {\bf \em Object Characterization Pipeline}, (\wbsObjChar), to characterize (perform measurements of) astrophysical objects detected in LSST imaging (both in single frames and coadds).
@@ -244,10 +244,10 @@ Level 1 pipelines run as the data are being acquired. They primarily focus on im
     \end{itemize}
     The calibration products pipeline is also rerun as a part of Data Release Processing. Global self-calibration steps run in DRP only.
 
-       \item {\bf Science Data Quality Analysis (SDQA) pipelines and toolkits}, to enable collection, computation, visualization, monitoring and analysis of data quality metrics across all pipelines. These are divided into:
+       \item {\bf Science Data Quality Assessment (SDQA) pipelines and toolkits}, to enable collection, computation, visualization, monitoring and analysis of data quality metrics across all pipelines. These are divided into:
        \begin{itemize}
-           \item {\bf \em SDQA Pipeline}, (\wbsSDQAP), that provides low-level data collection functionality for SDQA and
-           \item {\bf \em SDQA Toolkit}, (\wbsSDQAT), that provides the visualization, analysis and monitoring capabilities for SDQA.
+           \item {\bf \em Science Data Quality Assessment Pipeline}, (\wbsSDQAP), that provides low-level data collection functionality for SDQA and
+           \item {\bf \em Science Data Quality Analyst Toolkit}, (\wbsSDQAT), that provides the visualization, analysis and monitoring capabilities for SDQA.
        \end{itemize}
 
 \end{itemize}
@@ -922,11 +922,11 @@ The design and performance of the current prototype pipeline is described in the
 
 \clearpage
 
-\subsection{PSF Estimation (\wbsPSF)}
+\subsection{PSF Estimation Pipeline (\wbsPSF)}
 
 \subsubsection{Key Requirements}
 
-PSF Estimation algorithms must enable the estimation of the point spread function with residual ellipticity correlations at the levels required by LSR-REQ-0097.
+PSF Estimation pipeline must enable the estimation of the point spread function with residual ellipticity correlations at the levels required by LSR-REQ-0097.
 
 \subsubsection{Baseline design}
 
