@@ -937,11 +937,12 @@ Current state-of-the-art PSF estimation methods typically use some basis functio
 \begin{itemize}
     \item Decompose the PSF into a component due to the atmosphere and a component due to the telescope and camera system.
     \item Estimate the telescope+camera component using the wavefront sensor information (the reconstructed wavefront) and camera metrology (the laboratory or on-sky measurement of $z$ offsets of individual sensors)
-    \item Estimate the atmospheric contribution by modelling the PSF from bright, isolated, stars, and interpolating using PCA decomposition or Kriging.
+    \item Estimate the atmospheric contribution by modelling the PSF from bright, isolated, stars, and interpolating using Kriging. % RHL PCA \'a la Jarvis and Jain only works for the camera part
 \end{itemize}
 This estimation will be performed on the full focal plane, and use the per-CCD estimates of the PSF and cutouts of bright stars (PSF estimation candidates) as inputs.
 \\
-The PSF of thick deep depletion devices such as LSST's is known to be intensity dependent. We will estimate the zero-intensity PSF by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same algorithm will be used to estimate PSF in undersampled imaging (best quartile of seeing).
+The PSF of thick deep depletion devices such as LSST's is known to be intensity dependent. We will estimate the zero-intensity PSF by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same forward-modelling algorithm will allow us to estimate the PSF in undersampled imaging, as is expected for roughly the best quartile of the seeing distribution.
+% RHL [As you know] it's more accurate to say that the as-detected image is an intensity-dependent mapping of the image incident on the CCD (I must be able to find a better way to express that!).  A consequence is that the PSF is intensity dependent.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -999,7 +1000,7 @@ Perform Global Photometric Calibration;
 
 \subsubsection{Prototype Implementation}
 
-Photometric Calibration Pipeline has been fully prototyped by the LSST Calibration Group to the required level of accuracy and performance (see the \UCAL document for discussion).
+Photometric Calibration Pipeline has been fully prototyped by the LSST Calibration Group to the required level of accuracy and performance (see the \UCAL document for discussion). % RHL really?  I thought that they wrote a small-scale toy version.  But I may be totally out of date.
 \\
 
 As the prototype has not been written using LSST Data Management software framework or coding standards, we assume a non-negligible refactoring and coding effort will be needed to convert it to production code in LSST Construction.
@@ -1017,7 +1018,7 @@ The Astrometric Calibration Pipeline is required to calibrate the relative and a
 Algorithms developed for the Photometric Calibration Pipeline (\wbsPhotoCal) will be repurposed for astrometric calibration by changing the relevant functions to minimize. This pipeline will further be aided by WCS and local astrometric registration modules developed as a component of the Single Frame Processing pipeline (\wbsSFM).
 \\
 
-Gaia standard stars will be used to fix the global astrometric system. It is likely that the existence of Gaia catalogs may make a separate Astrometric Calibration Pipeline obsolete.
+Gaia standard stars will be used to fix the global astrometric system. It is likely that the existence of Gaia catalogs may make a separate Astrometric Calibration Pipeline unnecessary.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -1050,7 +1051,7 @@ Configure Pipeline Execution;Execute Pipeline;Incorporate User Code into Pipel
 
 \subsubsection{Prototype Implementation}
 
-While no explicit prototype implementation exists at this time, the majority of LSST pipeline prototypes have successfully been designed in modular and portable fashion. This has allowed a diverse set of users to customize and run the pipelines on platforms ranging from OS X laptops, to 10,000+ core clusters (e.g., BlueWaters).
+While no explicit prototype implementation exists at this time, the majority of LSST pipeline prototypes have successfully been designed in modular and portable fashion. This has allowed a diverse set of users to customize and run the pipelines on platforms ranging from OS X laptops, to 10,000+ core clusters (e.g., BlueWaters), and to implement plugin algorithms (e.g. Kron photometry).
 
 \clearpage
 
@@ -1102,6 +1103,7 @@ The toolkit will enable automation of tests and monitoring, and issuance of warn
 \subsubsection{Baseline design}
 
 The core of the toolkit will be designed around IPython notebooks (\url{http://ipython.org/notebook.html}), web-based interactive computational environments that can combine code execution, text, mathematics, plots and rich media into a single document.
+% RHL I'm a bit nervous about making this the baseline -- we have no experience of using IPython notebooks for this application
 
 Standard data visualization {\em aspects} will be realized with predefined set of notebooks with tests/analyses executed on a given SDQA repository. These aspects will allow the browsing and drill-down of data collected in Data Release Production runs, or monitoring of live data (for Level 1).
 
