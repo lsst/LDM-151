@@ -218,8 +218,9 @@ platforms.
 
 We recognize four major groups of science pipelines residing in the Applications layer:
 \begin{itemize}
-    \item {\bf Level 1 Science Pipelines}, grouped under the {\bf Alert Production} element of the WBS, are designed to generate Level 1 data products. These include:
+    \item {\bf Level 1 Pipelines}, grouped under the {\bf Alert Production} element of the WBS, are designed to generate Level 1 data products. These include:
     \begin{itemize}
+    \item {\bf \em Single Frame Processing (``SFM'') Pipeline}, (\wbsSFM) to reduce acquired visits and detect and characterize astrophysical sources present in these visits.
     \item {\bf \em Image Differencing Pipeline} (\wbsDiffim), to create difference images, and detect and characterize sources in them.
     \item {\bf \em Association Pipeline} (\wbsAssocP), to associate sources detected in the difference images with known objects.
     \item {\bf \em Alert Generation Pipeline} (\wbsAP), to generate and transmit alerts to time-domain events (e.g. transients) to the astronomical community, and
@@ -227,9 +228,8 @@ We recognize four major groups of science pipelines residing in the Applications
     \end{itemize}
 Level 1 pipelines run as the data are being acquired. They primarily focus on image differencing, and the reduction of information extracted from difference images. The algorithms they employ are designed and chosen to complete processing on minute (alert production) to day (Solar System object pipelines) time scales. They are also rerun as a part of Data Release Production (DRP), potentially in somewhat different configurations to achieve greater precision at the expense of increased runtime.
     
-    \item {\bf Level 2 Science Pipelines} run annually or semi-annualy (for the first year of data), and are designed to generate deep co-adds and catalogs stemming from analysis of direct image data.  These include:
+    \item {\bf Level 2 Pipelines} run annually or semi-annualy (for the first year of data), and are designed to generate deep co-adds and catalogs stemming from analysis of direct image data.  These include:
     \begin{itemize}
-        \item {\bf \em Single Frame Processing (``SFM'') Pipeline}, (\wbsSFM) to reduce acquired visits and detect and characterize astrophysical sources present in these visits.
         \item {\bf \em PSF Estimation Pipeline}, (\wbsPSF), to estimate the PSF properties and variation across the focal plane for each visit, to the degree of precision required by the \SRD. Note that the work of this pipeline goes beyond the typical single-CCD PSF estimation present in the SFM pipeline.
         \item {\bf \em Image Coaddition Pipeline}, (\wbsCoadd), to generate and characterize coadded images of the sky, as well as create templates for image differencing.
         \item {\bf \em Deep Detection Pipeline}, (\wbsDeepDet), to detect sources in coadded images of the sky.
@@ -260,7 +260,7 @@ In addition to these four, we recognize two other, cross-cutting, elements of DM
        \item The {\bf Science Pipeline Toolkit}, (\wbsSPT), a collection of software components (and design principles) designed to enable construction of Level 3 pipelines relying on reusable lower-level components produced in support of other LSST DM software.
 \end{itemize}
 
-\subsubsection{Level 1 Science Pipelines Overview}
+\subsubsection{Level 1 Pipelines Overview}
 The production of Level 1 products is generally performed nightly, directly fed by 
 the output data stream from the Camera SDS\footnote{Science Array Data Acquisition (DAQ) Subsystem} during observing. This data stream
 contains both unprocessed (raw) camera images, and images that have been corrected
@@ -307,7 +307,7 @@ Similarly, in daytime after the nightly observing run, atmospheric models from t
 
 In addition to these, the Moving Object Pipeline (MOPS; \wbsMOPS; \uc{Process Moving Objects}) will also be run in daytime. It is described in its own section of this document, with a detailed design in a separate Moving Object Pipeline Design Document (\MOPSD).
 
-\subsubsection{Level 2 Science Pipelines Overview}
+\subsubsection{Level 2 Pipelines Overview}
 
 \begin{figure}[!htbp]
     \centering
@@ -416,7 +416,108 @@ Prototype code is available at \url{https://dev.lsstcorp.org/cgit/LSST/DMS/afw.g
 
 \clearpage
 
-\section{Level 1 Science Pipelines}
+\section{Level 1 Pipelines}
+
+\subsection{Single Frame Processing Pipeline (\wbsSFM)}
+
+\subsubsection{Key Requirements}
+
+Single Frame Processing (SFM) Pipeline is responsible for reducing raw image data to {\em calibrated exposures}, and detection and measurement of \Sources (using the components functionally a part of the Object Characterization Pipeline).
+\\
+
+SFM pipeline functions include:
+%
+\begin{itemize}
+    \item Assembly of per-amplifier images to an image of the entire CCD.
+    \item Instrumental Signature Removal
+    \item Cosmic ray rejection and snap combining
+    \item Per-CCD Determination of zeropoint and aperture corrections
+    \item Per-CCD PSF determination
+    \item Per-CCD WCS determination and astrometric registration of images
+    \item Per-CCD sky background determination 
+    \item Source detection
+\end{itemize}
+
+Calibrated exposure produced by the SFM pipeline must possess all information necessary for measurement of source properties by single-epoch Object Characterization algorithms.
+
+It shall be possible to run this pipeline in two modes: a ``fast" mode needed in nightly operations for Level 1 data reductions where no source characterization is done beyond what's required for zero-point, PSF, sky, and WCS determination (image reduction); and a ``full" mode that will be run for Level 2 data reductions.
+
+\subsubsection{Baseline design}
+
+Single Frame Processing pipeline will be implemented as a flexible framework where different data can be easily treated differently, and new processing steps can be added without modifying the stack code.
+\\
+
+It will consist of three primary components:
+%
+\begin{itemize}
+    \item A library of useful methods that wrap a small number of atomic operations (e.g. {\tt interpolateFromMask}, {\tt overscanCorrection}, {\tt biasCorrection}, etc.) % RHL things like overscanCorrection aren't atomic (or at least, they use afw::math and afw::cameraGeom primitives)
+    \item A set of classes ({\tt Task}s) that perform higher level jobs
+    (e.g., {\tt AssembleCcdTask}, or {\tt FringeTask}), and a top level class to apply corrections to the input data in the proper order. This top level class can be overridden in the instrument specific {\tt obs\_*} packages, making the core SFM pipeline camera agnostic.
+    \item A top-level Task to run the SFM pipeline.
+\end{itemize}
+
+In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS {\em Photo} pipeline (Lupton et al.).
+
+\paragraph{Instrumental Signature Removal:}
+
+The adopted pipeline design allows for straightforward addition of correction for instrumental effects that will be discovered in the as-built Camera. The effects currently baselined to be corrected are:
+
+\begin{itemize}
+\item Bias: A master bias frame, created from a set of overscan corrected zero length exposures, is subtracted from the image to correct for 2D structure in the bias level. For each exposure, overscan columns will be averaged and fit with a 1D function and subtracted row by row to account for time variable bias level.
+
+\item Assembly: CCDs will be assembled by trimming the prescan and/or overscan rows and columns from amplifier images and storing them into a Image object.
+
+\item Dark current: A master dark frame created from a set of bias corrected exposures taken with the shutter closed is scaled to the science image exposure time and subtracted to correct for 2D structure in the dark current.
+
+\item Cross-talk: Cross talk is generated by interaction of fields produced by the current in physically proximate electronic components. This results in bright features from one amp showing up in other. Correction is to subtract each aggressor amp (possibly flipped) modulated by a measured coefficient from the victim amp. The implementation may assume the cross-talk is small enough to be correctable by first order correction only.
+
+\item Non-linearity: CCDs do not have perfectly linear response. At both almost empty and almost full well the response can become non-linear. Given a measurement of the linearity of the CCD response, along with any temperature dependence, the data values will be corrected to linear response by simple mapping and interpolation.
+
+\item Flat-field: The correction is a division by the normalized master flat. The master flat will be generated assuming a nominal flat spectrum for all sources. Photometric corrections will be applied downstream on a source by source basis given an SED for each source.
+
+\item Fringing: Fringe parerns are an interference effect that result from the sharp emission lines in the night sky spectrum. This effect is the strongest in redder bands. The best fit modeled fringe pattern, constructed from monochromatic flats assuming a low-dimensional parametrization of the night sky emission spectrum, will be subtracted from the image.
+
+\item Cosmic ray rejection and snap combining: Exposures will be taken in pairs separated by the readout time. The two images and the expected statistics on those images are used to reject pixels that are significant outliers. Once cosmic rays are flagged the two snaps will be added to produce an image with a longer effective exposure.  % RHL There'll probably also be a significant morphological component.  Esp. if we want snap-to-snap transients...
+\end{itemize}
+
+\paragraph{PSF determination:} We will run separate algorithms to select candidate stars and determine the point-spread function (PSF, the light distribution for a point source, a critical ingredient to understanding the data and measuring accurate fluxes and shapes).  Both the star selector and PSF determiner algorithms will be pluggable Python modules, so that different algorithms can be run as desired for different analysis needs.
+
+Three selectors will be implemented. % RHL I bet that these will change dramatically before construction.  I was tempted to change ``will be implemented'' to ``will be implemented initially'' but didn't.
+The ``second-moment'' star selector will builds a histogram of the X and Y second moments of flux, search for a peak, and select sources in the peak as point source candidates.  The ``catalog'' star selector, in contrast, will make use of an external catalog of point sources and use astrometric matching to select point source candidates.  The ``objectSize'' star selector will identify point source candidates from the cluster of sources with similar sizes regardless of magnitude.  When selecting point source candidates by size (i.e., for the ``second-moment'' and ``objectSize'' algorithms), the sizes will be corrected by the known optical distortion of the camera.  % RHL objectSize has superceded secondMoment already.
+\\
+
+Given the irregularly sampled grid of PSFs represented by selected stars, the variation of the PSF across the CCD will be determined. The baselined ``principle-components'' PSF (pcaPsf) determiner performs a singular value decomposition (also known as a principal components analysis, or PCA) on the point-source candidates in pixel space to produce a set of eigen-images.  Using the dominant eigen-images, it constructs polynomial interpolants for their relative weights.  This produces a spatially-varying PSF model that captures the most important changes in the PSF over the CCD.
+\\
+
+These algorithms are intended to be sufficient to enable Level 1 processing. More advanced PSF determination algorithms will be developed in the PSF Estimation Pipeline (\wbsPSF).
+% RHL We'll have to be careful, as I think these fluxes/positions are the inputs into global calibration
+
+\paragraph{Sky Background Determination:}
+
+We will estimate the smooth sky background by measuring the background level in cells (typically 256 or 512 pixels square) % RHL I'm sure 256 will be too small.  512 may well be too.
+using (by default) a clipped mean, and ignoring pixels that are part of detected sources.  An interpolating spline (an Akima spline, by default) will be constructed to estimate the background level in each pixel. Backgrounds will be possible to estimate simultaneously over multiple sensors, including the full focal plane.
+
+Background models will be saved, for later subtraction or restoration (e.g., in background matching, as implemented by the Coaddition Pipeline, \wbsCoadd).
+
+\paragraph{WCS determination and image registration}
+
+The absolute World Coordinate System (WCS) will be determined using an {\em astrometry.net} type algorithm (Lang et al. 2009), seeded with the approximate position of the boresite.  % RHL I doubt if we'll use a.n in production (except as a fallback when all else fails)
+
+This module will also include the capability to perform relative registration of a set of images to enable coaddition and image differencing, using the {\em meas\_mosaic} registration algorithm of Furusawa et al. (2013) as the baseline.
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Assemble CCD; Determine Aperture Correction; Determine PSF; Remove Instrument Signature; Detect Sources; Determine Photometric Zeropoint; Measure Single Visit Sources; Determine WCS; Sum Exposures, Combine Raw Exposures, Remove Exposure Artifacts; Determine Sky Background Model; Calibrate Exposure; Process Raw Exposures to Calibrated Exposure; Perform Single Visit Processing; \subsubsection{Prototype Implementation}
+
+A prototype implementation of all major components of SFM baseline design has been completed in LSST Final Design Phase. The achieved accuracy is comparable to state-of-the art codes today (e.g., SDSS, SExtractor). We expect it will be possible to transfer a significant fraction of the existing code into Construction, with continued improvement to meet LSST accuracy requirements.
+\\
+
+WCS determination and image registration modules are an exception, and will require extensive redesign and rewrite. The sky determination module will have to be enhanced to support multi-CCD fitting capability.
+\\
+
+The prototype codes are available in the following repositories: \url{https://dev.lsstcorp.org/cgit/LSST/DMS/ip_isr.git/}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_algorithms.git}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_astrom.git}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_mosaic.git}, , \url{https://dev.lsstcorp.org/cgit/LSST/DMS/pipe_tasks.git}.
+
+\clearpage
 
 \subsection{Image Differencing Pipeline (\wbsDiffim)}
 
@@ -539,104 +640,40 @@ Prototype MOPS codes are available at \url{https://dev.lsstcorp.org/cgit/LSST/DM
 
 \clearpage
 
-\section{Level 2 Science Pipelines}
+\section{Level 2 Pipelines}
 
-\subsection{Single Frame Processing Pipeline (\wbsSFM)}
+\subsection{PSF Estimation Pipeline (\wbsPSF)}
 
 \subsubsection{Key Requirements}
 
-Single Frame Processing (SFM) Pipeline is responsible for reducing raw image data to {\em calibrated exposures}, and detection and measurement of \Sources (using the components functionally a part of the Object Characterization Pipeline).
-\\
-
-SFM pipeline functions include:
-%
-\begin{itemize}
-    \item Assembly of per-amplifier images to an image of the entire CCD.
-    \item Instrumental Signature Removal
-    \item Cosmic ray rejection and snap combining
-    \item Per-CCD Determination of zeropoint and aperture corrections
-    \item Per-CCD PSF determination
-    \item Per-CCD WCS determination and astrometric registration of images
-    \item Per-CCD sky background determination 
-    \item Source detection
-\end{itemize}
-
-Calibrated exposure produced by the SFM pipeline must possess all information necessary for measurement of source properties by single-epoch Object Characterization algorithms.
+PSF Estimation pipeline must enable the estimation of the point spread function with residual ellipticity correlations at the levels required by LSR-REQ-0097.
 
 \subsubsection{Baseline design}
 
-Single Frame Processing pipeline will be implemented as a flexible framework where different data can be easily treated differently, and new processing steps can be added without modifying the stack code.
+LSST's PSF models will be implemented as a plugin. Simple PSF estimation algorithms (e.g., {\tt pcaPsf}) will be implemented by the Single Frame Processing pipeline (\wbsSFM). CoaddPsf ({\tt stackfitPsf}) algorithm will be implemented in the Image Coaddition Pipeline (\wbsCoadd).
 \\
 
-It will consist of three primary components:
-%
+Current state-of-the-art PSF estimation methods typically use some basis functions (e.g. $\delta$-functions, PCA) and a spatial model (e.g. polynomials) to estimate the PSF. This is not expected to be sufficient to reach LSST requirements. We've therefore adopted a baseline algorithm as follows:
 \begin{itemize}
-    \item A library of useful methods that wrap a small number of atomic operations (e.g. {\tt interpolateFromMask}, {\tt overscanCorrection}, {\tt biasCorrection}, etc.) % RHL things like overscanCorrection aren't atomic (or at least, they use afw::math and afw::cameraGeom primitives)
-    \item A set of classes ({\tt Task}s) that perform higher level jobs
-    (e.g., {\tt AssembleCcdTask}, or {\tt FringeTask}), and a top level class to apply corrections to the input data in the proper order. This top level class can be overridden in the instrument specific {\tt obs\_*} packages, making the core SFM pipeline camera agnostic.
-    \item A top-level Task to run the SFM pipeline.
+    \item Decompose the PSF into a component due to the atmosphere and a component due to the telescope and camera system.
+    \item Estimate the telescope+camera component using the wavefront sensor information (the reconstructed wavefront) and camera metrology (the laboratory or on-sky measurement of $z$ offsets of individual sensors)
+    \item Estimate the atmospheric contribution by modelling the PSF from bright, isolated, stars, and interpolating using Kriging. % RHL PCA \'a la Jarvis and Jain only works for the camera part
 \end{itemize}
-
-In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS {\em Photo} pipeline (Lupton et al.).
-
-\paragraph{Instrumental Signature Removal:}
-
-The adopted pipeline design allows for straightforward addition of correction for instrumental effects that will be discovered in the as-built Camera. The effects currently baselined to be corrected are:
-
-\begin{itemize}
-\item Bias: A master bias frame, created from a set of overscan corrected zero length exposures, is subtracted from the image to correct for 2D structure in the bias level. For each exposure, overscan columns will be averaged and fit with a 1D function and subtracted row by row to account for time variable bias level.
-
-\item Assembly: CCDs will be assembled by trimming the prescan and/or overscan rows and columns from amplifier images and storing them into a Image object.
-
-\item Dark current: A master dark frame created from a set of bias corrected exposures taken with the shutter closed is scaled to the science image exposure time and subtracted to correct for 2D structure in the dark current.
-
-\item Cross-talk: Cross talk is generated by interaction of fields produced by the current in physically proximate electronic components. This results in bright features from one amp showing up in other. Correction is to subtract each aggressor amp (possibly flipped) modulated by a measured coefficient from the victim amp. The implementation may assume the cross-talk is small enough to be correctable by first order correction only.
-
-\item Non-linearity: CCDs do not have perfectly linear response. At both almost empty and almost full well the response can become non-linear. Given a measurement of the linearity of the CCD response, along with any temperature dependence, the data values will be corrected to linear response by simple mapping and interpolation.
-
-\item Flat-field: The correction is a division by the normalized master flat. The master flat will be generated assuming a nominal flat spectrum for all sources. Photometric corrections will be applied downstream on a source by source basis given an SED for each source.
-
-\item Fringing: Fringe parerns are an interference effect that result from the sharp emission lines in the night sky spectrum. This effect is the strongest in redder bands. The best fit modeled fringe pattern, constructed from monochromatic flats assuming a low-dimensional parametrization of the night sky emission spectrum, will be subtracted from the image.
-
-\item Cosmic ray rejection and snap combining: Exposures will be taken in pairs separated by the readout time. The two images and the expected statistics on those images are used to reject pixels that are significant outliers. Once cosmic rays are flagged the two snaps will be added to produce an image with a longer effective exposure.  % RHL There'll probably also be a significant morphological component.  Esp. if we want snap-to-snap transients...
-\end{itemize}
-
-\paragraph{PSF determination:} We will run separate algorithms to select candidate stars and determine the point-spread function (PSF, the light distribution for a point source, a critical ingredient to understanding the data and measuring accurate fluxes and shapes).  Both the star selector and PSF determiner algorithms will be pluggable Python modules, so that different algorithms can be run as desired for different analysis needs.
-
-Three selectors will be implemented. % RHL I bet that these will change dramatically before construction.  I was tempted to change ``will be implemented'' to ``will be implemented initially'' but didn't.
-The ``second-moment'' star selector will builds a histogram of the X and Y second moments of flux, search for a peak, and select sources in the peak as point source candidates.  The ``catalog'' star selector, in contrast, will make use of an external catalog of point sources and use astrometric matching to select point source candidates.  The ``objectSize'' star selector will identify point source candidates from the cluster of sources with similar sizes regardless of magnitude.  When selecting point source candidates by size (i.e., for the ``second-moment'' and ``objectSize'' algorithms), the sizes will be corrected by the known optical distortion of the camera.  % RHL objectSize has superceded secondMoment already.
+This estimation will be performed on the full focal plane, and use the per-CCD estimates of the PSF and cutouts of bright stars (PSF estimation candidates) as inputs.
 \\
-
-Given the irregularly sampled grid of PSFs represented by selected stars, the variation of the PSF across the CCD will be determined. The baselined ``principle-components'' PSF (pcaPsf) determiner performs a singular value decomposition (also known as a principal components analysis, or PCA) on the point-source candidates in pixel space to produce a set of eigen-images.  Using the dominant eigen-images, it constructs polynomial interpolants for their relative weights.  This produces a spatially-varying PSF model that captures the most important changes in the PSF over the CCD.
-\\
-
-These algorithms are intended to be sufficient to enable Level 1 processing. More advanced PSF determination algorithms will be developed in the PSF Estimation Pipeline (\wbsPSF).
-% RHL We'll have to be careful, as I think these fluxes/positions are the inputs into global calibration
-
-\paragraph{Sky Background Determination:}
-
-We will estimate the smooth sky background by measuring the background level in cells (typically 256 or 512 pixels square) % RHL I'm sure 256 will be too small.  512 may well be too.
-using (by default) a clipped mean, and ignoring pixels that are part of detected sources.  An interpolating spline (an Akima spline, by default) will be constructed to estimate the background level in each pixel. Backgrounds will be possible to estimate simultaneously over multiple sensors, including the full focal plane.
-
-Background models will be saved, for later subtraction or restoration (e.g., in background matching, as implemented by the Coaddition Pipeline, \wbsCoadd).
-
-\paragraph{WCS determination and image registration}
-
-The absolute World Coordinate System (WCS) will be determined using an {\em astrometry.net} type algorithm (Lang et al. 2009), seeded with the approximate position of the boresite.  % RHL I doubt if we'll use a.n in production (except as a fallback when all else fails)
-
-This module will also include the capability to perform relative registration of a set of images to enable coaddition and image differencing, using the {\em meas\_mosaic} registration algorithm of Furusawa et al. (2013) as the baseline.
+The PSF of thick deep depletion devices such as LSST's is known to be intensity dependent. We will estimate the zero-intensity PSF by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same forward-modelling algorithm will allow us to estimate the PSF in undersampled imaging, as is expected for roughly the best quartile of the seeing distribution.
+% RHL [As you know] it's more accurate to say that the as-detected image is an intensity-dependent mapping of the image incident on the CCD (I must be able to find a better way to express that!).  A consequence is that the PSF is intensity dependent.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Assemble CCD; Determine Aperture Correction; Determine PSF; Remove Instrument Signature; Detect Sources; Determine Photometric Zeropoint; Measure Single Visit Sources; Determine WCS; Sum Exposures, Combine Raw Exposures, Remove Exposure Artifacts; Determine Sky Background Model; Calibrate Exposure; Process Raw Exposures to Calibrated Exposure; Perform Single Visit Processing; \subsubsection{Prototype Implementation}
+Perform Full Focal Plane PSF Estimation;
 
-A prototype implementation of all major components of SFM baseline design has been completed in LSST Final Design Phase. The achieved accuracy is comparable to state-of-the art codes today (e.g., SDSS, SExtractor). We expect it will be possible to transfer a significant fraction of the existing code into Construction, with continued improvement to meet LSST accuracy requirements.
+\subsubsection{Prototype Implementation}
+
+Prototype code for wavefront reconstruction has been developed by the LSST Telescope and Site group. We expect this code will be rewritten in Construction to follow LSST Data Management standards and be straightforward to incorporate into the PSF Estimation pipeline.
 \\
 
-WCS determination and image registration modules are an exception, and will require extensive redesign and rewrite. The sky determination module will have to be enhanced to support multi-CCD fitting capability.
-\\
-
-The prototype codes are available in the following repositories: \url{https://dev.lsstcorp.org/cgit/LSST/DMS/ip_isr.git/}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_algorithms.git}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_astrom.git}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_mosaic.git}, , \url{https://dev.lsstcorp.org/cgit/LSST/DMS/pipe_tasks.git}.
+The remaining components of the PSF Estimation pipeline have not been prototyped at this time.
 
 \clearpage
 
@@ -919,41 +956,6 @@ Missing from the current prototypes are the moving point source fit (implemented
 \\
 
 The design and performance of the current prototype pipeline is described in the Summer 2012 Data Challenge (\url{http://ls.st/vho}), Winter 2013 Data Challenge Report (\url{http://ls.st/ofk}), and Summer 2013 Data Challenge Report (\url{http://ls.st/grd}). The codes are available in the {\tt meas\_*} git repositories browsable through the LSST git repository browser at \url{http://dev.lsstcorp.org/cgit}.
-
-\clearpage
-
-\subsection{PSF Estimation Pipeline (\wbsPSF)}
-
-\subsubsection{Key Requirements}
-
-PSF Estimation pipeline must enable the estimation of the point spread function with residual ellipticity correlations at the levels required by LSR-REQ-0097.
-
-\subsubsection{Baseline design}
-
-LSST's PSF models will be implemented as a plugin. Simple PSF estimation algorithms (e.g., {\tt pcaPsf}) will be implemented by the Single Frame Processing pipeline (\wbsSFM). CoaddPsf ({\tt stackfitPsf}) algorithm will be implemented in the Image Coaddition Pipeline (\wbsCoadd).
-\\
-
-Current state-of-the-art PSF estimation methods typically use some basis functions (e.g. $\delta$-functions, PCA) and a spatial model (e.g. polynomials) to estimate the PSF. This is not expected to be sufficient to reach LSST requirements. We've therefore adopted a baseline algorithm as follows:
-\begin{itemize}
-    \item Decompose the PSF into a component due to the atmosphere and a component due to the telescope and camera system.
-    \item Estimate the telescope+camera component using the wavefront sensor information (the reconstructed wavefront) and camera metrology (the laboratory or on-sky measurement of $z$ offsets of individual sensors)
-    \item Estimate the atmospheric contribution by modelling the PSF from bright, isolated, stars, and interpolating using Kriging. % RHL PCA \'a la Jarvis and Jain only works for the camera part
-\end{itemize}
-This estimation will be performed on the full focal plane, and use the per-CCD estimates of the PSF and cutouts of bright stars (PSF estimation candidates) as inputs.
-\\
-The PSF of thick deep depletion devices such as LSST's is known to be intensity dependent. We will estimate the zero-intensity PSF by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same forward-modelling algorithm will allow us to estimate the PSF in undersampled imaging, as is expected for roughly the best quartile of the seeing distribution.
-% RHL [As you know] it's more accurate to say that the as-detected image is an intensity-dependent mapping of the image incident on the CCD (I must be able to find a better way to express that!).  A consequence is that the PSF is intensity dependent.
-
-\subsubsection{Constituent Use Cases and Diagrams}
-
-Perform Full Focal Plane PSF Estimation;
-
-\subsubsection{Prototype Implementation}
-
-Prototype code for wavefront reconstruction has been developed by the LSST Telescope and Site group. We expect this code will be rewritten in Construction to follow LSST Data Management standards and be straightforward to incorporate into the PSF Estimation pipeline.
-\\
-
-The remaining components of the PSF Estimation pipeline have not been prototyped at this time.
 
 \clearpage
 
