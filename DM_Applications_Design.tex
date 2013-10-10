@@ -486,7 +486,7 @@ Three selectors will be implemented. % RHL I bet that these will change dramatic
 The ``second-moment'' star selector will builds a histogram of the X and Y second moments of flux, search for a peak, and select sources in the peak as point source candidates.  The ``catalog'' star selector, in contrast, will make use of an external catalog of point sources and use astrometric matching to select point source candidates.  The ``objectSize'' star selector will identify point source candidates from the cluster of sources with similar sizes regardless of magnitude.  When selecting point source candidates by size (i.e., for the ``second-moment'' and ``objectSize'' algorithms), the sizes will be corrected by the known optical distortion of the camera.  % RHL objectSize has superceded secondMoment already.
 \\
 
-Given the irregularly sampled grid of PSFs represented by selected stars, the variation of the PSF across the CCD will be determined. The baselined ``principle-components'' PSF (pcaPsf) determiner performs a singular value decomposition (also known as a principal components analysis, or PCA) on the point-source candidates in pixel space to produce a set of eigen-images.  Using the dominant eigen-images, it constructs polynomial interpolants for their relative weights.  This produces a spatially-varying PSF model that captures the most important changes in the PSF over the CCD.
+Given the irregularly sampled grid of PSFs represented by selected stars, the variation of the PSF across the CCD will be determined. The baselined ``principal-components'' PSF (pcaPsf) determiner performs a singular value decomposition (also known as a principal components analysis, or PCA) on the point-source candidates in pixel space to produce a set of eigen-images.  Using the dominant eigen-images, it constructs polynomial interpolants for their relative weights.  This produces a spatially-varying PSF model that captures the most important changes in the PSF over the CCD.
 \\
 
 These algorithms are intended to be sufficient to enable Level 1 processing. More advanced PSF determination algorithms will be developed in the PSF Estimation Pipeline (\wbsPSF).
@@ -501,7 +501,7 @@ Background models will be saved, for later subtraction or restoration (e.g., in 
 
 \paragraph{WCS determination and image registration}
 
-The absolute World Coordinate System (WCS) will be determined using an {\em astrometry.net} type algorithm (Lang et al. 2009), seeded with the approximate position of the boresite.  % RHL I doubt if we'll use a.n in production (except as a fallback when all else fails)
+The absolute World Coordinate System (WCS) will be determined using an {\em astrometry.net} type algorithm (Lang et al. 2009), seeded with the approximate position of the boresight.  % RHL I doubt if we'll use a.n in production (except as a fallback when all else fails)
 
 This module will also include the capability to perform relative registration of a set of images to enable coaddition and image differencing, using the {\em meas\_mosaic} registration algorithm of Furusawa et al. (2013) as the baseline.
 
