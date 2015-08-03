@@ -59,17 +59,17 @@
 \newcommand{\wbsAP}{WBS 02C.03.03}
 \newcommand{\wbsDiffim}{WBS 02C.03.04}
 \newcommand{\wbsMOPS}{WBS 02C.03.06}
-\newcommand{\wbsSDQAP}{WBS 02C.01.02.01}
+\newcommand{\wbsSDQAP}{WBS 02C.01.02.02}
 \newcommand{\wbsSDQAT}{WBS 02C.01.02.02}
 \newcommand{\wbsSPT}{WBS 02C.01.02.03}
 \newcommand{\wbsPSF}{WBS 02C.04.03}
 \newcommand{\wbsCoadd}{WBS 02C.04.04}
 \newcommand{\wbsDeepDet}{WBS 02C.04.05}
 \newcommand{\wbsObjChar}{WBS 02C.04.06}
-\newcommand{\wbsAFW}{WBS 02C.03.05, 02C.04.07}
-\newcommand{\wbsCPP}{WBS 02C.01.02.04}
-\newcommand{\wbsPhotoCal}{WBS 02C.04.01}
-\newcommand{\wbsAstroCal}{WBS 02C.04.02}
+\newcommand{\wbsAFW}{WBS 02C.03.05, 02C.04.01}
+\newcommand{\wbsCPP}{WBS 02C.04.02}
+\newcommand{\wbsPhotoCal}{WBS 02C.03.07}
+\newcommand{\wbsAstroCal}{WBS 02C.03.08}
 
 \newcommand{\uc}[1]{{\tt #1}}
 
@@ -412,7 +412,7 @@ Needs for future improvement have been identified in three areas:
 \end{itemize}
 % RHL I can think of lots more...
 
-Prototype code is available at \url{https://dev.lsstcorp.org/cgit/LSST/DMS/afw.git}. The documentation for the prototype is located at \url{http://ls.st/w3o} and \url{http://ls.st/6i0}.
+Prototype code is available at \url{https://github.com/lsst/afw/}. The documentation for the prototype is located at \url{http://ls.st/w3o} and \url{http://ls.st/6i0}.
 
 \clearpage
 
@@ -515,7 +515,7 @@ A prototype implementation of all major components of SFM baseline design has be
 WCS determination and image registration modules are an exception, and will require extensive redesign and rewrite. The sky determination module will have to be enhanced to support multi-CCD fitting capability.
 \\
 
-The prototype codes are available in the following repositories: \url{https://dev.lsstcorp.org/cgit/LSST/DMS/ip_isr.git/}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_algorithms.git}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_astrom.git}, \url{https://dev.lsstcorp.org/cgit/LSST/DMS/meas_mosaic.git}, , \url{https://dev.lsstcorp.org/cgit/LSST/DMS/pipe_tasks.git}.
+The prototype codes are available in the following repositories: \url{https://github.com/lsst/ip_isr}, \url{https://github.com/lsst/meas_algorithms}, \url{https://github.com/lsst/meas_astrom}, \url{https://github.com/lsst-dm/legacy-meas_mosaic}, \url{https://github.com/lsst/pipe_tasks}.
 
 \clearpage
 
@@ -552,7 +552,7 @@ A prototype implementation partially implementing the baseline design has been c
 This implementation was used to benchmark the speed of the image differencing code and examine the expected levels of false positives. Deblending on difference images, fits to trailed sources, and dipole fits were not prototyped. The final report on prototype design and performance can be found in Becker et al. (\url{http://ls.st/x9f}).
 \\
 
-The prototype code is available at \url{https://dev.lsstcorp.org/cgit/LSST/DMS/ip_diffim.git}. The current prototype, while functional, will require a partial redesign to be transfered to construction to address performance and extensibility concerns.
+The prototype code is available at \url{https://github.com/lsst/ip_diffim}. The current prototype, while functional, will require a partial redesign to be transfered to construction to address performance and extensibility concerns.
 
 \clearpage
 
@@ -580,7 +580,7 @@ Perform DIA Object Association;Perform DIA Source Association;
 Prototype implementation of the baseline design has been completed in LSST Final Design Phase. The nearest-neighbor matching has been implemented as a part of the Application Framework, while clustering using OPTICS resides in the database-related ingest modules.
 \\
 
-The prototype code is available at \url{https://dev.lsstcorp.org/cgit/LSST/DMS/ap.git}. The current prototype, while functional, will require a partial redesign in Construction to address scalability and performance.
+The prototype code is available at \url{https://github.com/lsst/ap}. The current prototype, while functional, will require a partial redesign in Construction to address scalability and performance.
 
 \clearpage
 
@@ -636,7 +636,7 @@ Fit Orbit;Prune Moving Object Catalog;Perform Precovery;Recalculate Solar Sys
 A prototype implementation implementing the key components of DayMOPS baseline design has been completed in LSST Final Design Phase. NightMOPS has not been extensively prototyped, as it is understood not to be an area of significant uncertainty and risk. An extensive report on MOPS prototyping and performance is available as a part of the MOPS Design Document (\MOPSD).
 \\
 
-Prototype MOPS codes are available at \url{https://dev.lsstcorp.org/cgit/LSST/DMS/mops_daymops.git/} and \url{https://dev.lsstcorp.org/cgit/LSST/DMS/mops_nightmops.git/}. We expect it will be possible to transfer a significant fraction of the existing code into Construction. Current DayMOPS prototype already performs within the computational envelope envisioned for LSST Operations, though it does not yet reach the required completeness requirement.
+Prototype MOPS codes are available at \url{https://github.com/lsst/mops_daymops} and \url{https://github.com/lsst/mops_nightmops}. We expect it will be possible to transfer a significant fraction of the existing code into Construction. Current DayMOPS prototype already performs within the computational envelope envisioned for LSST Operations, though it does not yet reach the required completeness requirement.
 
 \clearpage
 
@@ -783,7 +783,7 @@ A prototype implementation of all major components of the Coaddition Pipeline ba
 The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82). Using Stripe 82 data, it demonstrated the benefits of background matching and CoaddPsf approaches.
 \\
 
-The design and performance of the current prototype pipeline is described in the Summer 2012 Data Challenge (\url{http://ls.st/vho}) and Winter 2013 Data Challenge Report (\url{http://ls.st/ofk}). The prototype codes are available in the {\tt coadd\_*} git repositories browsable through the LSST git repository browser at \url{dev.lsstcorp.org/cgit}.
+The design and performance of the current prototype pipeline is described in the Summer 2012 Data Challenge (\url{http://ls.st/vho}) and Winter 2013 Data Challenge Report (\url{http://ls.st/ofk}). The prototype codes are available in the {\tt coadd\_*} git repositories browsable through the LSST git repository browser at \url{https://github.com/lsst}.
 
 \clearpage
 
@@ -813,7 +813,7 @@ Detect Sources on Coadds;
 A fully functional prototype implementation of the Deep Detection Pipeline baseline design has been completed in LSST Final Design Phase and extensively tested with image simulation inputs as well as real data (SDSS Stripe 82). We expect it will be possible to transfer a significant fraction of the existing code into Construction, for continued improvement to meet LSST performance and accuracy requirements. % RHL We didn't do the recursive binning, which requires slightly tricky book-keeping.
 \\
 
-The detection functionallity is a part of the {\tt afw} git repository browsable through the LSST git repository browser at \url{dev.lsstcorp.org/cgit}.
+The detection functionallity is a part of the {\tt afw} git repository browsable through the LSST git repository browser at \url{https://github.com/lsst}.
 
 \clearpage
 
@@ -955,7 +955,7 @@ A prototype implementation of all major components of the Object Characterizatio
 Missing from the current prototypes are the moving point source fit (implemented algorithms assume the source does not move), the trailed source fit, and the aperture, Kron and Petrosian magnitudes using elliptical apertures (implemented algorithms assume the apertures are circular).
 \\
 
-The design and performance of the current prototype pipeline is described in the Summer 2012 Data Challenge (\url{http://ls.st/vho}), Winter 2013 Data Challenge Report (\url{http://ls.st/ofk}), and Summer 2013 Data Challenge Report (\url{http://ls.st/grd}). The codes are available in the {\tt meas\_*} git repositories browsable through the LSST git repository browser at \url{http://dev.lsstcorp.org/cgit}.
+The design and performance of the current prototype pipeline is described in the Summer 2012 Data Challenge (\url{http://ls.st/vho}), Winter 2013 Data Challenge Report (\url{http://ls.st/ofk}), and Summer 2013 Data Challenge Report (\url{http://ls.st/grd}). The codes are available in the {\tt meas\_*} git repositories browsable through the LSST git repository browser at \url{https://github.com/lsst}.
 
 \clearpage
 
@@ -1086,11 +1086,11 @@ Assess Data Quality for Nightly Processing at Archive;
 Prototype implementation of the SDQA Pipeline baseline design has been completed in LSST Final Design Phase. The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82). The existing prototype will be refactored to enhance performance and flexibility in Construction.
 \\
 
-The prototype code is available in the \url{https://dev.lsstcorp.org/cgit/LSST/DMS/testing_pipeQA.git/} git repository.
+The prototype code is available in the \url{https://github.com/lsst/testing_pipeQA} git repository.
 
 \clearpage
 
-\subsection{SDQA Toolkit (\wbsDiffim)}
+\subsection{SDQA Toolkit (\wbsSDQAT)}
 
 \subsubsection{Key Requirements}
 
@@ -1122,7 +1122,7 @@ Prototype implementation of the SDQA Toolkit has been implemented in LSST Final 
 The existing prototype uses a set of statically and dynamically generated pages (written in php) to display the results of data production runs. While proving invaluable for data analysis, the prototype design was found it to be difficult to extend with new analyst-developed tests. The current baseline has been defined based on this experience and will be implemented in Construction.
 \\
 
-The prototype code is available in the \url{https://dev.lsstcorp.org/cgit/LSST/DMS/testing_displayQA.git/} git repository.
+The prototype code is available in the \url{https://github.com/lsst/testing_displayQA} git repository.
 
 \clearpage
 
@@ -1162,10 +1162,10 @@ second readout time, and a second 15 second exposure.
 \begin{thebibliography}{10}
 
 \bibitem{DMSSystem} \textbf{Data~Management~System~Design},\\ 
-https://www.lsstcorp.org/docushare/dsweb/Get/LDM-148, 2013
+ \url{http://ls.st/LDM-148}, 2013
 
 \bibitem{DMSFRS}  \textbf{Data~Management~Subsystem~Requirements},\\
-  https://www.lsstcorp.org/docushare/dsweb/Get/LSE-61, 2013
+  \url{http://ls.st/LSE-61}, 2013
 
 \bibitem{JeeTyson11} M. J. Jee and J. A. Tyson,  \textbf{Toward
   Precision LSST Weak-Lensing Measurement. I. Impacts of Atmospheric
@@ -1181,10 +1181,10 @@ https://www.lsstcorp.org/docushare/dsweb/Get/LDM-148, 2013
   J. Bell., p.257
 
 \bibitem{SRD}  \textbf{Science~Requirements~Document},\\
-  https://www.lsstcorp.org/docushare/dsweb/Get/LPM-17, 2011 
+  \url{http://ls.st/LPM-17}, 2011 
 
 \bibitem{SUI}  \textbf{LSST~Science~User~Interface~Conceptual~Design},\\
-  https://www.lsstcorp.org/docushare/dsweb/Get/LDM-131, 2011
+  \url{http://ls.st/LDM-131}, 2011
 
 \bibitem{TysonAdass07} J. A. Tyson, et al,  \textbf{LSST and the
   Dark Sector: Image Processing Challenges}, Astronomical Data
