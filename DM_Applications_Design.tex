@@ -223,7 +223,7 @@ We recognize four major groups of science pipelines residing in the Applications
     \item {\bf \em Single Frame Processing (``SFM'') Pipeline}, (\wbsSFM) to reduce acquired visits and detect and characterize astrophysical sources present in these visits.
     \item {\bf \em Image Differencing Pipeline} (\wbsDiffim), to create difference images, and detect and characterize sources in them.
     \item {\bf \em Association Pipeline} (\wbsAssocP), to associate sources detected in the difference images with known objects.
-    \item {\bf \em Alert Generation Pipeline} (\wbsAP), to generate and transmit alerts to time-domain events (e.g. transients) to the astronomical community, and
+    \item {\bf \em Alert Generation Pipeline} (\wbsAP), to generate and transmit alerts to time-domain events (e.g., transients) to the astronomical community, and
     \item {\bf \em Moving Object Pipeline} (\wbsMOPS), to identify, link and compute orbits for Solar System objects detected in difference images.
     \end{itemize}
 Level 1 pipelines run as the data are being acquired. They primarily focus on image differencing, and the reduction of information extracted from difference images. The algorithms they employ are designed and chosen to complete processing on minute (alert production) to day (Solar System object pipelines) time scales. They are also rerun as a part of Data Release Production (DRP), potentially in somewhat different configurations to achieve greater precision at the expense of increased runtime.
@@ -450,7 +450,7 @@ Single Frame Processing pipeline will be implemented as a flexible framework whe
 It will consist of three primary components:
 %
 \begin{itemize}
-    \item A library of useful methods that wrap a small number of atomic operations (e.g. {\tt interpolateFromMask}, {\tt overscanCorrection}, {\tt biasCorrection}, etc.) % RHL things like overscanCorrection aren't atomic (or at least, they use afw::math and afw::cameraGeom primitives)
+    \item A library of useful methods that wrap a small number of atomic operations (e.g., {\tt interpolateFromMask}, {\tt overscanCorrection}, {\tt biasCorrection}, etc.) % RHL things like overscanCorrection aren't atomic (or at least, they use afw::math and afw::cameraGeom primitives)
     \item A set of classes ({\tt Task}s) that perform higher level jobs
     (e.g., {\tt AssembleCcdTask}, or {\tt FringeTask}), and a top level class to apply corrections to the input data in the proper order. This top level class can be overridden in the instrument specific {\tt obs\_*} packages, making the core SFM pipeline camera agnostic.
     \item A top-level Task to run the SFM pipeline.
@@ -536,7 +536,7 @@ Differencing will be performed against a deeper template, and differential chrom
 All \DIASource measurements described in the \DPDD, including post-processing such as variability characterization, will be performed for all sources detected in this manner. The measurements will be performed on the pre-convolved likelihood image. The measurement code will reside in a separate module in the Object Characterization Pipeline (\wbsObjChar).
 \\
 
-If necessary a {\em spuriousness metric} using machine-learning techniques (e.g. Bloom et al. 2010) will be developed to help in the discrimination of real sources from those caused by artifacts.
+If necessary a {\em spuriousness metric} using machine-learning techniques (e.g., Bloom et al. 2010) will be developed to help in the discrimination of real sources from those caused by artifacts.
 \\
 
 Details of this baseline design have been captured in the \uc{Detect and Characterize DIA Sources} and related diagrams, presented in Figure~\ref{fig:diffimUML}.
@@ -653,7 +653,7 @@ PSF Estimation pipeline must enable the estimation of the point spread function 
 LSST's PSF models will be implemented as a plugin. Simple PSF estimation algorithms (e.g., {\tt pcaPsf}) will be implemented by the Single Frame Processing pipeline (\wbsSFM). CoaddPsf ({\tt stackfitPsf}) algorithm will be implemented in the Image Coaddition Pipeline (\wbsCoadd).
 \\
 
-Current state-of-the-art PSF estimation methods typically use some basis functions (e.g. $\delta$-functions, PCA) and a spatial model (e.g. polynomials) to estimate the PSF. This is not expected to be sufficient to reach LSST requirements. We've therefore adopted a baseline algorithm as follows:
+Current state-of-the-art PSF estimation methods typically use some basis functions (e.g., $\delta$-functions, PCA) and a spatial model (e.g., polynomials) to estimate the PSF. This is not expected to be sufficient to reach LSST requirements. We've therefore adopted a baseline algorithm as follows:
 \begin{itemize}
     \item Decompose the PSF into a component due to the atmosphere and a component due to the telescope and camera system.
     \item Estimate the telescope+camera component using the wavefront sensor information (the reconstructed wavefront) and camera metrology (the laboratory or on-sky measurement of $z$ offsets of individual sensors)
@@ -683,7 +683,7 @@ The remaining components of the PSF Estimation pipeline have not been prototyped
 
 Image Coaddition Pipeline shall produce PSF-matched and non-PSF-matched coadds given a stack of input calibrated exposures. Generated coadds must be characterized, at a pixel level, for validity and variance (i.e., have a Mask plane and a Variance plane).
 
-When non-PSF-matched coadds are produced, the effective PSF and its variation across the full coadd must be determined and retained. Outliers appearing in a small subset of input images (e.g., transients or moving objects) must not appear in the final co-adds. % RHL how we handle variables (e.g. RR Lyrae's) is not obvious
+When non-PSF-matched coadds are produced, the effective PSF and its variation across the full coadd must be determined and retained. Outliers appearing in a small subset of input images (e.g., transients or moving objects) must not appear in the final co-adds. % RHL how we handle variables (e.g., RR Lyrae's) is not obvious
 
 The Image Coaddition Pipeline shall make it possible to generate the coadds with astrophysical backgrounds removed or retained, depending on runtime configuration directives.
 
@@ -868,7 +868,7 @@ cannot usually do not properly account for the PSF). % RHL I think that this is 
 While it may be
 possible to construct an optimal coadd that would also be
 theoretically optimal, we expect that the difficulty in creating such
-a coadd (i.e. perfectly tracking the covariances between pixels
+a coadd (i.e., perfectly tracking the covariances between pixels
 introduced by resampling to a common pixel grid) would be prohibitively
 complex.  On the other hand, for many measurements a non-optimal coadd
 may be practically
@@ -1053,7 +1053,7 @@ Configure Pipeline Execution;Execute Pipeline;Incorporate User Code into Pipel
 
 \subsubsection{Prototype Implementation}
 
-While no explicit prototype implementation exists at this time, the majority of LSST pipeline prototypes have successfully been designed in modular and portable fashion. This has allowed a diverse set of users to customize and run the pipelines on platforms ranging from OS X laptops, to 10,000+ core clusters (e.g., BlueWaters), and to implement plugin algorithms (e.g. Kron photometry).
+While no explicit prototype implementation exists at this time, the majority of LSST pipeline prototypes have successfully been designed in modular and portable fashion. This has allowed a diverse set of users to customize and run the pipelines on platforms ranging from OS X laptops, to 10,000+ core clusters (e.g., BlueWaters), and to implement plugin algorithms (e.g., Kron photometry).
 
 \clearpage
 
