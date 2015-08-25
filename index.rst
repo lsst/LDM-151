@@ -56,8 +56,8 @@ the detailed (inter)connections between individual pipeline components,
 and this document capturing the overall goals, pipeline architecture,
 and algorithmic choices.
 
-Though under strict change control [1]_, this is a ***living
-document***. Firstly, as a consequence of the “rolling wave" LSST
+Though under strict change control [1]_, this is a **living
+document**. Firstly, as a consequence of the “rolling wave" LSST
 software development model, the designs presented in this document will
 be refined and made more detailed as particular pipeline functionality
 is about to be implemented. Secondly, the LSST will undergo a period of
@@ -183,21 +183,21 @@ Applications layer:
    of the WBS, are designed to generate Level 1 data products. These
    include:
 
-   -  ***Single Frame Processing (“SFM”) Pipeline***, (WBS 02C.03.01) to
+   -  **Single Frame Processing (“SFM”) Pipeline**, (WBS 02C.03.01) to
       reduce acquired visits and detect and characterize astrophysical
       sources present in these visits.
 
-   -  ***Image Differencing Pipeline*** (WBS 02C.03.04), to create
+   -  **Image Differencing Pipeline** (WBS 02C.03.04), to create
       difference images, and detect and characterize sources in them.
 
-   -  ***Association Pipeline*** (WBS 02C.03.02), to associate sources
+   -  **Association Pipeline** (WBS 02C.03.02), to associate sources
       detected in the difference images with known objects.
 
-   -  ***Alert Generation Pipeline*** (WBS 02C.03.03), to generate and
+   -  **Alert Generation Pipeline** (WBS 02C.03.03), to generate and
       transmit alerts to time-domain events (e.g., transients) to the
       astronomical community, and
 
-   -  ***Moving Object Pipeline*** (WBS 02C.03.06), to identify, link
+   -  **Moving Object Pipeline** (WBS 02C.03.06), to identify, link
       and compute orbits for Solar System objects detected in difference
       images.
 
@@ -214,21 +214,21 @@ Applications layer:
    year of data), and are designed to generate deep co-adds and catalogs
    stemming from analysis of direct image data. These include:
 
-   -  ***PSF Estimation Pipeline***, (WBS 02C.04.03), to estimate the
+   -  **PSF Estimation Pipeline**, (WBS 02C.04.03), to estimate the
       :term:`PSF` properties and variation across the focal plane for each
       visit, to the degree of precision required by the
       `SRD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LPM-17>`__.
       Note that the work of this pipeline goes beyond the typical
       single-CCD :term:`PSF` estimation present in the SFM pipeline.
 
-   -  ***Image Coaddition Pipeline***, (WBS 02C.04.04), to generate and
+   -  **Image Coaddition Pipeline**, (WBS 02C.04.04), to generate and
       characterize coadded images of the sky, as well as create
       templates for image differencing.
 
-   -  ***Deep Detection Pipeline***, (WBS 02C.04.05), to detect sources
+   -  **Deep Detection Pipeline**, (WBS 02C.04.05), to detect sources
       in coadded images of the sky.
 
-   -  ***Object Characterization Pipeline***, (WBS 02C.04.06), to
+   -  **Object Characterization Pipeline**, (WBS 02C.04.06), to
       characterize (perform measurements of) astrophysical objects
       detected in LSST imaging (both in single frames and coadds).
 
@@ -236,16 +236,16 @@ Applications layer:
    perform calibration of LSST instruments and data products. These
    include:
 
-   -  ***Calibration Products Pipeline***, (WBS 02C.04.02), that
+   -  **Calibration Products Pipeline**, (WBS 02C.04.02), that
       generates the necessary calibration data products (e.g., master
       flats, biases, atmospheric models, etc.). It is run periodically
       as new calibration data are acquired.
 
-   -  ***Photometric Calibration Pipeline***, (WBS 02C.03.07), that
+   -  **Photometric Calibration Pipeline**, (WBS 02C.03.07), that
       performs global photometric self-calibration of the Level 2
       dataset.
 
-   -  ***Astrometric Calibration Pipeline***, (WBS 02C.03.08), that
+   -  **Astrometric Calibration Pipeline**, (WBS 02C.03.08), that
       performs global astrometric self-calibration of the Level 2
       dataset.
 
@@ -257,11 +257,11 @@ Applications layer:
    analysis of data quality metrics across all pipelines. These are
    divided into:
 
-   -  ***Science Data Quality Assessment Pipeline***, (WBS
+   -  **Science Data Quality Assessment Pipeline**, (WBS
       02C.01.02.02), that provides low-level data collection
       functionality for :term:`SDQA` and
 
-   -  ***Science Data Quality Analyst Toolkit***, (WBS 02C.01.02.02),
+   -  **Science Data Quality Analyst Toolkit**, (WBS 02C.01.02.02),
       that provides the visualization, analysis and monitoring
       capabilities for :term:`SDQA`.
 
@@ -382,19 +382,19 @@ regular Level 2 data processing:
    visit exposures*, and ``Sources``\ are independently detected,
    deblended, and measured on all visits. Their measurements
    (instrumental fluxes and shapes) are stored in the ``Source``\ table.
-   This step is performed by the ***Single Frame Processing Pipeline***
+   This step is performed by the **Single Frame Processing Pipeline**
    (WBS 02C.03.01).
 
 #. *Relative calibration*: The survey is internally calibrated, both
-   photometrically and astrometrically using the ***Astrometric*** (WBS
-   02C.03.08) and ***Photometric Calibration Pipelines*** (WBS
+   photometrically and astrometrically using the **Astrometric** (WBS
+   02C.03.08) and **Photometric Calibration Pipelines** (WBS
    02C.03.07). Relative zero points over the focal plane and astrometric
    corrections are computed for every visit.
 
 #. *Coadd creation*: Deep, seeing optimized, and short-period per-band
    coadds are created in :math:`ugrizy` bands, as well as deeper,
-   multi-color, coadds. This task is performed by the ***Image
-   Coaddition Pipeline*** (WBS 02C.04.04). Transient sources (including
+   multi-color, coadds. This task is performed by the **Image
+   Coaddition Pipeline** (WBS 02C.04.04). Transient sources (including
    Solar System objects, explosive transients, etc), will be rejected
    from the coadds.
 
@@ -406,9 +406,9 @@ regular Level 2 data processing:
    more *peaks*, and the collection of these peaks (and their membership
    in the footprints) are the output of this stage. This information
    will be stored in a catalog of ``CoaddSources``. The detection is
-   performed by the ***Deep Detection Pipeline*** (WBS 02C.04.05), while
-   object characterization is a part of the ***Object Characterization
-   Pipeline*** (WBS 02C.04.06).
+   performed by the **Deep Detection Pipeline** (WBS 02C.04.05), while
+   object characterization is a part of the **Object Characterization
+   Pipeline** (WBS 02C.04.06).
 
 #. *Association and deblending*. The next stage in the pipeline, which
    we will for simplicity just call *the deblender*, will synthesize a
@@ -416,9 +416,9 @@ regular Level 2 data processing:
    ``Sources``\ and ``CoaddSources``, catalogs of ``DIASources``,
    ``DIAObjects``\ and ``SSObjects``\ detected on difference images, and
    objects from external catalogs. Association will be performed by the
-   software that is functionally part of the ***Association Pipeline***
+   software that is functionally part of the **Association Pipeline**
    (WBS 02C.03.02), while the deblender component a part of the
-   ***Object Characterization Pipeline*** (WBS 02C.04.06).
+   **Object Characterization Pipeline** (WBS 02C.04.06).
 
 #. *Multi-epoch object characterization*. A set of measurements
    (including predefined classes of model fits) will be performed on
@@ -431,15 +431,15 @@ regular Level 2 data processing:
    :math:`S/N`, and allows for fitting of time-dependent quantities
    degenerate with shape on the coadds (for example, the proper motion).
    The models we plan to fit will *not* allow for flux variability.
-   Object characterization is a part of the ***Object Characterization
-   Pipeline*** (WBS 02C.04.06).
+   Object characterization is a part of the **Object Characterization
+   Pipeline** (WBS 02C.04.06).
 
 #. *Forced Photometry*. Source fluxes will be measured on every visit,
    with the position, motion, structural parameters, and deblending
    characterized in the previous step kept fixed. This process of
    *forced photometry*, will result in the characterization of the
    light-curve for each object in the survey. Forced photometry is
-   functionally a part of the ***Object Characterization Pipeline***
+   functionally a part of the **Object Characterization Pipeline**
    (WBS 02C.04.06).
 
 Enabling Level 3 Pipelines
@@ -460,8 +460,8 @@ kind of measurement on objects detected in the course of Level 2
 processing. A user will be able to do this by reusing the desired
 components of Level 2 processing, plugging in (via Python import
 directives in the appropriate configuration file) the modules for their
-custom measurement, and executing the pipeline. The ***Science Pipeline
-Toolkit*** (WBS 02C.01.02.03) will provide the necessary components to
+custom measurement, and executing the pipeline. The **Science Pipeline
+Toolkit** (WBS 02C.01.02.03) will provide the necessary components to
 support user-driven construction and execution of custom pipelines.
 
 Science Data Quality Analysis Pipeline and Toolkit
@@ -470,8 +470,8 @@ Science Data Quality Analysis Pipeline and Toolkit
 | Science Data Quality Analysis requirements are described in the Data
 Quality Assurance Plan (
 `LSE-63 <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-63>`__)
-document. They will be implemented by the ***SDQA Pipeline*** (WBS
-02C.01.02.02; the data collection backend) and the ***SDQA Toolkit***
+document. They will be implemented by the **SDQA Pipeline** (WBS
+02C.01.02.02; the data collection backend) and the **SDQA Toolkit**
 (WBS 02C.01.02.02; the data analysis front-end).
 
 LSST QA will include four main components, which to some extent reflect
@@ -541,7 +541,7 @@ Applications Framework (WBS 02C.03.05, 02C.04.01)
 Key Requirements
 ~~~~~~~~~~~~~~~~
 
-The ***LSST Applications Framework*** (afw) is to provide the basic
+The **LSST Applications Framework** (afw) is to provide the basic
 functionality needed by an image processing system. In particular, it
 shall provide:
 
@@ -998,14 +998,14 @@ LSST Data Management:
    System objects that meet the findability criteria as defined in the
    `OSS <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-30>`__.
    The software components implementing this function are known as
-   ***DayMOPS***.
+   **DayMOPS**.
 
 -  The second responsibility of the :term:`MOPS` is to predict future locations
    of moving objects in incoming images so that their sources may be
    associated with known objects; this will reduce the number of
    spurious transient detections and appropriately flag alerts to
    detections of known Solar System objects. The software components
-   implementing this function are known as ***NightMOPS***.
+   implementing this function are known as **NightMOPS**.
 
 Baseline design
 ~~~~~~~~~~~~~~~
