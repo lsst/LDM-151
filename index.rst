@@ -1903,78 +1903,80 @@ https://github.com/lsst/testing_displayQA git repository.
 Glossary
 ========
 
-API
-    Applications Programming Interface
+.. glossary::
 
-DAC
-    Data Access Center
-
-DAQ
-    Data Acquisition
-
-DMS
-    Data Management System
-
-DR
-    Data Release.
-
-EPO
-    Education and Public Outreach
-
-Footprint
-    The set of pixels that contains flux from an object. Footprints of
-    multiple objects may have pixels in common.
-
-FRS
-    Functional Requirements Specification
-
-MOPS
-    Moving Object Pipeline System
-
-OCS
-    Observatory Control System
-
-Production
-    A coordinated set of pipelines
-
-PSF
-    Point Spread Function
-
-RGB
-    Red-Green-Blue image, suitable for color display.
-
-SDS
-    Science Array DAQ Subsystem. The system on the mountain which reads
-    out the data from the camera, buffers it as necessary, and supplies
-    it to data clients, including the DMS.
-
-SDQA
-    Science Data Quality Assessment.
-
-SNR
-    Signal-to-Noise Ratio
-
-SQL
-    Structured Query Language, the common language for querying
-    relational databases.
-
-TBD
-    To Be Determined
-
-Visit
-    A pair of exposures of the same area of the sky taken in immediate
-    succession. A Visit for LSST consists of a 15 second exposure, a 2
-    second readout time, and a second 15 second exposure.
-
-VO
-    Virtual Observatory
-
-VOEvent
-    A VO standard for disseminating information about transient events.
-
-WCS
-    World Coordinate System. A bidirectional mapping between pixel- and
-    sky-coordinates.
+    API
+        Applications Programming Interface
+    
+    DAC
+        Data Access Center
+    
+    DAQ
+        Data Acquisition
+    
+    DMS
+        Data Management System
+    
+    DR
+        Data Release.
+    
+    EPO
+        Education and Public Outreach
+    
+    Footprint
+        The set of pixels that contains flux from an object. Footprints of
+        multiple objects may have pixels in common.
+    
+    FRS
+        Functional Requirements Specification
+    
+    MOPS
+        Moving Object Pipeline System
+    
+    OCS
+        Observatory Control System
+    
+    Production
+        A coordinated set of pipelines
+    
+    PSF
+        Point Spread Function
+    
+    RGB
+        Red-Green-Blue image, suitable for color display.
+    
+    SDS
+        Science Array DAQ Subsystem. The system on the mountain which reads
+        out the data from the camera, buffers it as necessary, and supplies
+        it to data clients, including the DMS.
+    
+    SDQA
+        Science Data Quality Assessment.
+    
+    SNR
+        Signal-to-Noise Ratio
+    
+    SQL
+        Structured Query Language, the common language for querying
+        relational databases.
+    
+    TBD
+        To Be Determined
+    
+    Visit
+        A pair of exposures of the same area of the sky taken in immediate
+        succession. A Visit for LSST consists of a 15 second exposure, a 2
+        second readout time, and a second 15 second exposure.
+    
+    VO
+        Virtual Observatory
+    
+    VOEvent
+        A VO standard for disseminating information about transient events.
+    
+    WCS
+        World Coordinate System. A bidirectional mapping between pixel- and
+        sky-coordinates.
 
 References
 ==========
