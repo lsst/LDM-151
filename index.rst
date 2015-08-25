@@ -116,14 +116,16 @@ pipelines*). The fourth is discussed separately in the SUI Conceptual
 Design Document (
 `SUID <https://docushare.lsstcorp.org/docushare/dsweb/Get/LDM-131>`__).
 
-.. figure:: DMS-Architecture.pdf
+.. figure:: _static/DMS-Architecture.png
    :alt: Architecture of the Data Management System[fig:DMS]
 
    Architecture of the Data Management System[fig:DMS]
-.. figure:: DataProductDelivarables.png
+
+.. figure:: _static/DataProductDelivarables.png
    :alt: Organization of LSST Data Products[fig:DP]
 
    Organization of LSST Data Products[fig:DP]
+
 Data Products
 -------------
 
@@ -290,10 +292,11 @@ exposures of the same field in immediate succession. These two exposures
 together form a *visit*, which is the typical image data unit processed
 by the rest of the DM system.
 
-.. figure:: process_nightly_observing_run.png
+.. figure:: _static/process_nightly_observing_run.png
    :alt: Level 1 Processing Flow Diagram[fig:level1]
 
    Level 1 Processing Flow Diagram[fig:level1]
+
 The logical flow of Level 1 processing is shown in the Use Case diagram
 presented in Figure [fig:level1]. For every observation, the following
 sequence of events will unfold:
@@ -355,7 +358,12 @@ Moving Object Pipeline Design Document (
 Level 2 Pipelines Overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[!htbp] |Level 2 Processing Overview[fig:level2dp]|
+.. [!htbp] |Level 2 Processing Overview[fig:level2dp]|
+
+.. figure:: _static/Level_2_Processing_Flowchart.png
+   :alt: Level 1 Processing Overview[fig:level2dp]
+
+   Level 2 Processing Overview[fig:level2dp]
 
 | Figure [fig:level2dp] presents a high-level overview of the Level 2
 data processing workflow. Logically [5]_, the processing begins with
@@ -561,10 +569,11 @@ shall provide:
 Baseline design
 ~~~~~~~~~~~~~~~
 
-.. figure:: domain_model_-_exposures.png
+.. figure:: _static/domain_model_-_exposures.png
    :alt: Exposure class diagram[fig:exposureUML]
 
    Exposure class diagram[fig:exposureUML]
+
 | The baseline design calls for a library of C++ classes and functions,
 exposed to Python callers as a Python module named lsst.afw. The classes
 required are captured in the UML Domain Model model (
@@ -832,10 +841,11 @@ fields.
 Baseline design
 ~~~~~~~~~~~~~~~
 
-.. figure:: detect_and_characterize_dia_sources.png
+.. figure:: _static/detect_and_characterize_dia_sources.png
    :alt: Image Differencing Pipeline Use Case Diagram[fig:diffimUML]
 
    Image Differencing Pipeline Use Case Diagram[fig:diffimUML]
+
 The Image Differencing pipeline will difference, detect, and deblend
 objects in the resulting image using the “preconvolution” algorithm as
 described in Becker et al. (http://ls.st/x9f). Differencing will be
@@ -1622,10 +1632,11 @@ models derived from the spectra taken by the Auxilliary Telescope.
 Baseline design
 ~~~~~~~~~~~~~~~
 
-.. figure:: produce_calibration_data_products.png
+.. figure:: _static/produce_calibration_data_products.png
    :alt: Calibration Products Pipeline Use Case Diagram[fig:cppUML]
 
    Calibration Products Pipeline Use Case Diagram[fig:cppUML]
+
 The baseline Calibration Products Pipeline will implement all algorithms
 described in the Photometric Calibration Plan (
 `PCP <https://docushare.lsstcorp.org/docushare/dsweb/Get/Document-8123>`__).
@@ -1965,7 +1976,8 @@ WCS
     World Coordinate System. A bidirectional mapping between pixel- and
     sky-coordinates.
 
-10
+References
+==========
 
 | **Data Management System Design**,
 | http://ls.st/LDM-148, 2013
@@ -2039,10 +2051,6 @@ ASP Conference Series, Vol. 394 (2007)
    Another way of looking at this is that, functionally, there will be
    no fundamental difference between Level 2 and 3 pipelines, except for
    the level of privileges and access to software or hardware resources.
-
-
-
-.. |Level 2 Processing Overview[fig:level2dp]| image:: Level_2_Processing_Flowchart
 
 .. Sphinx bootstrap content --------------------------------------------------
 
