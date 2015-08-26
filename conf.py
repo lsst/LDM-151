@@ -207,6 +207,11 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'LDM-151doc'
 
+numfig = True
+numfig_format = {'figure': 'Figure %s',
+                 'table': 'Table %s',
+                 'code-block': 'Listing %s'}
+
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {

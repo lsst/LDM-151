@@ -108,7 +108,7 @@ The overall architecture of the :term:`DMS` is discussed in more detail in the
 Data Management System Design (
 `DMSD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LDM-148>`__)
 document. The overall architecture of the :term:`DMS` is shown in
-Figure [fig:DMS].
+:numref:`fig_DMS`.
 
 This document discusses the role of the Applications layer in the first
 three functions listed above (the functions involving *science
@@ -116,15 +116,19 @@ pipelines*). The fourth is discussed separately in the SUI Conceptual
 Design Document (
 `SUID <https://docushare.lsstcorp.org/docushare/dsweb/Get/LDM-131>`__).
 
-.. figure:: _static/DMS-Architecture.png
-   :alt: Architecture of the Data Management System[fig:DMS]
+.. _fig_DMS:
 
-   Architecture of the Data Management System[fig:DMS]
+.. figure:: _static/DMS-Architecture.png
+   :alt: Architecture of the Data Management System
+
+   Architecture of the Data Management System
+
+.. _fig_DP:
 
 .. figure:: _static/DataProductDelivarables.png
-   :alt: Organization of LSST Data Products[fig:DP]
+   :alt: Organization of LSST Data Products
 
-   Organization of LSST Data Products[fig:DP]
+   Organization of LSST Data Products
 
 Data Products
 -------------
@@ -166,7 +170,7 @@ for the discussion to follow.
    user-contributed Level 3 data product pipelines into the :term:`DMS`
    production flow, thereby promoting them to Level 1 or 2.
 
-The organization of LSST Data Products is shown in Figure [fig:DP].
+The organization of LSST Data Products is shown in :numref:`fig_DP`.
 
 Level 1 and Level 2 data products that have passed quality control tests
 will be accessible to the public without restriction. Additionally, the
@@ -292,13 +296,15 @@ exposures of the same field in immediate succession. These two exposures
 together form a *visit*, which is the typical image data unit processed
 by the rest of the DM system.
 
-.. figure:: _static/process_nightly_observing_run.png
-   :alt: Level 1 Processing Flow Diagram[fig:level1]
+.. _fig_level1:
 
-   Level 1 Processing Flow Diagram[fig:level1]
+.. figure:: _static/process_nightly_observing_run.png
+   :alt: Level 1 Processing Flow Diagram
+
+   Level 1 Processing Flow Diagram
 
 The logical flow of Level 1 processing is shown in the Use Case diagram
-presented in Figure [fig:level1]. For every observation, the following
+presented in :numref:`fig_level1`. For every observation, the following
 sequence of events will unfold:
 
 #. A visit is acquired (Prepare for Observing) and reduced (Process Raw
@@ -358,14 +364,14 @@ Moving Object Pipeline Design Document (
 Level 2 Pipelines Overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. [!htbp] |Level 2 Processing Overview[fig:level2dp]|
+.. _fig_level2dp:
 
 .. figure:: _static/Level_2_Processing_Flowchart.png
-   :alt: Level 1 Processing Overview[fig:level2dp]
+   :alt: Level 2 Processing Overview
 
-   Level 2 Processing Overview[fig:level2dp]
+   Level 2 Processing Overview
 
-Figure [fig:level2dp] presents a high-level overview of the Level 2
+:numref:`fig_level2dp` presents a high-level overview of the Level 2
 data processing workflow. Logically [5]_, the processing begins with
 single-frame (visit) image reduction and source measurement, followed by
 global astrometric and photometric calibration, coadd creation,
@@ -569,16 +575,18 @@ shall provide:
 Baseline design
 ~~~~~~~~~~~~~~~
 
-.. figure:: _static/domain_model_-_exposures.png
-   :alt: Exposure class diagram[fig:exposureUML]
+.. _fig_exposureUML:
 
-   Exposure class diagram[fig:exposureUML]
+.. figure:: _static/domain_model_-_exposures.png
+   :alt: Exposure class diagram
+
+   Exposure class diagram
 
 The baseline design calls for a library of C++ classes and functions,
 exposed to Python callers as a Python module named lsst.afw. The classes
 required are captured in the UML Domain Model model (
 `LDM-134 <https://docushare.lsstcorp.org/docushare/dsweb/Get/LDM-134>`__),
-with an example of the Exposure class shown in Figure [fig:exposureUML].
+with an example of the Exposure class shown in :numref:`fig_exposureUML`.
 
 This library will form the basis for all image processing pipelines and
 algorithms used for LSST so special attention will be paid to
@@ -841,10 +849,12 @@ fields.
 Baseline design
 ~~~~~~~~~~~~~~~
 
-.. figure:: _static/detect_and_characterize_dia_sources.png
-   :alt: Image Differencing Pipeline Use Case Diagram[fig:diffimUML]
+.. _fig_diffimUML:
 
-   Image Differencing Pipeline Use Case Diagram[fig:diffimUML]
+.. figure:: _static/detect_and_characterize_dia_sources.png
+   :alt: Image Differencing Pipeline Use Case Diagram
+
+   Image Differencing Pipeline Use Case Diagram
 
 The Image Differencing pipeline will difference, detect, and deblend
 objects in the resulting image using the “preconvolution” algorithm as
@@ -867,7 +877,7 @@ discrimination of real sources from those caused by artifacts.
 
 Details of this baseline design have been captured in the Detect and
 Characterize DIA Sources and related diagrams, presented in
-Figure [fig:diffimUML].
+:numref:`fig_diffimUML`.
 
 Constituent Use Cases and Diagrams
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1632,10 +1642,12 @@ models derived from the spectra taken by the Auxilliary Telescope.
 Baseline design
 ~~~~~~~~~~~~~~~
 
-.. figure:: _static/produce_calibration_data_products.png
-   :alt: Calibration Products Pipeline Use Case Diagram[fig:cppUML]
+.. _fig_cppUML:
 
-   Calibration Products Pipeline Use Case Diagram[fig:cppUML]
+.. figure:: _static/produce_calibration_data_products.png
+   :alt: Calibration Products Pipeline Use Case Diagram
+
+   Calibration Products Pipeline Use Case Diagram
 
 The baseline Calibration Products Pipeline will implement all algorithms
 described in the Photometric Calibration Plan (
@@ -1643,7 +1655,7 @@ described in the Photometric Calibration Plan (
 Its logical design is further described in the Calibration Processing
 package of the UML model (
 `LDM-134 <https://docushare.lsstcorp.org/docushare/dsweb/Get/LDM-134>`__;
-see also Figure [fig:cppUML] for the high-level overview).
+see also :ref:`fig_cppUML` for the high-level overview).
 
 Constituent Use Cases and Diagrams
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
