@@ -2,9 +2,9 @@
 LDM-151: Large Synoptic Survey Telescope Data Management Applications Design
 ****************************************************************************
 
-.. toctree::
-   :hidden:
-   :maxdepth: 2
+.. .. toctree::
+..    :hidden:
+..    :maxdepth: 2
 
 
 The LSST Science Requirements Document (the LSST
