@@ -32,12 +32,12 @@ describes the design of the scientific aspects of those pipelines.
 Preface
 =======
 
-| The purpose of this document is to describe the design of pipelines
+The purpose of this document is to describe the design of pipelines
 belonging to the Applications Layer of the Large Synoptic Survey
 Telescope (LSST) Data Management system. These include most of the core
 astronomical data processing software that LSST employs.
 
-| The intended audience of this document are LSST software architects
+The intended audience of this document are LSST software architects
 and developers. It presents the baseline architecture and algorithmic
 selections for core DM pipelines. The document assumes the
 reader/developer has the required knowledge of astronomical image
@@ -48,7 +48,7 @@ read the LSST Science Requirements (
 well as the LSST Data Products Definition Document (
 `DPDD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-163>`__).
 
-| This document should be read in conjunction with the LSST DM
+This document should be read in conjunction with the LSST DM
 Applications Use Case Model (
 `LDM-134 <https://docushare.lsstcorp.org/docushare/dsweb/Get/LDM-134>`__).
 They are intended to be complementary, with the Use Case model capturing
@@ -104,7 +104,7 @@ following major functions:
    user data analysis and the production of user-defined data products
    at Data Access Centers (:term:`DAC`) and at external sites.
 
-| The overall architecture of the :term:`DMS` is discussed in more detail in the
+The overall architecture of the :term:`DMS` is discussed in more detail in the
 Data Management System Design (
 `DMSD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LDM-148>`__)
 document. The overall architecture of the :term:`DMS` is shown in
@@ -283,7 +283,7 @@ elements of :term:`DMS` functionality:
 Level 1 Pipelines Overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| The production of Level 1 products is generally performed nightly,
+The production of Level 1 products is generally performed nightly,
 directly fed by the output data stream from the Camera :term:`SDS` [3]_ during
 observing. This data stream contains both unprocessed (raw) camera
 images, and images that have been corrected for crosstalk by the :term:`SDS` on
@@ -339,12 +339,12 @@ sequence of events will unfold:
    photometry will be performed (Perform Difference Image Forced
    Photometry). No alerts will be issued for these measurements.
 
-| Within 24 hours of discovery, LSST DM system will perform *precovery*
+Within 24 hours of discovery, LSST DM system will perform *precovery*
 :term:`PSF` forced photometry on any prior difference image overlapping the
 predicted position of new ``DIAObjects``\ taken within the past 30 days
 (Perform Precovery Forced Photometry).
 
-| Similarly, in daytime after the nightly observing run, atmospheric
+Similarly, in daytime after the nightly observing run, atmospheric
 models from the calibration telescope spectra will be calculated
 (Calculate Atmospheric Models from Calibration Telescope Spectra) and
 made available to the users.
@@ -365,7 +365,7 @@ Level 2 Pipelines Overview
 
    Level 2 Processing Overview[fig:level2dp]
 
-| Figure [fig:level2dp] presents a high-level overview of the Level 2
+Figure [fig:level2dp] presents a high-level overview of the Level 2
 data processing workflow. Logically [5]_, the processing begins with
 single-frame (visit) image reduction and source measurement, followed by
 global astrometric and photometric calibration, coadd creation,
@@ -467,7 +467,7 @@ support user-driven construction and execution of custom pipelines.
 Science Data Quality Analysis Pipeline and Toolkit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Science Data Quality Analysis requirements are described in the Data
+Science Data Quality Analysis requirements are described in the Data
 Quality Assurance Plan (
 `LSE-63 <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-63>`__)
 document. They will be implemented by the **SDQA Pipeline** (WBS
@@ -574,7 +574,7 @@ Baseline design
 
    Exposure class diagram[fig:exposureUML]
 
-| The baseline design calls for a library of C++ classes and functions,
+The baseline design calls for a library of C++ classes and functions,
 exposed to Python callers as a Python module named lsst.afw. The classes
 required are captured in the UML Domain Model model (
 `LDM-134 <https://docushare.lsstcorp.org/docushare/dsweb/Get/LDM-134>`__),
@@ -587,7 +587,7 @@ performance.
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| A prototype implementation of the baseline design has been completed
+A prototype implementation of the baseline design has been completed
 in LSST Final Design Phase, including prototype GPU (CUDA) support for
 major image processing functions (e.g., warping). We expect it will be
 possible to transfer a significant fraction of the existing code into
@@ -619,7 +619,7 @@ Single Frame Processing Pipeline (WBS 02C.03.01)
 Key Requirements
 ~~~~~~~~~~~~~~~~
 
-| Single Frame Processing (SFM) Pipeline is responsible for reducing raw
+Single Frame Processing (SFM) Pipeline is responsible for reducing raw
 image data to *calibrated exposures*, and detection and measurement of
 ``Sources``\ (using the components functionally a part of the Object
 Characterization Pipeline).
@@ -655,7 +655,7 @@ will be run for Level 2 data reductions.
 Baseline design
 ~~~~~~~~~~~~~~~
 
-| Single Frame Processing pipeline will be implemented as a flexible
+Single Frame Processing pipeline will be implemented as a flexible
 framework where different data can be easily treated differently, and
 new processing steps can be added without modifying the stack code.
 
@@ -742,7 +742,7 @@ accurate fluxes and shapes). Both the star selector and :term:`PSF` determiner
 algorithms will be pluggable Python modules, so that different
 algorithms can be run as desired for different analysis needs.
 
-| Three selectors will be implemented. The “second-moment” star selector
+Three selectors will be implemented. The “second-moment” star selector
 will builds a histogram of the X and Y second moments of flux, search
 for a peak, and select sources in the peak as point source candidates.
 The “catalog” star selector, in contrast, will make use of an external
@@ -753,7 +753,7 @@ regardless of magnitude. When selecting point source candidates by size
 (i.e., for the “second-moment” and “objectSize” algorithms), the sizes
 will be corrected by the known optical distortion of the camera.
 
-| Given the irregularly sampled grid of PSFs represented by selected
+Given the irregularly sampled grid of PSFs represented by selected
 stars, the variation of the term:`PSF` across the CCD will be determined. The
 baselined “principal-components” :term:`PSF` (pcaPsf) determiner performs a
 singular value decomposition (also known as a principal components
@@ -805,14 +805,14 @@ Perform Single :term:`Visit` Processing;
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| A prototype implementation of all major components of SFM baseline
+A prototype implementation of all major components of SFM baseline
 design has been completed in LSST Final Design Phase. The achieved
 accuracy is comparable to state-of-the art codes today (e.g., SDSS,
 SExtractor). We expect it will be possible to transfer a significant
 fraction of the existing code into Construction, with continued
 improvement to meet LSST accuracy requirements.
 
-| WCS determination and image registration modules are an exception, and
+WCS determination and image registration modules are an exception, and
 will require extensive redesign and rewrite. The sky determination
 module will have to be enhanced to support multi-CCD fitting capability.
 
@@ -853,7 +853,7 @@ performed against a deeper template, and differential chromatic
 refraction (DCR) will be handled by having templates in several bins of
 airmass.
 
-| All ``DIASource``\ measurements described in the
+All ``DIASource``\ measurements described in the
 `DPDD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-163>`__,
 including post-processing such as variability characterization, will be
 performed for all sources detected in this manner. The measurements will
@@ -861,7 +861,7 @@ be performed on the pre-convolved likelihood image. The measurement code
 will reside in a separate module in the Object Characterization Pipeline
 (WBS 02C.04.06).
 
-| If necessary a *spuriousness metric* using machine-learning techniques
+If necessary a *spuriousness metric* using machine-learning techniques
 (e.g., Bloom et al. 2010) will be developed to help in the
 discrimination of real sources from those caused by artifacts.
 
@@ -881,7 +881,7 @@ Object Flux Variability Metrics;Fit DIA Object Position and Motion;
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| A prototype implementation partially implementing the baseline design
+A prototype implementation partially implementing the baseline design
 has been completed in the LSST Final Design Phase. It includes
 detection, centroiding, aperture and :term:`PSF` photometry, and adaptive shape
 measurement. This implementation was used to benchmark the speed of the
@@ -931,7 +931,7 @@ Perform DIA Object Association;Perform DIA Source Association;
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Prototype implementation of the baseline design has been completed in
+Prototype implementation of the baseline design has been completed in
 LSST Final Design Phase. The nearest-neighbor matching has been
 implemented as a part of the Application Framework, while clustering
 using OPTICS resides in the database-related ingest modules.
@@ -1010,7 +1010,7 @@ LSST Data Management:
 Baseline design
 ~~~~~~~~~~~~~~~
 
-| The baseline NightMOPS design is to adopt and adapt an existing
+The baseline NightMOPS design is to adopt and adapt an existing
 ephemeris computation pipeline such as OrbFit (Milani et al.) or OpenOrb
 (Granvik et al.). The baseline DayMOPS design uses Kubica et al. (2005)
 algorithms to identify and link Solar System object candidates.
@@ -1029,7 +1029,7 @@ Tracks;Find Tracklets;
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| A prototype implementation implementing the key components of DayMOPS
+A prototype implementation implementing the key components of DayMOPS
 baseline design has been completed in LSST Final Design Phase. NightMOPS
 has not been extensively prototyped, as it is understood not to be an
 area of significant uncertainty and risk. An extensive report on :term:`MOPS`
@@ -1061,7 +1061,7 @@ by LSR-REQ-0097.
 Baseline design
 ~~~~~~~~~~~~~~~
 
-| LSST’s :term:`PSF` models will be implemented as a plugin. Simple :term:`PSF`
+LSST’s :term:`PSF` models will be implemented as a plugin. Simple :term:`PSF`
 estimation algorithms (e.g., pcaPsf) will be implemented by the Single
 Frame Processing pipeline (WBS 02C.03.01). CoaddPsf (stackfitPsf)
 algorithm will be implemented in the Image Coaddition Pipeline (WBS
@@ -1084,10 +1084,10 @@ baseline algorithm as follows:
 -  Estimate the atmospheric contribution by modelling the :term:`PSF` from
    bright, isolated, stars, and interpolating using Kriging.
 
-| This estimation will be performed on the full focal plane, and use the
+This estimation will be performed on the full focal plane, and use the
 per-CCD estimates of the :term:`PSF` and cutouts of bright stars (:term:`PSF` estimation
 candidates) as inputs.
-| The :term:`PSF` of thick deep depletion devices such as LSST’s is known to be
+The :term:`PSF` of thick deep depletion devices such as LSST’s is known to be
 intensity dependent. We will estimate the zero-intensity :term:`PSF` by
 iteratively forward-modeling the estimated zero-intensity :term:`PSF` until
 convergence is achieved. The same forward-modelling algorithm will allow
@@ -1102,7 +1102,7 @@ Perform Full Focal Plane :term:`PSF` Estimation;
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Prototype code for wavefront reconstruction has been developed by the
+Prototype code for wavefront reconstruction has been developed by the
 LSST Telescope and Site group. We expect this code will be rewritten in
 Construction to follow LSST Data Management standards and be
 straightforward to incorporate into the :term:`PSF` Estimation pipeline.
@@ -1145,7 +1145,7 @@ Baseline design
 Coaddition
 ^^^^^^^^^^
 
-| The Coaddition Pipeline will apply the results of the relative
+The Coaddition Pipeline will apply the results of the relative
 astrometric solution (developed as a part of Single Frame Pipeline, WBS
 02C.03.01) to the input images, warp (§[alg:warp]) them to a common
 coordinate system (“sky map”; §[alg:skymap]) and coadd the pixels. The
@@ -1153,10 +1153,10 @@ warped images will be kept in memory. Using those images, multiple
 coadds will be created, each consisting of a subset of input images
 defined explicitly by the operator or algoritmically by quality cuts.
 
-| Production of multi-band coadds will be supported by implementing the
+Production of multi-band coadds will be supported by implementing the
 Szalay, Connolly, Szokoly (1999) algorithm.
 
-| Determining the background from individual visits separately is
+Determining the background from individual visits separately is
 problematic (because different choices can be made in each, especially
 at the edge of a CCD; and because extended, faint astrophysical flux is
 misinterpreted as background), commonly manifesting as dark rings around
@@ -1171,7 +1171,7 @@ also be possible to produce coadds by subtracting the background first
 using Sky Background determination and substraction components developed
 in the Single Frame Processing Pipeline (WBS 02C.03.01).
 
-| If the seeing is not constant it becomes impossible to produce a coadd
+If the seeing is not constant it becomes impossible to produce a coadd
 with a :term:`PSF` varying in a continuous fashion over the field, unless the
 data is deliberately degraded by convolving the inputs to a common :term:`PSF`
 (known as ":term:`PSF` matching"). In order to enable dealing with the
@@ -1233,7 +1233,7 @@ ghosts, glints and other contaminants that can be masked.
 Sky Tesselation and Coadd Projections[alg:skymap]
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-| The “skymap” is a tessellation of the sky, providing suitable
+The “skymap” is a tessellation of the sky, providing suitable
 pre-defined coordinate systems for operations on the sky such as
 coaddition. The sky map divides the sky into “tracts”. For convenience
 and parallelism, each tract is sub-divided into “patches”. Tracts and
@@ -1281,13 +1281,13 @@ Calibrated Exposures;Create Best Seeing Coadd Exposures;Create
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| A prototype implementation of all major components of the Coaddition
+A prototype implementation of all major components of the Coaddition
 Pipeline baseline design has been completed in LSST Final Design Phase.
 We expect it will be possible to transfer a significant fraction of the
 existing code into Construction, for continued improvement to meet LSST
 performance and accuracy requirements.
 
-| The existing prototype has been extensively tested with image
+The existing prototype has been extensively tested with image
 simulation inputs, as well as real data (SDSS Stripe 82). Using Stripe
 82 data, it demonstrated the benefits of background matching and
 CoaddPsf approaches.
@@ -1310,9 +1310,9 @@ coadds produced by the Coaddition Pipeline.
 Baseline design
 ~~~~~~~~~~~~~~~
 
-| The baseline is the SDSS detection algorithm (Lupton et al.).
+The baseline is the SDSS detection algorithm (Lupton et al.).
 
-| Object detection is performed by correlating the deep coadd image with
+Object detection is performed by correlating the deep coadd image with
 the CoaddPsf :term:`PSF` and searching for peaks above the preset threshold.
 Multiple adjacent peaks will be detected and merged to reduce spuriously
 detected objects due to noise or object substructure.
@@ -1328,7 +1328,7 @@ Detect and Characterize AstroObjects; Detect Sources on Coadds;
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| A fully functional prototype implementation of the Deep Detection
+A fully functional prototype implementation of the Deep Detection
 Pipeline baseline design has been completed in LSST Final Design Phase
 and extensively tested with image simulation inputs as well as real data
 (SDSS Stripe 82). We expect it will be possible to transfer a
@@ -1346,7 +1346,7 @@ Object Characterization Pipeline (WBS 02C.04.06)
 Key Requirements
 ~~~~~~~~~~~~~~~~
 
-| Given one or more cutouts of a detected object, observed in one or
+Given one or more cutouts of a detected object, observed in one or
 more epochs, the Object Characterization Pipeline will perform all
 measurements required by the
 `DPDD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-163>`__,
@@ -1533,7 +1533,7 @@ adopt a baseline for the “deblender” based on the algorithms used in
 SDSS (Lupton and Ivezic, 2005;
 http://adsabs.harvard.edu/abs/2005ASPC..338..151L).
 
-| The baseline deblender assumes that discrete sources generally have
+The baseline deblender assumes that discrete sources generally have
 twofold rotational symmetry. When one side of a source is blended, we
 can recover its appearance by examining the symmetric side. The
 deblender begins by building these symmetric templates for each source.
@@ -1544,7 +1544,7 @@ galaxy shapes, etc) need not know that the source was blended. This
 deblending algorithm works well in practice for moderately crowded
 fields (as demonstrated by SDSS).
 
-| This SDSS-style deblender will be run on the set of single-band
+This SDSS-style deblender will be run on the set of single-band
 coadds, then a set of :term:`PSF`-convolved models will be fit to the deblended
 the children. The initial templates with then be replaced by these
 models, convolved with the appropriate :term:`PSF`, and flux assigned as before.
@@ -1592,7 +1592,7 @@ Photometry;Characterize AstroObject Flux Variability;
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| A prototype implementation of all major components of the Object
+A prototype implementation of all major components of the Object
 Characterization Pipeline baseline design has been completed in LSST
 Final Design Phase. The existing prototype has been extensively tested
 with image simulation inputs, as well as real data (SDSS Stripe 82). We
@@ -1600,7 +1600,7 @@ expect it will be possible to transfer a significant fraction of the
 existing code into Construction, for continued improvement to meet LSST
 performance and accuracy requirements.
 
-| Missing from the current prototypes are the moving point source fit
+Missing from the current prototypes are the moving point source fit
 (implemented algorithms assume the source does not move), the trailed
 source fit, and the aperture, Kron and Petrosian magnitudes using
 elliptical apertures (implemented algorithms assume the apertures are
@@ -1697,7 +1697,7 @@ Perform Global Photometric Calibration;
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Photometric Calibration Pipeline has been fully prototyped by the LSST
+Photometric Calibration Pipeline has been fully prototyped by the LSST
 Calibration Group to the required level of accuracy and performance (see
 the
 `UCAL <https://docushare.lsstcorp.org/docushare/dsweb/Get/Document-15125>`__\ document
@@ -1721,7 +1721,7 @@ relative and absolute astrometry of the LSST survey, enabling the Level
 Baseline design
 ~~~~~~~~~~~~~~~
 
-| Algorithms developed for the Photometric Calibration Pipeline (WBS
+Algorithms developed for the Photometric Calibration Pipeline (WBS
 02C.03.07) will be repurposed for astrometric calibration by changing
 the relevant functions to minimize. This pipeline will further be aided
 by WCS and local astrometric registration modules developed as a
@@ -1761,7 +1761,7 @@ pipelines shall be executable on LSST computing resources or elsewhere.
 Baseline design
 ~~~~~~~~~~~~~~~
 
-| The baseline design assumes that Level 3 pipelines will use the same
+The baseline design assumes that Level 3 pipelines will use the same
 Tasks infrastructure (see the Data Management Middleware Design
 document;
 `DMMD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LDM-152>`__)
@@ -1799,7 +1799,7 @@ SDQA Pipeline (WBS 02C.01.02.02)
 Key Requirements
 ~~~~~~~~~~~~~~~~
 
-| :term:`SDQA` Pipeline shall provide low-level data collection functionality
+:term:`SDQA` Pipeline shall provide low-level data collection functionality
 for science data quality analysis of Level 1, 2, and Calibration
 Processing pipelines.
 
@@ -1831,7 +1831,7 @@ Quality for Nightly Processing at Archive;
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Prototype implementation of the :term:`SDQA` Pipeline baseline design has been
+Prototype implementation of the :term:`SDQA` Pipeline baseline design has been
 completed in LSST Final Design Phase. The existing prototype has been
 extensively tested with image simulation inputs, as well as real data
 (SDSS Stripe 82). The existing prototype will be refactored to enhance
@@ -1846,11 +1846,11 @@ SDQA Toolkit (WBS 02C.01.02.02)
 Key Requirements
 ~~~~~~~~~~~~~~~~
 
-| :term:`SDQA` Toolkit shall.provides the visualization, analysis and monitoring
+:term:`SDQA` Toolkit shall.provides the visualization, analysis and monitoring
 capabilities for science quality data analysis. Its inputs will be
 provided by the :term:`SDQA` Pipeline.
 
-| The toolkit capabilities shall be made flexible, to provide the
+The toolkit capabilities shall be made flexible, to provide the
 analyst with the ability to easily construct custom tests and analyses,
 and “drill down" into various aspects of the data being analyzed.
 
@@ -1885,12 +1885,12 @@ Analyze :term:`SDQA` Metrics;Correlate :term:`SDQA` metric with other data;Corre
 Prototype Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Prototype implementation of the :term:`SDQA` Toolkit has been implemented in
+Prototype implementation of the :term:`SDQA` Toolkit has been implemented in
 LSST Final Design Phase. The existing prototype has been extensively
 tested with image simulation inputs, as well as real data (SDSS Stripe
 82).
 
-| The existing prototype uses a set of statically and dynamically
+The existing prototype uses a set of statically and dynamically
 generated pages (written in php) to display the results of data
 production runs. While proving invaluable for data analysis, the
 prototype design was found it to be difficult to extend with new
@@ -1985,11 +1985,9 @@ Glossary
 References
 ==========
 
-| **Data Management System Design**,
-| http://ls.st/LDM-148, 2013
+**Data Management System Design**, http://ls.st/LDM-148, 2013
 
-| **Data Management Subsystem Requirements**,
-| http://ls.st/LSE-61, 2013
+**Data Management Subsystem Requirements**, http://ls.st/LSE-61, 2013
 
 M. J. Jee and J. A. Tyson, **Toward Precision LSST Weak-Lensing
 Measurement. I. Impacts of Atmospheric Turbulence and Optical
@@ -2005,11 +2003,9 @@ Conference Series, Vol. 376, proceedings of the conference held 15-18
 October 2006 in Tucson, Arizona, USA. Edited by Richard A. Shaw, Frank
 Hill and David J. Bell., p.257
 
-| **Science Requirements Document**,
-| http://ls.st/LPM-17, 2011
+**Science Requirements Document**, http://ls.st/LPM-17, 2011
 
-| **LSST Science User Interface Conceptual Design**,
-| http://ls.st/LDM-131, 2011
+**LSST Science User Interface Conceptual Design**, http://ls.st/LDM-131, 2011
 
 J. A. Tyson, et al, **LSST and the Dark Sector: Image Processing
 Challenges**, Astronomical Data Analysis Software and Systems XVII O5.3,
