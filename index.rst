@@ -1157,8 +1157,8 @@ Coaddition
 
 The Coaddition Pipeline will apply the results of the relative
 astrometric solution (developed as a part of Single Frame Pipeline, WBS
-02C.03.01) to the input images, warp (§[alg:warp]) them to a common
-coordinate system (“sky map”; §[alg:skymap]) and coadd the pixels. The
+02C.03.01) to the input images, warp (:ref:`alg_warp`) them to a common
+coordinate system (“sky map”; :ref:`alg_skymap`) and coadd the pixels. The
 warped images will be kept in memory. Using those images, multiple
 coadds will be created, each consisting of a subset of input images
 defined explicitly by the operator or algoritmically by quality cuts.
@@ -1172,7 +1172,7 @@ at the edge of a CCD; and because extended, faint astrophysical flux is
 misinterpreted as background), commonly manifesting as dark rings around
 very bright stars and the suppression of extended flux around galaxies.
 Therefore, the pipeline will include the capability to perform
-“background matching” (§[alg:backgroundMatching]) to produce a coadd
+“background matching” (:ref:`alg_backgroundMatching`) to produce a coadd
 with a high signal-to-noise realization of the background in a single
 reference exposure. This background will be measured over large scales
 and be possible to subtract with a high degree of accuracy. Background
@@ -1186,7 +1186,7 @@ with a :term:`PSF` varying in a continuous fashion over the field, unless the
 data is deliberately degraded by convolving the inputs to a common :term:`PSF`
 (known as ":term:`PSF` matching"). In order to enable dealing with the
 discontinuous :term:`PSF`, the Coaddition Pipeline will construct a “CoaddPsf”
-(§[alg:coaddPsf]) :term:`PSF` model, which is a sum of the PSFs of the input
+(:ref:`alg_coaddPsf`) :term:`PSF` model, which is a sum of the PSFs of the input
 images at each point of interest (as proposed as part of ‘StackFit’ (Jee
 and Tyson, 2012)).
 
@@ -1196,10 +1196,12 @@ changes and imperfect galaxy models, the baseline implementation will be
 capable of producing “PSF-matched coadds” using well known :term:`PSF`-matching
 algorithms.
 
+.. _alg_warp:
+
 Warping
 ^^^^^^^
 
-[alg:warp] To warp an image from the detector frame to the sky frame, a
+To warp an image from the detector frame to the sky frame, a
 resampling kernel will be used. The kernel is set according to the
 sub-pixel position on the input image of the centre of the corresponding
 output pixel. The code will support using Lanczos (of configurable
@@ -1207,10 +1209,10 @@ order), bilinear or nearest-neighbour kernels, with the default being a
 3rd-order Lanczos (with :math:`10^6` cache realizations), as a
 compromise between the infinite *sinc* function and the need for speed.
 
+.. _alg_backgroundMatching:
+
 Background Matching
 ^^^^^^^^^^^^^^^^^^^
-
-[alg:backgroundMatching]
 
 Background matching will be implemented to enable reaching the maximum
 depth in the coadds and preserve the astrophysical backgrounds. We adopt
@@ -1240,8 +1242,10 @@ be carefully removed over multiple patches at once. The subtracted image
 also provides an opportunity to identify sharp features such as optical
 ghosts, glints and other contaminants that can be masked.
 
-Sky Tesselation and Coadd Projections[alg:skymap]
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _alg_skymap:
+
+Sky Tesselation and Coadd Projections
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The “skymap” is a tessellation of the sky, providing suitable
 pre-defined coordinate systems for operations on the sky such as
@@ -1261,10 +1265,10 @@ approximately :math:`2{\rm k} \times 2{\rm k}` pixel, non-overlapping,
 Clients will be able to request arbitrarily chosen regions in each
 tract [11]_, and receive them back as afw Exposure objects.
 
+.. _alg_coaddPsf:
+
 CoaddPsf
 ^^^^^^^^
-
-[alg:coaddPsf]
 
 One of the main challenges in producing quality measurements from
 non-:term:`PSF`-matched coadds is the complexity of the effective point-spread
@@ -1522,15 +1526,15 @@ brightness measurements (see below).
 Aperture surface brightness
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-. Aperture surface brightness will be computed in a variable number,
+Aperture surface brightness will be computed in a variable number,
 depending on the size of the source, of concentric, logarithmically
 spaced, :term:`PSF`-homogenized, elliptical apertures, convolved to standard
 seeing.
 
+.. _alg_deblender:
+
 Deblender
 ^^^^^^^^^
-
-[alg:deblender]
 
 At the depths probed by LSST images, many of the sources are
 superimposed on each other on the sky (“blended”), which makes detecting
@@ -1571,10 +1575,10 @@ convolved with the :term:`PSF`). This, effectively, makes the deblender into a
 crowded field code, allowing this baseline to satisfy the requirements
 for crowded field photometry.
 
+.. _alg_star-galaxy:
+
 Resolved/Unresolved object separation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-[alg:star-galaxy]
 
 We baseline the resolved/unresolved object separation algorithm based on
 the ratio of :term:`PSF` and model fluxes. We use the extendedness criterion as
