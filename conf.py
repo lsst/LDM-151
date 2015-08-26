@@ -52,8 +52,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'LDM-151'
-copyright = u'2015, LSST Data Management'
-author = u'LSST Data Management'
+copyright = u'2015, AURA/LSST'
+author = u'Mario Juric, R.H. Lupton, T. Axelrod, J.F. Bosch, P.A. Price, G.P. Dubois-Felsmann, Z. Ivezic, A.C. Becker, J. Becla, A.J. Connolly, J. Kantor, K-T Lim, D. Shaw, for the LSST Data Management'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
