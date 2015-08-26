@@ -11,7 +11,7 @@ The LSST Science Requirements Document (the LSST
 `SRD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LPM-17>`__)
 specifies a set of data product guidelines, designed to support science
 goals envisioned to be enabled by the LSST observing program. Following
-these guidlines, the details of these data products have been described
+these guidelines, the details of these data products have been described
 in the LSST Data Products Definition Document (
 `DPDD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-163>`__),
 and captured in a formal flow-down from the
@@ -214,7 +214,7 @@ Applications layer:
    potentially in somewhat different configurations to achieve greater
    precision at the expense of increased runtime.
 
--  **Level 2 Pipelines** run annually or semi-annualy (for the first
+-  **Level 2 Pipelines** run annually or semi-annually (for the first
    year of data), and are designed to generate deep co-adds and catalogs
    stemming from analysis of direct image data. These include:
 
@@ -320,7 +320,7 @@ sequence of events will unfold:
    image. :term:`PSF` photometry is performed on the visit image at the position
    of the ``DIASource`` to obtain a measure of the absolute flux.
 
-#. The Level 1 databaseis searched for a ``DIAObject`` or an
+#. The Level 1 database is searched for a ``DIAObject`` or an
    ``SSObject`` with which to positionally associate the newly
    discovered ``DIASource``. If no match is found, a new
    ``DIAObject`` is created and the observed ``DIASource`` is
@@ -683,7 +683,7 @@ It will consist of three primary components:
 
 In the paragraphs to follow, we describe the adopted baseline for key
 SFM algorithms. If not discussed explicitly, the algorithmic baseline
-for all other functionallity is assumed to be the same as that used by
+for all other functionality is assumed to be the same as that used by
 SDSS *Photo* pipeline (Lupton et al.).
 
 Instrumental Signature Removal:
@@ -727,7 +727,7 @@ as-built Camera. The effects currently baselined to be corrected are:
    spectrum for all sources. Photometric corrections will be applied
    downstream on a source by source basis given an SED for each source.
 
--  Fringing: Fringe parerns are an interference effect that result from
+-  Fringing: Fringe patterns are an interference effect that result from
    the sharp emission lines in the night sky spectrum. This effect is
    the strongest in redder bands. The best fit modeled fringe pattern,
    constructed from monochromatic flats assuming a low-dimensional
@@ -977,7 +977,7 @@ Baseline design
 ~~~~~~~~~~~~~~~
 
 The baseline design is to adopt and upgrade for performance and
-functionallity the Skyalert package (http://lib.skyalert.org/skyalert/).
+functionality the Skyalert package (http://lib.skyalert.org/skyalert/).
 
 Constituent Use Cases and Diagrams
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1161,7 +1161,7 @@ astrometric solution (developed as a part of Single Frame Pipeline, WBS
 coordinate system (“sky map”; :ref:`alg_skymap`) and coadd the pixels. The
 warped images will be kept in memory. Using those images, multiple
 coadds will be created, each consisting of a subset of input images
-defined explicitly by the operator or algoritmically by quality cuts.
+defined explicitly by the operator or algorithmically by quality cuts.
 
 Production of multi-band coadds will be supported by implementing the
 Szalay, Connolly, Szokoly (1999) algorithm.
@@ -1178,7 +1178,7 @@ reference exposure. This background will be measured over large scales
 and be possible to subtract with a high degree of accuracy. Background
 matching will be the default mode of operation. Nevertheless, it will
 also be possible to produce coadds by subtracting the background first
-using Sky Background determination and substraction components developed
+using Sky Background determination and subtraction components developed
 in the Single Frame Processing Pipeline (WBS 02C.03.01).
 
 If the seeing is not constant it becomes impossible to produce a coadd
@@ -1221,7 +1221,7 @@ two-dimensional data.
 
 The common practice of subtracting the background from each input
 individually removes features on moderate scales (such as the outer
-haloes of galaxies, and Galactic cirrus) and can be unstable (especially
+halos of galaxies, and Galactic cirrus) and can be unstable (especially
 when the features appear at the edge of a frame) causing increased
 noise.
 
@@ -1350,7 +1350,7 @@ significant fraction of the existing code into Construction, for
 continued improvement to meet LSST performance and accuracy
 requirements.
 
-The detection functionallity is a part of the afw git repository
+The detection functionality is a part of the afw git repository
 browsable through the LSST git repository browser at
 https://github.com/lsst.
 
@@ -1520,7 +1520,7 @@ pipeline shall be capable of computing radii enclosing 50% and 90% of
 light.
 
 The baseline for both Petrosian and Kron flux implementation is to
-derive these as an a mathematical transformation of aperture surface
+derive these as a mathematical transformation of aperture surface
 brightness measurements (see below).
 
 Aperture surface brightness
@@ -1640,8 +1640,8 @@ The Calibration Products Pipeline shall generate the calibration data
 products as required by the Photometric Calibration Plan (
 `PCP <https://docushare.lsstcorp.org/docushare/dsweb/Get/Document-8123>`__).
 This includes the telescope/camera calibration products derived from the
-in-dome aparatus of the LSST observatory, as well as the atmospheric
-models derived from the spectra taken by the Auxilliary Telescope.
+in-dome apparatus of the LSST observatory, as well as the atmospheric
+models derived from the spectra taken by the Auxiliary Telescope.
 
 Baseline design
 ~~~~~~~~~~~~~~~
