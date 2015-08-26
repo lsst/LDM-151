@@ -15,7 +15,7 @@ these guidlines, the details of these data products have been described
 in the LSST Data Products Definition Document (
 `DPDD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-163>`__),
 and captured in a formal flow-down from the
-`SRD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LPM-17>`__\ via
+`SRD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LPM-17>`__ via
 the LSST System Requirements (
 `LSR <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-29>`__),
 Observatory System Requirements (
@@ -313,25 +313,25 @@ sequence of events will unfold:
    etc.
 
 #. The visit image is differenced against the appropriate template and
-   ``DIASources``\ are detected (Detect and Characterize DIA Sources).
+   ``DIASources`` are detected (Detect and Characterize DIA Sources).
    If necessary, deblending is performed at this stage.
 
    The flux and shape of the DIASource are measured on the difference
    image. :term:`PSF` photometry is performed on the visit image at the position
-   of the ``DIASource``\ to obtain a measure of the absolute flux.
+   of the ``DIASource`` to obtain a measure of the absolute flux.
 
-#. The Level 1 databaseis searched for a ``DIAObject``\ or an
-   ``SSObject``\ with which to positionally associate the newly
+#. The Level 1 databaseis searched for a ``DIAObject`` or an
+   ``SSObject`` with which to positionally associate the newly
    discovered ``DIASource``. If no match is found, a new
-   ``DIAObject``\ is created and the observed ``DIASource``\ is
+   ``DIAObject`` is created and the observed ``DIASource`` is
    associated to it.
 
-   If the ``DIASource``\ has been associated to an ``SSObject``\ (a
+   If the ``DIASource`` has been associated to an ``SSObject`` (a
    known Solar System object), it will be flagged as such and an alert
    will be issued. Further processing will occur in daytime (Process
    Moving Objects).
 
-#. Otherwise, the associated ``DIAObject``\ measurements will be updated
+#. Otherwise, the associated ``DIAObject`` measurements will be updated
    with new data (Update DIA Object Properties). All affected columns
    will be recomputed, including proper motions, centroids, light
    curves, nearest Level 2 ``Objects``, etc.
@@ -340,14 +340,14 @@ sequence of events will unfold:
    required components, as described in the
    `DPDD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-163>`__.
 
-#. For all ``DIAObjects``\ overlapping the field of view to which a
-   ``DIASource``\ from this visit has *not* been associated, forced
+#. For all ``DIAObjects`` overlapping the field of view to which a
+   ``DIASource`` from this visit has *not* been associated, forced
    photometry will be performed (Perform Difference Image Forced
    Photometry). No alerts will be issued for these measurements.
 
 Within 24 hours of discovery, LSST DM system will perform *precovery*
 :term:`PSF` forced photometry on any prior difference image overlapping the
-predicted position of new ``DIAObjects``\ taken within the past 30 days
+predicted position of new ``DIAObjects`` taken within the past 30 days
 (Perform Precovery Forced Photometry).
 
 Similarly, in daytime after the nightly observing run, atmospheric
@@ -385,9 +385,9 @@ The following is a high-level description of steps which occur during
 regular Level 2 data processing:
 
 #. *Single Frame Processing*: Raw exposures are reduced to *calibrated
-   visit exposures*, and ``Sources``\ are independently detected,
+   visit exposures*, and ``Sources`` are independently detected,
    deblended, and measured on all visits. Their measurements
-   (instrumental fluxes and shapes) are stored in the ``Source``\ table.
+   (instrumental fluxes and shapes) are stored in the ``Source`` table.
    This step is performed by the **Single Frame Processing Pipeline**
    (WBS 02C.03.01).
 
@@ -419,8 +419,8 @@ regular Level 2 data processing:
 #. *Association and deblending*. The next stage in the pipeline, which
    we will for simplicity just call *the deblender*, will synthesize a
    list of unique objects. In doing so it will consider the catalogs of
-   ``Sources``\ and ``CoaddSources``, catalogs of ``DIASources``,
-   ``DIAObjects``\ and ``SSObjects``\ detected on difference images, and
+   ``Sources`` and ``CoaddSources``, catalogs of ``DIASources``,
+   ``DIAObjects`` and ``SSObjects`` detected on difference images, and
    objects from external catalogs. Association will be performed by the
    software that is functionally part of the **Association Pipeline**
    (WBS 02C.03.02), while the deblender component a part of the
@@ -428,7 +428,7 @@ regular Level 2 data processing:
 
 #. *Multi-epoch object characterization*. A set of measurements
    (including predefined classes of model fits) will be performed on
-   each of the ``Objects``\ identified in the previous step, taking all
+   each of the ``Objects`` identified in the previous step, taking all
    available multi-epoch data into account. Model fits will be performed
    using *MultiFit*-type algorithms. Rather than coadding a set of
    images and measuring object characteristics on the coadd, MultiFit
@@ -629,7 +629,7 @@ Key Requirements
 
 Single Frame Processing (SFM) Pipeline is responsible for reducing raw
 image data to *calibrated exposures*, and detection and measurement of
-``Sources``\ (using the components functionally a part of the Object
+``Sources`` (using the components functionally a part of the Object
 Characterization Pipeline).
 
 SFM pipeline functions include:
@@ -863,7 +863,7 @@ performed against a deeper template, and differential chromatic
 refraction (DCR) will be handled by having templates in several bins of
 airmass.
 
-All ``DIASource``\ measurements described in the
+All ``DIASource`` measurements described in the
 `DPDD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-163>`__,
 including post-processing such as variability characterization, will be
 performed for all sources detected in this manner. The measurements will
@@ -912,15 +912,15 @@ Key Requirements
 ~~~~~~~~~~~~~~~~
 
 The Association Pipeline has two key responsibilities: i) it must be
-able to associate newly discovered ``DIASources``\ with previously known
-``DIAObjects``\ and ``SSObjects``, and ii) it must be able to associate
-``DIAObjects``\ with known ``Objects``\ from the Level 2 catalogs.
+able to associate newly discovered ``DIASources`` with previously known
+``DIAObjects`` and ``SSObjects``, and ii) it must be able to associate
+``DIAObjects`` with known ``Objects`` from the Level 2 catalogs.
 
 Baseline design
 ~~~~~~~~~~~~~~~
 
-The baseline design for ``DIASources``\ to ``DIAObject``\ association
-and ``DIAObject``\ to ``Object``\ association is to use simple
+The baseline design for ``DIASources`` to ``DIAObject`` association
+and ``DIAObject`` to ``Object`` association is to use simple
 nearest-neighbor search while taking proper motions and positional
 errors ellipses into account.
 
@@ -957,9 +957,9 @@ Key Requirements
 ~~~~~~~~~~~~~~~~
 
 Alert Generation Pipeline shall take the newly discovered
-``DIASources``\ and all associated metadata as described in the
+``DIASources`` and all associated metadata as described in the
 `DPDD <https://docushare.lsstcorp.org/docushare/dsweb/Get/LSE-163>`__,
-and generate alert packets in ``VOEvent``\ format. It will transmit
+and generate alert packets in ``VOEvent`` format. It will transmit
 these packets to :term:`VO` Event Brokers, using standard IVOA protocols (eg.,
 :term:`VOEvent` Transport Protocol; VTP. End-users will primarily use these
 brokers to classify and filter events for subsets fitting their science
