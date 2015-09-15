@@ -1,0 +1,171 @@
+\documentclass[10pt]{article}
+
+% \setcitestyle{numbers}
+\usepackage[numbers]{natbib}
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage[]{hyperref}
+\usepackage{comment}
+\usepackage{xspace}
+\usepackage[usenames]{color}
+\usepackage{datetime}
+\usepackage{bm}
+
+
+\title{Measurement of Blended Objects in LSST\\
+{\author{
+    Jim Bosch\\
+    {\em for LSST Data Management}
+}}}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Most LSST objects will overlap one or more of its neighbors enough to affect
+naive measurements of their properties.  One of the major challenges in the
+deep processing pipeline will be measuring these sources in a way that
+corrects for and/or characterizes the effect of these blends.
+
+The measurements of interest can be split up broadly into two categories:
+\begin{itemize}
+    \item weighted moments (includes aperture fluxes and most centroiders)
+    \item forward modeling
+\end{itemize}
+
+The statistical framework in which weighted moments make sense assumes that
+each object is isolated from its neighbors.  As a result, our only option for
+these measurements is {\em deblending}, which we define here as any
+procedure that attempts to remove neighbors from the pixel values prior to
+measurement.
+
+In forward modeling, we convolve a model for the object with our model for
+the PSF, compare this model to the data, and either optimize to find
+best-fit parameters or explore the full likelihood surface in another way
+(e.g. Monte Carlo sampling).  We can use the deblending approach for
+forward fitting, simply by fittting each object separately to the deblended
+pixels.  However, we can also use {\em simultaneous fitting}, in which we
+optimize or sample the models for multiple objects jointly.
+
+Both deblending and simultaneous fitting have some advantages and
+disadvantages:
+\begin{itemize}
+\item Deblending provides no direct way to characterize the uncertainties in
+      an object's measurements due to neighbors, while these are naturally
+      captured in the full likelihood distribution of a simultaneous fit.
+      This likelihood distribution may be very high-dimensional in a fit that
+      involves many objects, however, and may be difficult to characterize or
+      store.
+\item Deblending generally allows for more flexible morphologies than the
+      analytic models typically used in forward fitting, which is particularly
+      important for nearby galaxies and objects blended with them;
+      simultaneous fitting is only statistically well-motivated to the extent
+      the models used can reproduce the data.
+\item Once deblended pixels are available, fitting objects simultaneously will
+      almost always be more computationally expensive than fitting them
+      separately to the deblended pixels.  At best, simultaneous fitting will
+      have similar performance but still require more complex code.  And
+      because we will need to deblend pixels to support some measurement
+      algorithms, we'll always have to deblend whether we want to subsequently
+      do simultaneous fitting or not.
+\end{itemize}
+
+\section{Blend Families and Footprints}
+
+We identify groups of blended objects at the detection stage from their
+isophotes at the detection limit; a single simply-connected region of
+above-threshold pixels is a {\em parent}, with {\em children} initially
+discovered as peaks within that region.  These peaks may not originate in
+the same image; we will merge peaks from multiple detection images (e.g.
+coadds of different filters or ranges of observation dates).
+
+We call the above-threshold region (and the data structure that defines it) a
+\texttt{Footprint}, and the combination of such a region with the values of
+the pixels within it (either original data or deblended) a \texttt
+{HeavyFootprint}.
+
+For each blend family, in addition to measuring the properties of the children
+(either via deblending or simultaneous fitting), we also measure the parent:
+we interpret of the region as a single unblended object. This is essentially
+an incomplete but useful hedge against overdeblending (we'd like to evaluate
+all alternate hypotheses for any combination of peaks belonging to the same
+object, but that's infeasible).
+
+\section{Deblended Measurement}
+
+The specific approach to deblending we plan to take for LSST is based on
+the deblender in the SDSS {\em Photo} pipeline.
+
+Given pixel values $I_{i}$, we create a ``template'' $T_{i,j}$ that represents
+an attempt to model the surface brightness of object $j$ at pixel
+$i$.\footnote {
+    In {\em~Photo}, this template was determined from symmetry arguments and a
+    number of heuristics; a full description of how we plan to generate
+    templates in LSST is beyond the scope of this paper.
+}  We then find the best least-squares linear combination of templates to the
+data (ignoring per-pixel variances), solving for coefficients $\alpha_{j}$:
+\begin{align}
+\bm{\alpha} = \left(\bm{T}^T\bm{T}\right)^{-1}\!\bm{T}^T\bm{I}
+\end{align}
+Our best-fit prediction for the pixel value vector is thus
+$\bm{T}\bm{\alpha}$.
+Because this is not the same as the true pixel vector $\bm{I}$, we do not use
+the per-object model prediction $\bm{T}\bm{\alpha}$ directly for the deblended
+pixel values; instead we reapportion the true per-pixel fluxes according to
+the relative predicted contribution from each object:
+\begin{align}
+D_{i,j} = \frac{
+    T_{i,j} \, \alpha_j
+}{
+    \sum\limits_k T_{i,k} \, \alpha_k
+}
+I_i
+\end{align}
+
+While these deblended pixel values $D_{i,j}$ are what we store in the
+\texttt{HeavyFootprint} for each child object, we do not perform measurements
+on these values directly for two reasons:
+\begin{itemize}
+\item $D_{i,j}$ typically has many zero entries, especially for a large blend
+    family (i.e. many pixels for which a particular object has no
+    contribution).  We include only the nonzero values in the
+    \texttt{HeavyFootprint}s for efficiency reasons.
+\item Many measurements utilize pixels beyond the blend family's
+    \texttt{Footprint}, and in fact may extend to pixels that are in another
+    family.
+\end{itemize}
+To address these issues, we measure deblended objects using the following
+procedure:
+\begin{enumerate}
+\item Replace every above threshold pixel in the image (all
+    \texttt{Footprint}s) with randomly generated noise that matches
+    the background noise in the image.
+\item For each blend family:
+    \begin{enumerate}
+    \item For each child object in the current blend family:
+        \begin{enumerate}
+        \item Insert the child's \texttt{HeavyFootprint} into the image,
+            replacing (not adding to) any pixels it covers.
+        \item Run all measurement algorithms to produce {\em child}
+            measurements.
+        \item Replace the pixels in the child's \texttt{Footprint} region
+            with (the same) random noise again.
+        \end{enumerate}
+    \item Revert the pixels in the parent \texttt{Footprint} to their original
+        values.
+    \item Run all measurement algorithms to produce {\em parent} measurements.
+    \item Replace the parent \texttt{Footprint} pixels with (the same) random
+        noise again.
+    \end{enumerate}
+\end{enumerate}
+This procedure double-counts flux that is not part of a \texttt{Footprint},
+but this is considered better than ignoring this flux, because most
+measurement algorithms utilize some other procedure for downweighting the
+contribution of faraway pixels.
+
+\end{document}
