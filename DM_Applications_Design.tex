@@ -456,7 +456,7 @@ It will consist of three primary components:
     \item A top-level Task to run the SFM pipeline.
 \end{itemize}
 
-In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS {\em Photo} pipeline (Lupton et al.).
+In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS {\em Photo} pipeline \cite{LuptonPhoto}.
 
 \paragraph{Instrumental Signature Removal:}
 
@@ -501,9 +501,9 @@ Background models will be saved, for later subtraction or restoration (e.g., in 
 
 \paragraph{WCS determination and image registration}
 
-The absolute World Coordinate System (WCS) will be determined using an {\em astrometry.net} type algorithm (Lang et al. 2009), seeded with the approximate position of the boresight.  % RHL I doubt if we'll use a.n in production (except as a fallback when all else fails)
+The absolute World Coordinate System (WCS) will be determined using an {\em astrometry.net} type algorithm \cite{Lang09}, seeded with the approximate position of the boresight.  % RHL I doubt if we'll use a.n in production (except as a fallback when all else fails)
 
-This module will also include the capability to perform relative registration of a set of images to enable coaddition and image differencing, using the {\em meas\_mosaic} registration algorithm of Furusawa et al. (2013) as the baseline.
+This module will also include the capability to perform relative registration of a set of images to enable coaddition and image differencing, using the {\em meas\_mosaic} registration algorithm developed by Furusawa et al. \cite{Furusawa14} as the baseline.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -536,7 +536,7 @@ Differencing will be performed against a deeper template, and differential chrom
 All \DIASource measurements described in the \DPDD, including post-processing such as variability characterization, will be performed for all sources detected in this manner. The measurements will be performed on the pre-convolved likelihood image. The measurement code will reside in a separate module in the Object Characterization Pipeline (\wbsObjChar).
 \\
 
-If necessary a {\em spuriousness metric} using machine-learning techniques (e.g., Bloom et al. 2010) will be developed to help in the discrimination of real sources from those caused by artifacts.
+If necessary a {\em spuriousness metric} using machine-learning techniques (e.g., Bloom et al. \cite{Bloom12}) will be developed to help in the discrimination of real sources from those caused by artifacts.
 \\
 
 Details of this baseline design have been captured in the \uc{Detect and Characterize DIA Sources} and related diagrams, presented in Figure~\ref{fig:diffimUML}.
@@ -568,7 +568,7 @@ The baseline design for \DIASources to \DIAObject association and \DIAObject to 
 
 For matches to \SSObjects, the \SSObject's ephemeris are to be computed by NightMOPS (functionally a part of the Moving Object Pipeline, \wbsMOPS). Matching to the computed ephemeris is to be performed as if they were \DIAObjects.
 
-When Level 1 data is reprocessed, a more sophisticated clustering algorithm (OPTICS; Ankerst et al. 1999) will be employed.
+When Level 1 data is reprocessed, a more sophisticated clustering algorithm \cite{Ankerst99} will be employed.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -621,7 +621,7 @@ The Moving Object Pipeline System (MOPS) has two responsibilities within LSST Da
 
 \subsubsection{Baseline design}
 
-The baseline NightMOPS design is to adopt and adapt an existing ephemeris computation pipeline such as OrbFit (Milani et al.) or OpenOrb (Granvik et al.). The baseline DayMOPS design uses Kubica et al. (2005) algorithms to identify and link Solar System object candidates.
+The baseline NightMOPS design is to adopt and adapt an existing ephemeris computation pipeline such as OrbFit\footnote{\url{http://adams.dm.unipi.it/orbfit/}} or OpenOrb\footnote{\url{https://github.com/oorb/oorb}}. The baseline DayMOPS design uses Kubica et al. \cite{Kubica05} algorithms to identify and link Solar System object candidates.
 \\
 
 The design of these components are explained in detail in the MOPS Design Document (\MOPSD).
@@ -697,13 +697,13 @@ For performance reasons, the pipeline shall be able to simultaneously generate m
 (``sky map''; \S\ref{alg:skymap}) and coadd the pixels. The warped images will be kept in memory. Using those images, multiple coadds will be created, each consisting of a subset of input images defined explicitly by the operator or algoritmically by quality cuts.
 \\
 
-Production of multi-band coadds will be supported by implementing the Szalay, Connolly, Szokoly (1999) algorithm. % RHL I'm not sure about this one.  My proposal at the apps review was more nuanced
+Production of multi-band coadds will be supported by implementing the Szalay, Connolly, Szokoly (1999) algorithm \cite{Szalay99}. % RHL I'm not sure about this one.  My proposal at the apps review was more nuanced
 \\
 
 Determining the background from individual visits separately is problematic (because different choices can be made in each, especially at the edge of a CCD; and because extended, faint astrophysical flux is misinterpreted as background), commonly manifesting as dark rings around very bright stars and the suppression of extended flux around galaxies. Therefore, the pipeline will include the capability to perform ``background matching'' (\S\ref{alg:backgroundMatching}) to produce a coadd with a high signal-to-noise realization of the background in a single reference exposure.  This background will be measured over large scales and be possible to subtract with a high degree of accuracy. Background matching will be the default mode of operation. Nevertheless, it will also be possible to produce coadds by subtracting the background first using Sky Background determination and substraction components developed in the Single Frame Processing Pipeline (\wbsSFM).
 \\
 
-If the seeing is not constant it becomes impossible to produce a coadd with a PSF varying in a continuous fashion over the field, unless the data is deliberately degraded by convolving the inputs to a common PSF (known as ``PSF matching").  In order to enable dealing with the discontinuous PSF, the Coaddition Pipeline will construct a ``CoaddPsf'' (\S\ref{alg:coaddPsf}) PSF model, which is a sum of the PSFs of the input images at each point of interest (as proposed as part of `StackFit' (Jee and Tyson, 2012)).
+If the seeing is not constant it becomes impossible to produce a coadd with a PSF varying in a continuous fashion over the field, unless the data is deliberately degraded by convolving the inputs to a common PSF (known as ``PSF matching").  In order to enable dealing with the discontinuous PSF, the Coaddition Pipeline will construct a ``CoaddPsf'' (\S\ref{alg:coaddPsf}) PSF model, which is a sum of the PSFs of the input images at each point of interest (as proposed as part of `StackFit' \cite{Jee13}).
 \\
 
 To accurately measure the colors of galaxies (e.g., for photometric redshifts) in the presence of intra-object color gradients, seeing changes and imperfect galaxy models, the baseline implementation will be capable of producing ``PSF-matched coadds'' using well known PSF-matching algorithms.
@@ -715,11 +715,11 @@ To warp an image from the detector frame to the sky frame, a resampling kernel w
 \paragraph{Background Matching}
 \label{alg:backgroundMatching}
 
-Background matching will be implemented to enable reaching the maximum depth in the coadds and preserve the astrophysical backgrounds.  We adopt as our baseline the algorithm of Huff et al. (2011), extended to two-dimensional data.
+Background matching will be implemented to enable reaching the maximum depth in the coadds and preserve the astrophysical backgrounds.  We adopt as our baseline the algorithm of Huff et al. \cite{Huff11}, extended to two-dimensional data.
 
 The common practice of subtracting the background from each input individually removes features on moderate scales (such as the outer haloes of galaxies, and Galactic cirrus) and can be unstable (especially when the features appear at the edge of a frame) causing increased noise.
 
-Instead, the following algorithm (following Huff et al. 2011) will be implemented: the pipeline will choose one or more reference exposures, and match the backgrounds of each of the other exposures to the reference.  This will be done by subtracting the reference from each of the other exposures (which mostly removes astrophysical sources, especially the extended sources which normally contaminate background measurement) and fitting a background model to the difference between the backgrounds\footnote{It is anticipated this code will be shared with the Sky Background determination modules from the Single Frame Processing pipeline.}. These models will then be subtracted from the other inputs, so that all exposures have the same large-scale background as the reference exposure. 
+Instead, the following algorithm (following Huff et al.) will be implemented: the pipeline will choose one or more reference exposures, and match the backgrounds of each of the other exposures to the reference.  This will be done by subtracting the reference from each of the other exposures (which mostly removes astrophysical sources, especially the extended sources which normally contaminate background measurement) and fitting a background model to the difference between the backgrounds\footnote{It is anticipated this code will be shared with the Sky Background determination modules from the Single Frame Processing pipeline.}. These models will then be subtracted from the other inputs, so that all exposures have the same large-scale background as the reference exposure. 
 
 The coadd produced with the above algorithm will retain the extended astrophysical features at high signal-to-noise, and the background can be carefully removed over multiple patches at once. The subtracted image also provides an opportunity to identify sharp features such as optical ghosts, glints and other contaminants that can be masked.
 
@@ -740,7 +740,7 @@ location of chip boundaries, modeling approaches based on
 interpolating with smooth functions cannot be used.  Instead, when
 creating a coadd image, we also combine the PSF models of all the
 input exposures, using an approach similar to that devised by
-Jee and Tyson (2011).  This combination is lazy, in that we simply store the
+Jee and Tyson \cite{JeeTyson11}.  This combination is lazy, in that we simply store the
 PSF models, their bounding boxes, and the coordinate transforms that
 relate them to the coadd pixel grid.  Then, when measuring an object
 on the coadd, we obtain the coadd PSF model at that location by coadding the
@@ -845,7 +845,7 @@ Single-epoch (including coadd) object characterization will primarily rely on fo
 For multi-epoch characterization and some science measurements --- particularly shape measurement for weak
 lensing --- measurement on a coadd image may not provide the necessary
 precision and control of systematics.  To perform these measurements,
-we baseline the ``MultiFit'' approach (Bosch 2010, Bosch et al. 2013), in which a
+we baseline the ``MultiFit'' approach \cite{Bosch10, Bosch13}, in which a
 parametrized model for each astronomical object is fit simultaneously
 to all of the data in which that object appears.  Rather than
 transform and combine the data, we instead transform the model to the
@@ -881,7 +881,7 @@ possible on the coadd first, and only use a multifit approach to ``tune up''
 the final result.  And when this final tuning is determined to be
 unnecessary, it can be skipped entirely.
 
-To further make the multifit approach computationally tractable, we baseline use the multi-shapelet multifit algorithm implementation, as described in Bosch et al. 2013 (\url{http://ls.st/grd}).
+To further make the multifit approach computationally tractable, we baseline use the multi-shapelet multifit algorithm implementation, as described in \cite{Bosch13}.
 
 \paragraph{Point source model fit} To satisfy the point-source model fit requirements, we model each observed object as a point source with finite proper motion and parallax and with constant flux (allowed to be different in each band). This model is a good description for stars and other unresolved sources. Its 11 parameters will be simultaneously constrained using information from all available observations in all bands. The fitting procedure will account for differential chromatic refraction. Multifit will be used to perform the fit.
 
@@ -897,7 +897,7 @@ The pipeline shall be capable of fitting a trailed object model, as described in
 
 The pipeline shall be capable of fitting a dipole object model, as described in the \DPDD. The baseline algorithm is analogous to that employed by the bulge-disk model fit, but with the model being a mixture of positive and negative point sources, instead of Sersic profiles.
 
-\paragraph{Centroids} Centroids will be computed independently for each band using an algorithm similar to that employed by SDSS (Lupton et al.). Information from all epochs will be used to derive the estimate. These centroids will be used for adaptive moment, Petrosian, Kron, standard color, and aperture measurements.
+\paragraph{Centroids} Centroids will be computed independently for each band using an algorithm similar to that employed by SDSS \cite{LuptonPhoto}. Information from all epochs will be used to derive the estimate. These centroids will be used for adaptive moment, Petrosian, Kron, standard color, and aperture measurements.
 
 \paragraph{Adaptive moments} Adaptive moments will be computed using information from all epochs, independently for each band, using the algorithm of Bernstein \& Jarvis (2002).
 
@@ -934,14 +934,14 @@ In areas of significant stellar crowding (i.e., Galactic plane, star clusters), 
 \paragraph{Resolved/Unresolved object separation}
 \label{alg:star-galaxy}
 
-We baseline the resolved/unresolved object separation algorithm based on the ratio of PSF and model fluxes. We use the extendedness criterion as defined by the HSC (Furusawa et al., 2013):
+We baseline the resolved/unresolved object separation algorithm based on the ratio of PSF and model fluxes. We use the extendedness criterion as defined by the HSC \cite{Furusawa14}:
 \begin{equation}
 {\rm extendedness} = (0.95\times {\rm flux.gaussian} < {\rm flux.psf})\, ?\, 0.0 : 1.0 \nonumber
 \end{equation}
 
 \paragraph{Variability Characterization}
 
-       Two groups of parameters are required to be provided (see {\tt lcPeriodic} and {\tt lcNonPeriodic} in the \DPDD), designed to characterize periodic and aperiodic variability features. We baseline the metrics and algorithms described in Richards et al. (2011) for production of these data products.
+       Two groups of parameters are required to be provided (see {\tt lcPeriodic} and {\tt lcNonPeriodic} in the \DPDD), designed to characterize periodic and aperiodic variability features. We baseline the metrics and algorithms described in \cite{Richards11} for production of these data products.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -995,7 +995,7 @@ The Photometric Calibration Pipeline is required to internally calibrate the rel
 
 \subsubsection{Baseline design}
 
-The adopted baseline algorithm is a variant of ``ubercal", as described in Padmanabhan et al (2008) and Schlafly et al (2013). This baseline is described in detail in the Photometric Self Calibration Design and Prototype Document (\UCAL).
+The adopted baseline algorithm is a variant of ``ubercal'' \cite{Padmanabhan08, Schlafly12}. This baseline is described in detail in the Photometric Self Calibration Design and Prototype Document (\UCAL).
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -1162,37 +1162,73 @@ second readout time, and a second 15 second exposure.
 
 \begin{thebibliography}{10}
 
-\bibitem{DMSSystem} \textbf{Data~Management~System~Design},\\ 
- \url{http://ls.st/LDM-148}, 2013
+\bibitem{Ankerst99} M.~Ankerst, M.~M.~Breunig, H.-P.~Kriegel and J.~Sander,
+  \textbf{OPTICS: Ordering Points To Identify the Clustering Structure},
+  Proc ACM SIGMOD (1999).
 
-\bibitem{DMSFRS}  \textbf{Data~Management~Subsystem~Requirements},\\
-  \url{http://ls.st/LSE-61}, 2013
+\bibitem{Bloom12} J.~S.~Bloom et al,
+  \textbf{Automating discovery and classification of transients and variable stars in the synoptic survey era},
+  PASP 124, 1175--1196 (2012).
 
-\bibitem{JeeTyson11} M. J. Jee and J. A. Tyson,  \textbf{Toward
+\bibitem{Bosch10} J.~F.~Bosch,
+  \textbf{Modeling Techniques for Measuring Galaxy Properties in Multi-Epoch Surveys},
+  PhD Thesis, University of California, Davis (2011). \url{http://adsabs.harvard.edu/abs/2011PhDT.......226B}
+
+\bibitem{Bosch13} J.~Bosch, P.~Gee, R.~Owen, M.~Juric and the LSST DM team,
+  \textbf{LSST DM S13 Report: Shape measurement plans and prototypes},
+  \url{https://docushare.lsstcorp.org/docushare/dsweb/ImageStoreViewer/Document-15298}
+
+\bibitem{Huff11} E.~M.~Huff et al,
+  \textbf{Seeing in the dark -- I. Multi-epoch alchemy},
+  \url{http://arxiv.org/abs/1111.6958}.
+
+\bibitem{Furusawa14} H.~Furusawa et al,
+  \textbf{Hyper Suprime-Cam Survey Pipeline Description},
+  \url{http://hsca.ipmu.jp/pipeline_outputs.pdf}.
+
+\bibitem{JeeTyson11} M.~J.~Jee and J.~A.~Tyson,  \textbf{Toward
   Precision LSST Weak-Lensing Measurement. I. Impacts of Atmospheric
-  Turbulence and Optical Aberration}, PASP 123, 596(2011)
+  Turbulence and Optical Aberration}, PASP 123, 596(2011).
 
-\bibitem{Lang08} D. Lang, D. Hogg, S. Jester, and H-W Rix,  \textbf{Measuring the undetectable: Proper motions and parallaxes of very faint sources}, ArXiv e-prints, 0808.4004 (2008)
+\bibitem{Jee13} M.~J.~Jee, J.~A.~Tyson, M.~D.~Schneider, D.~Wittman, S.~Schmidt and S.~Hilbert,
+  \textbf{Cosmic shear results from the Deep Lens Survey. I. Joint constraints on $\Omega_M$ and $\sigma_8$ with a two-dimensional analysis},
+  ApJ 765 74 (2013).
 
-\bibitem{MOPS} L. Denneau, J. Kubica, and R. Jedicke,
+\bibitem{Kubica05} J.~Kubica et al,
+  \textbf{Efficiently Tracking Moving Sources in the LSST},
+  Bulletin of the American Astronomical Society, 37, 1207 (2005).
+
+\bibitem{Lang09} D.~Lang, D.~Hogg, S.~Jester and H.-W.~Rix,
+  \textbf{Measuring the undetectable: Proper motions and parallaxes of very faint sources},
+  AJ 137 4400--4111 (2009).
+
+\bibitem{LuptonPhoto} R.~H.~Lupton et al,
+  \textbf{SDSS Image Processing II: The \textit{Photo} Pipelines}.
+  \url{http://www.astro.princeton.edu/~rhl/photo-lite.pdf}
+
+\bibitem{MOPS} L.~Denneau, J.~Kubica and R.~Jedicke,
    \textbf{The Pan-STARRS Moving Object Pipeline}, Astronomical Data
   Analysis Software and Systems XVI ASP Conference Series, Vol. 376,
   proceedings of the conference held 15-18 October 2006 in Tucson,
   Arizona, USA. Edited by Richard A. Shaw, Frank Hill and David
-  J. Bell., p.257
+  J. Bell., p.257.
 
-\bibitem{SRD}  \textbf{Science~Requirements~Document},\\
-  \url{http://ls.st/LPM-17}, 2011 
+\bibitem{Padmanabhan08} N.~Padmanabhan et al,
+  \textbf{An Improved Photometric Calibration of the Sloan Digital Sky Survey Imaging Data},
+  ApJ 674 1217--1233 (2008).
 
-\bibitem{SUI}  \textbf{LSST~Science~User~Interface~Conceptual~Design},\\
-  \url{http://ls.st/LDM-131}, 2011
+\bibitem{Richards11} J.~Richards et al,
+  \textbf{On Machine-learned Classification of Variable Stars with Sparse and Noisy Time-series Data},
+  ApJ 733 10 (2011).
 
-\bibitem{TysonAdass07} J. A. Tyson, et al,  \textbf{LSST and the
-  Dark Sector: Image Processing Challenges}, Astronomical Data
-  Analysis Software and Systems XVII O5.3, ASP Conference Series,
-  Vol. 394 (2007)
+\bibitem{Schlafly12} E.~F.~Schlafly et al,
+  \textbf{Photometric Calibration of the First 1.5 Years of the Pan-STARRS1 Survey},
+  ApJ 756 158 (2012).
+
+\bibitem{Szalay99} A.~S.~Szalay, A.~J.~Connolly and G.~P.~Szokoly,
+  \textbf{Simultaneous Multicolor Detection of Faint Galaxies in the Hubble Deep Field},
+  AJ 117 68--74 (1999).
 
 \end{thebibliography}
-
 
 \end{document}
