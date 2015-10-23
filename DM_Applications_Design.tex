@@ -507,7 +507,9 @@ This module will also include the capability to perform relative registration of
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Assemble CCD; Determine Aperture Correction; Determine PSF; Remove Instrument Signature; Detect Sources; Determine Photometric Zeropoint; Measure Single Visit Sources; Determine WCS; Sum Exposures, Combine Raw Exposures, Remove Exposure Artifacts; Determine Sky Background Model; Calibrate Exposure; Process Raw Exposures to Calibrated Exposure; Perform Single Visit Processing; \subsubsection{Prototype Implementation}
+Assemble CCD; Determine Aperture Correction; Determine PSF; Remove Instrument Signature; Detect Sources; Determine Photometric Zeropoint; Measure Single Visit Sources; Determine WCS; Sum Exposures, Combine Raw Exposures, Remove Exposure Artifacts; Determine Sky Background Model; Calibrate Exposure; Process Raw Exposures to Calibrated Exposure; Perform Single Visit Processing;
+
+\subsubsection{Prototype Implementation}
 
 A prototype implementation of all major components of SFM baseline design has been completed in LSST Final Design Phase. The achieved accuracy is comparable to state-of-the art codes today (e.g., SDSS, SExtractor). We expect it will be possible to transfer a significant fraction of the existing code into Construction, with continued improvement to meet LSST accuracy requirements.
 \\
@@ -523,7 +525,9 @@ The prototype codes are available in the following repositories: \url{https://gi
 
 \subsubsection{Key Requirements}
 
-The image differencing pipeline shall difference a visit image against a deeper template, and detect and characterize sources in the difference image in the time required to achieve the 60 second design goal for Level 1 alert processing (current timing allocation: 24 seconds). The algorithms employed by the pipeline shall result in purity and completeness of the sample as required by the \DMSR. Image differencing shall perform as well in crowded as in uncrowded fields.\subsubsection{Baseline design}
+The image differencing pipeline shall difference a visit image against a deeper template, and detect and characterize sources in the difference image in the time required to achieve the 60 second design goal for Level 1 alert processing (current timing allocation: 24 seconds). The algorithms employed by the pipeline shall result in purity and completeness of the sample as required by the \DMSR. Image differencing shall perform as well in crowded as in uncrowded fields.
+
+\subsubsection{Baseline design}
 
 \begin{figure}
 \includegraphics[angle=0,scale=0.44]{detect_and_characterize_dia_sources.png}
@@ -543,7 +547,7 @@ Details of this baseline design have been captured in the \uc{Detect and Charact
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Subtract Calibrated Exposure from Template Exposure;Identify DIA Sources caused by Artifacts;Perform Precovery Forced Photometry;Measure DIA Sources;Detect DIA Sources in Difference Exposure;Measure Snap Difference Flux;Perform Difference Image Forced Photometry;Calculate DIA Object Flux Variability Metrics;Fit DIA Object Position and Motion;
+Subtract Calibrated Exposure from Template Exposure; Identify DIA Sources caused by Artifacts; Perform Precovery Forced Photometry; Measure DIA Sources; Detect DIA Sources in Difference Exposure; Measure Snap Difference Flux; Perform Difference Image Forced Photometry; Calculate DIA Object Flux Variability Metrics; Fit DIA Object Position and Motion;
 
 \subsubsection{Prototype Implementation}
 
@@ -572,8 +576,8 @@ When Level 1 data is reprocessed, a more sophisticated clustering algorithm \cit
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Create Instance Catalog for Visit;Associate with Instance Catalog;
-Perform DIA Object Association;Perform DIA Source Association;
+Create Instance Catalog for Visit; Associate with Instance Catalog;
+Perform DIA Object Association; Perform DIA Source Association;
 
 \subsubsection{Prototype Implementation}
 
@@ -599,7 +603,7 @@ The baseline design is to adopt and upgrade for performance and functionallity t
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Distribute to Subscribed Brokers;Distribute to Subscribed Users;Generate Alerts;
+Distribute to Subscribed Brokers; Distribute to Subscribed Users; Generate Alerts;
 Generate and Distribute Alerts;
 
 \subsubsection{Prototype Implementation}
@@ -629,7 +633,7 @@ The design of these components are explained in detail in the MOPS Design Docume
 \subsubsection{Constituent Use Cases and Diagrams}
 
 Process Moving Objects;
-Fit Orbit;Prune Moving Object Catalog;Perform Precovery;Recalculate Solar System Object Properties;Link Tracklets into Tracks;Find Tracklets;
+Fit Orbit; Prune Moving Object Catalog; Perform Precovery; Recalculate Solar System Object Properties; Link Tracklets into Tracks; Find Tracklets;
 
 \subsubsection{Prototype Implementation}
 
@@ -661,7 +665,7 @@ Current state-of-the-art PSF estimation methods typically use some basis functio
 \end{itemize}
 This estimation will be performed on the full focal plane, and use the per-CCD estimates of the PSF and cutouts of bright stars (PSF estimation candidates) as inputs.
 \\
-The PSF of thick deep depletion devices such as LSST's is known to be intensity dependent. We will estimate the zero-intensity PSF by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same forward-modelling algorithm will allow us to estimate the PSF in undersampled imaging, as is expected for roughly the best quartile of the seeing distribution.
+The PSF of thick deep depletion devices such as LSST's is known to be intensity dependent. We will estimate the zero-intensity PSF by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same forward-modelling algorithm will allow us to estimate the PSF in undersampled imaging, as is expected for roughly the best quartile of the seeing distribution.
 % RHL [As you know] it's more accurate to say that the as-detected image is an intensity-dependent mapping of the image incident on the CCD (I must be able to find a better way to express that!).  A consequence is that the PSF is intensity dependent.
 
 \subsubsection{Constituent Use Cases and Diagrams}
@@ -772,7 +776,7 @@ of an individual object.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Create Deep Coadd Exposures;Create Short Period Coadd Exposures;Coadd Calibrated Exposures;Create Best Seeing Coadd Exposures;Create PSF-matched Coadd Exposures;
+Create Deep Coadd Exposures; Create Short Period Coadd Exposures; Coadd Calibrated Exposures; Create Best Seeing Coadd Exposures; Create PSF-matched Coadd Exposures;
 Create Template Exposures;
 
 \subsubsection{Prototype Implementation}
@@ -957,8 +961,8 @@ We baseline the resolved/unresolved object separation algorithm based on the rat
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Measure AstroObjects;Exposure Stack Measurements;
-Create Sky Coverage Maps;Perform Deblending and Association;Perform Forced Photometry;Characterize AstroObject Flux Variability;
+Measure AstroObjects; Exposure Stack Measurements;
+Create Sky Coverage Maps; Perform Deblending and Association; Perform Forced Photometry; Characterize AstroObject Flux Variability;
 
 \subsubsection{Prototype Implementation}
 
@@ -991,7 +995,7 @@ The baseline Calibration Products Pipeline will implement all algorithms describ
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Produce Master Fringe Exposures;Produce Master Bias Exposure;Produce Master Dark Exposure;Calculate System Bandpasses;Calculate Telescope Bandpasses;Construct Defect Map;Produce Crosstalk Correction Matrix;Produce Optical Ghost Catalog;Produce Master Pupil Ghost Exposure;Determine CCOB-derived Illumination Correction;Determine Optical Model-derived Illumination Correction;Create Master Flat-Spectrum Flat;Determine Star Raster Photometry-derived Illumination Correction;Create Master Illumination Correction;Determine Self-calibration Correction-Derived Illumination Correction;Correct Monochromatic Flats;Reduce Spectrum Exposure;Prepare Nightly Flat Exposures;
+Produce Master Fringe Exposures; Produce Master Bias Exposure; Produce Master Dark Exposure; Calculate System Bandpasses; Calculate Telescope Bandpasses; Construct Defect Map; Produce Crosstalk Correction Matrix; Produce Optical Ghost Catalog; Produce Master Pupil Ghost Exposure; Determine CCOB-derived Illumination Correction; Determine Optical Model-derived Illumination Correction; Create Master Flat-Spectrum Flat; Determine Star Raster Photometry-derived Illumination Correction; Create Master Illumination Correction; Determine Self-calibration Correction-Derived Illumination Correction; Correct Monochromatic Flats; Reduce Spectrum Exposure; Prepare Nightly Flat Exposures;
 
 \subsubsection{Prototype Implementation}
 
@@ -1062,7 +1066,7 @@ The additional features unique to Level 3 involve the services to upload/downloa
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Configure Pipeline Execution;Execute Pipeline;Incorporate User Code into Pipeline;Monitor Pipeline Execution;Science Pipeline Toolkit;Select Data to be Processed;Select Data to be Stored;
+Configure Pipeline Execution; Execute Pipeline; Incorporate User Code into Pipeline; Monitor Pipeline Execution; Science Pipeline Toolkit; Select Data to be Processed; Select Data to be Stored;
 
 \subsubsection{Prototype Implementation}
 
@@ -1091,7 +1095,7 @@ The outputs of SDQA Pipeline runs will be stored into a SDQA repository (RDBMS o
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Assess Data Quality for Nightly Processing;Assess Data Quality for Calibration Products;Assess Data Quality for Data Release;
+Assess Data Quality for Nightly Processing; Assess Data Quality for Calibration Products; Assess Data Quality for Data Release;
 Assess Data Quality for Nightly Processing at Archive;
 
 \subsubsection{Prototype Implementation}
@@ -1125,7 +1129,7 @@ Data analysts and users will be able to create new QA tests to examine particula
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Analyze SDQA Metrics;Correlate SDQA metric with other data;Correlate SDQA metrics;Display SDQA Metrics;
+Analyze SDQA Metrics; Correlate SDQA metric with other data; Correlate SDQA metrics; Display SDQA Metrics;
 
 \subsubsection{Prototype Implementation}
 
