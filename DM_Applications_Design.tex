@@ -64,7 +64,7 @@
 \newcommand{\wbsSPT}{WBS 02C.01.02.03}
 \newcommand{\wbsPSF}{WBS 02C.04.03}
 \newcommand{\wbsCoadd}{WBS 02C.04.04}
-\newcommand{\wbsDeepDet}{WBS 02C.04.05}
+\newcommand{\wbsDetDeblend}{WBS 02C.04.05}
 \newcommand{\wbsObjChar}{WBS 02C.04.06}
 \newcommand{\wbsAFW}{WBS 02C.03.05, 02C.04.01}
 \newcommand{\wbsCPP}{WBS 02C.04.02}
@@ -232,7 +232,7 @@ Level 1 pipelines run as the data are being acquired. They primarily focus on im
     \begin{itemize}
         \item {\bf \em PSF Estimation Pipeline}, (\wbsPSF), to estimate the PSF properties and variation across the focal plane for each visit, to the degree of precision required by the \SRD. Note that the work of this pipeline goes beyond the typical single-CCD PSF estimation present in the SFM pipeline.
         \item {\bf \em Image Coaddition Pipeline}, (\wbsCoadd), to generate and characterize coadded images of the sky, as well as create templates for image differencing.
-        \item {\bf \em Deep Detection Pipeline}, (\wbsDeepDet), to detect sources in coadded images of the sky.
+        \item {\bf \em Object Detection and Deblending}, (\wbsDetDeblend), to detect sources in images of the sky and decompose them individual astronomical objects.
         \item {\bf \em Object Characterization Pipeline}, (\wbsObjChar), to characterize (perform measurements of) astrophysical objects detected in LSST imaging (both in single frames and coadds).
     \end{itemize}
     
@@ -323,9 +323,8 @@ The following is a high-level description of steps which occur during regular Le
     \item {\em Single Frame Processing}: Raw exposures are reduced to {\em calibrated visit exposures}, and \Sources are independently detected, deblended, and measured on all visits. Their measurements (instrumental fluxes and shapes) are stored in the \Source table. This step is performed by the {\bf \em Single Frame Processing Pipeline} (\wbsSFM).
     \item {\em Relative calibration}: The survey is internally calibrated, both photometrically and astrometrically using the {\bf \em Astrometric} (\wbsAstroCal) and {\bf \em Photometric Calibration Pipelines} (\wbsPhotoCal). Relative zero points over the focal plane and astrometric corrections are computed for every visit.
     \item {\em Coadd creation}: Deep, seeing optimized, and short-period per-band coadds are created in $ugrizy$ bands, as well as deeper, multi-color, coadds. This task is performed by the {\bf \em Image Coaddition Pipeline} (\wbsCoadd). Transient sources (including Solar System objects, explosive transients, etc), will be rejected from the coadds.
-    \item {\em Coadd source detection and characterization}. Sources will be detected on all coadds generated in the previous step. The source detection algorithm will detect regions of connected pixels, known as {\em footprints}, above the nominal $S/N$ threshold in the {\em PSF-likelihood image} of the visit. Each footprint may have one or more {\em peaks}, and the collection of these peaks (and their membership in the footprints) are the output of this stage. This information will be stored in a catalog of \CoaddSources. The detection is performed by the {\bf \em Deep Detection Pipeline} (\wbsDeepDet), while object characterization is a part of the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
-    \item {\em Association and deblending}. The next stage in the pipeline, which we will for simplicity just call {\em the deblender}, will synthesize a list of unique objects. In doing so it will consider the catalogs of \Sources and \CoaddSources, catalogs of \DIASources, \DIAObjects and \SSObjects detected on difference images, and objects from external catalogs. Association will be performed by the software that is functionally part of the {\bf \em Association Pipeline} (\wbsAssocP), while the deblender component a part of the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
-
+    \item {\em Coadd source detection}. Sources will be detected on all coadds generated in the previous step. The source detection algorithm will detect regions of connected pixels, known as {\em footprints}, above the nominal $S/N$ threshold in the {\em PSF-likelihood image} of the visit. Each footprint may have one or more {\em peaks}, and the collection of these peaks (and their membership in the footprints) are the output of this stage. This information will be stored in a catalog of \CoaddSources. The detection is performed by the {\bf \em Object Detection and Deblending} system (\wbsDetDeblend).
+    \item {\em Coadd source deblending and characterization}. The next stage in the pipeline will decompose the \CoaddSources into a set of individual astronomical sources which is consistent across all bands, a process known as {\em deblending}. The deblender may make use of the catalogs of \Sources and \CoaddSources, catalogs of \DIASources, \DIAObjects and \SSObjects detected on difference images, and objects from external. The deblended objects will then be characterized by measuring their positions, shapes and fluxes on the coadded images and by fitting galaxy models. This functionality is contained within the {\bf \em Object Detection and Deblending} system (\wbsDetDeblend) and the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
     \item {\em Multi-epoch object characterization}. A set of measurements (including predefined classes of model fits) will be performed on each of the \Objects identified in the previous step, taking all available multi-epoch data into account. Model fits will be performed using {\em MultiFit}-type algorithms. Rather than coadding a set of images and measuring object characteristics on the coadd, MultiFit simultaneously fits PSF-convolved models to the objects multiple observations. This reduces systematic errors, improves the overall $S/N$, and allows for fitting of time-dependent quantities degenerate with shape on the coadds (for example, the proper motion). The models we plan to fit will {\em not} allow for flux variability. Object characterization is a part of the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
     \item {\em Forced Photometry}. Source fluxes will be measured on every visit, with the position, motion, structural parameters, and deblending characterized in the previous step kept fixed.
       % RHL we're not clear about which model we'll use for this forced photometry. The best-fit Sersic? 
@@ -787,8 +786,9 @@ The design and performance of the current prototype pipeline is described in the
 
 \clearpage
 
-\subsection{Deep Detection Pipeline (\wbsDeepDet)}
+\subsection{Object Detection and Deblending (\wbsDetDeblend)}
 
+% TODO Rework.
 \subsubsection{Key Requirements}
 
 The Deep Detection Pipeline is responsible for detection of objects on coadds produced by the Coaddition Pipeline.
