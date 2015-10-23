@@ -794,32 +794,66 @@ The design and performance of the current prototype pipeline is described in the
 
 \subsection{Object Detection and Deblending (\wbsDetDeblend)}
 
-% TODO Rework.
 \subsubsection{Key Requirements}
 
-The Deep Detection Pipeline is responsible for detection of objects on coadds produced by the Coaddition Pipeline.
+The Object Detection and Deblending system is responsible for the detection of
+sources on coadds produced by the Coaddition Pipeline and for disentangling
+collections of superimposed objects into their constitutent parts.
 
 \subsubsection{Baseline design}
 
-The baseline is the SDSS detection algorithm (Lupton et al.).
+The baseline is taken from the SDSS detection and deblending algorithms
+\cite{Lupton05, LuptonPhoto}.
 \\
 
-Object detection is performed by correlating the deep coadd image with the CoaddPsf PSF and searching for peaks above the preset threshold. Multiple adjacent peaks will be detected and merged to reduce spuriously detected objects due to noise or object substructure.
+\paragraph{Object detection}
+
+Object detection is performed by correlating the deep coadd image with the
+CoaddPsf PSF and searching for peaks above the preset threshold. Multiple
+adjacent peaks will be detected and merged to reduce spuriously detected
+objects due to noise or object substructure.
 \\
 
 To enable detection of extended objects, the Pipeline will perform detection on recursively binned coadds.
 
+\paragraph{Deblender}
+\label{alg:deblender}
+
+At the depths probed by LSST images, many of the sources are superimposed on each other on the sky (``blended''), which makes detecting and measuring such sources difficult.  Often this blending is not severe, but the footprints of reasonably well separated objects can overlap (and therefore merge together) slightly.  In other cases, distinct objects will be superimposed directly on more extended objects (e.g., a star on a resolved galaxy). % RHL I didn't like 5\sigma contours as a 5\sigma object is a single pixel, and it's the growing that makes it overlap.
+
+In order to disentangle the multiple objects, we adopt a baseline for the ``deblender'' based on the algorithms used in SDSS.
+
+The baseline deblender assumes that discrete sources generally have twofold
+rotational symmetry.  When one side of a source is blended, we can
+recover its appearance by examining the symmetric side.  The deblender
+begins by building these symmetric templates for each source.  Next,
+the flux in each pixel is split among the blended source in proportion
+to their templates.  The deblender produces cutouts of each
+source in a blended group, so that the measurement algorithms (fluxes,
+galaxy shapes, etc) need not know that the source was blended. This deblending algorithm works well in practice for moderately crowded fields (as demonstrated by SDSS).
+\\
+
+This SDSS-style deblender will be run on the set of single-band coadds, then a set of PSF-convolved models will be fit to the deblended the children. The initial templates with then be replaced by these models, convolved with the appropriate PSF, and flux assigned as before. The use of physically-motivated templates will help with identification and reduction of non-physical deblends, generalization to multi-epoch data, and data with very different image quality.  Fitting these model templates will also allow us to improve centroids of objects whose positions were affected by their neighbors. % RHL I even spelt it in American
+\\
+
+In areas of significant stellar crowding (i.e., Galactic plane, star clusters), this approach lends itself to imposition of appropriate template priors (i.e., the correct template being that of a point source convolved with the PSF). This, effectively, makes the deblender into a crowded field code, allowing this baseline to satisfy the requirements for crowded field photometry.
+
+
 \subsubsection{Constituent Use Cases and Diagrams}
+% TODO The UML models are comprehensively outdated.
 
 Detect and Characterize AstroObjects;
 Detect Sources on Coadds;
 
 \subsubsection{Prototype Implementation}
 
-A fully functional prototype implementation of the Deep Detection Pipeline baseline design has been completed in LSST Final Design Phase and extensively tested with image simulation inputs as well as real data (SDSS Stripe 82). We expect it will be possible to transfer a significant fraction of the existing code into Construction, for continued improvement to meet LSST performance and accuracy requirements. % RHL We didn't do the recursive binning, which requires slightly tricky book-keeping.
+A fully functional implementation of the Object Detection and Deblending system baseline design has been completed in LSST Final Design Phase and extensively tested with image simulation inputs as well as real data (SDSS Stripe 82). We expect it will be possible to transfer a significant fraction of the existing code into Construction, for continued improvement to meet LSST performance and accuracy requirements. % RHL We didn't do the recursive binning, which requires slightly tricky book-keeping.
 \\
 
-The detection functionallity is a part of the {\tt afw} git repository browsable through the LSST git repository browser at \url{https://github.com/lsst}.
+The detection functionallity is a part of the {\tt afw} package
+browsable through the LSST git repository browser at
+\url{https://github.com/lsst/afw }; deblending functionality is in the {\tt
+meas\_deblender} package at \url{https://github.com/lsst/meas_deblender}.
 
 \clearpage
 
@@ -913,28 +947,6 @@ The radii will be computed independently for each band. Fluxes will be computed 
 The baseline for both Petrosian and Kron flux implementation is to derive these as an a mathematical transformation of aperture surface brightness measurements (see below).
 
 \paragraph{Aperture surface brightness}. Aperture surface brightness will be computed in a variable number, depending on the size of the source, of concentric, logarithmically spaced, PSF-homogenized, elliptical apertures, convolved to standard seeing.
-
-\paragraph{Deblender}
-\label{alg:deblender}
-
-At the depths probed by LSST images, many of the sources are superimposed on each other on the sky (``blended''), which makes detecting and measuring such sources difficult.  Often this blending is not severe, but the footprints of reasonably well separated objects can overlap (and therefore merge together) slightly.  In other cases, distinct objects will be superimposed directly on more extended objects (e.g., a star on a resolved galaxy). % RHL I didn't like 5\sigma contours as a 5\sigma object is a single pixel, and it's the growing that makes it overlap.
-
-In order to disentangle the multiple objects, we adopt a baseline for the ``deblender'' based on the algorithms used in SDSS (Lupton and Ivezic, 2005; \url{http://adsabs.harvard.edu/abs/2005ASPC..338..151L}).
-
-The baseline deblender assumes that discrete sources generally have twofold
-rotational symmetry.  When one side of a source is blended, we can
-recover its appearance by examining the symmetric side.  The deblender
-begins by building these symmetric templates for each source.  Next,
-the flux in each pixel is split among the blended source in proportion
-to their templates.  The deblender produces cutouts of each
-source in a blended group, so that the measurement algorithms (fluxes,
-galaxy shapes, etc) need not know that the source was blended. This deblending algorithm works well in practice for moderately crowded fields (as demonstrated by SDSS).
-\\
-
-This SDSS-style deblender will be run on the set of single-band coadds, then a set of PSF-convolved models will be fit to the deblended the children. The initial templates with then be replaced by these models, convolved with the appropriate PSF, and flux assigned as before. The use of physically-motivated templates will help with identification and reduction of non-physical deblends, generalization to multi-epoch data, and data with very different image quality.  Fitting these model templates will also allow us to improve centroids of objects whose positions were affected by their neighbors. % RHL I even spelt it in American
-\\
-
-In areas of significant stellar crowding (i.e., Galactic plane, star clusters), this approach lends itself to imposition of appropriate template priors (i.e., the correct template being that of a point source convolved with the PSF). This, effectively, makes the deblender into a crowded field code, allowing this baseline to satisfy the requirements for crowded field photometry.
 
 \paragraph{Resolved/Unresolved object separation}
 \label{alg:star-galaxy}
@@ -1210,6 +1222,10 @@ second readout time, and a second 15 second exposure.
 \bibitem{LuptonPhoto} R.~H.~Lupton et al,
   \textbf{SDSS Image Processing II: The \textit{Photo} Pipelines}.
   \url{http://www.astro.princeton.edu/~rhl/photo-lite.pdf}
+
+\bibitem{Lupton05} R.~Lupton and \v{Z}.~Ivezi\'c, \textbf{Experience with SDSS: the Promise and Perils of Large Surveys},
+  Astrometry in the Age of the Next Generation of Large Telescopes, ASP
+  Conferences Series, Vol 338 (2005). \url{http://adsabs.harvard.edu/abs/2005ASPC..338..151L}
 
 \bibitem{MOPS} L.~Denneau, J.~Kubica and R.~Jedicke,
    \textbf{The Pan-STARRS Moving Object Pipeline}, Astronomical Data
