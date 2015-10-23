@@ -44,7 +44,8 @@
 \newcommand{\LSR}{\ds{LSE-29}{LSR}}
 \newcommand{\OSS}{\ds{LSE-30}{OSS}}
 \newcommand{\DMSR}{\ds{LSE-61}{DMSR}}
-\newcommand{\appsUML}{\ds{LDM-134}{LDM-134}}
+\newcommand{\appsUMLdomain}{\ds{LDM-133}{LDM-133}}
+\newcommand{\appsUMLusecase}{\ds{LDM-134}{LDM-134}}
 \newcommand{\SUI}{\ds{LDM-131}{SUID}}
 \newcommand{\DMSD}{\ds{LDM-148}{DMSD}}
 \newcommand{\MOPSD}{\ds{LDM-156}{MOPSD}}
@@ -94,7 +95,7 @@ Data Management Applications Design \\
 \begin{abstract}
 The LSST Science Requirements Document (the LSST \SRD) specifies a set of
 data product guidelines, designed to support science goals envisioned to be enabled by the LSST observing program. Following these guidlines, the details of these data products have been described in the LSST Data Products Definition Document (\DPDD), and captured in a formal flow-down from the \SRD via the LSST System Requirements (\LSR), Observatory System Specifications (\OSS), to the Data Management System Requirements (\DMSR).
-LSST Data Management subsystem has the responsibility for design, implementation, deployment and execution of software pipelines necessary to generate these data products. This document, in conjunction with the UML Use Case model (\appsUML), describes the design of the scientific aspects of those pipelines.
+LSST Data Management subsystem has the responsibility for design, implementation, deployment and execution of software pipelines necessary to generate these data products. This document, in conjunction with the UML Use Case model (\appsUMLusecase), describes the design of the scientific aspects of those pipelines.
 \end{abstract}
 
 \clearpage
@@ -111,7 +112,7 @@ The purpose of this document is to describe the design of pipelines belonging to
 The intended audience of this document are LSST software architects and developers. It presents the baseline architecture and algorithmic selections for core DM pipelines. The document assumes the reader/developer has the required knowledge of astronomical image processing algorithms and solid understanding of the state of the art of the field, understanding of the LSST Project goals and concepts, and has read the LSST Science Requirements (\SRD) as well as the LSST Data Products Definition Document (\DPDD).
 \\
 
-This document should be read in conjunction with the LSST DM Applications Use Case Model (\appsUML). They are intended to be complementary, with the Use Case model capturing the detailed (inter)connections between individual pipeline components, and this document capturing the overall goals, pipeline architecture, and algorithmic choices.
+This document should be read in conjunction with the LSST DM Applications Use Case Model (\appsUMLusecase). They are intended to be complementary, with the Use Case model capturing the detailed (inter)connections between individual pipeline components, and this document capturing the overall goals, pipeline architecture, and algorithmic choices.
 \\
 
 Though under strict change control\footnote{LSST Docushare handle for this document is {\tt LDM-151}.}, this is a {\bf \em living document}. Firstly, as a consequence of the ``rolling wave" LSST software development model, the designs presented in this document will be refined and made more detailed as particular pipeline functionality is about to be implemented. Secondly, the LSST will undergo a period of construction and commissioning lasting no less than seven years, followed by a decade of survey operations. To ensure their continued scientific adequacy, the overall designs and plans for LSST data processing pipelines will be periodically reviewed and updated.
@@ -315,7 +316,7 @@ In addition to these, the Moving Object Pipeline (MOPS; \wbsMOPS; \uc{Process Mo
     \caption{Level 2 Processing Overview\label{fig:level2dp}}    
 \end{figure}
 
-Figure~\ref{fig:level2dp} presents a high-level overview of the Level 2 data processing workflow. Logically\footnote{The actual implementation may parallelize these steps to the extent possible; see LDM-230, the Automated DM Operations Document (\DMOps).}, the processing begins with single-frame (visit) image reduction and source measurement, followed by global astrometric and photometric calibration, coadd creation, detection on coadds, association and deblending, object characterization, and forced photometry measurements. The UML Use Case model (\appsUML) captures these activities in the \uc{Produce a Data Release} diagram.
+Figure~\ref{fig:level2dp} presents a high-level overview of the Level 2 data processing workflow. Logically\footnote{The actual implementation may parallelize these steps to the extent possible; see LDM-230, the Automated DM Operations Document (\DMOps).}, the processing begins with single-frame (visit) image reduction and source measurement, followed by global astrometric and photometric calibration, coadd creation, detection on coadds, association and deblending, object characterization, and forced photometry measurements. The UML Use Case model (\appsUMLusecase) captures these activities in the \uc{Produce a Data Release} diagram.
 \\
 
 The following is a high-level description of steps which occur during regular Level 2 data processing:
@@ -391,7 +392,7 @@ The {\bf \em LSST Applications Framework} ({\tt afw}) is to provide the basic fu
 \caption{Exposure class diagram\label{fig:exposureUML}}
 \end{figure}
 
-The baseline design calls for a library of C++ classes and functions, exposed to Python callers as a Python module named {\tt lsst.afw}. The classes required are captured in the UML Domain Model model (\appsUML), with an example of the Exposure class shown in Figure~\ref{fig:exposureUML}.
+The baseline design calls for a library of C++ classes and functions, exposed to Python callers as a Python module named {\tt lsst.afw}. The classes required are captured in the UML Domain Model (\appsUMLdomain), with an example of the Exposure class shown in Figure~\ref{fig:exposureUML}.
 \\
 
 This library will form the basis for all image processing pipelines and algorithms used for LSST so special attention will be paid to performance.
@@ -974,7 +975,7 @@ The Calibration Products Pipeline shall generate the calibration data products a
 \caption{Calibration Products Pipeline Use Case Diagram\label{fig:cppUML}}
 \end{figure}
 
-The baseline Calibration Products Pipeline will implement all algorithms described in the Photometric Calibration Plan (\PCP). Its logical design is further described in the Calibration Processing package of the UML model (\appsUML; see also Figure~\ref{fig:cppUML} for the high-level overview).
+The baseline Calibration Products Pipeline will implement all algorithms described in the Photometric Calibration Plan (\PCP). Its logical design is further described in the Calibration Processing package of the UML model (\appsUMLusecase; see also Figure~\ref{fig:cppUML} for the high-level overview).
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
