@@ -691,7 +691,7 @@ When non-PSF-matched coadds are produced, the effective PSF and its variation ac
 
 The Image Coaddition Pipeline shall make it possible to generate the coadds with astrophysical backgrounds removed or retained, depending on runtime configuration directives.
 
-The pipeline must be capable of generating coadds in varying geometries and tesselations of the sky, plugged in at runtime via Python modules and configuration directives. To reduce its memory footprint, it shall be capable of generating the coadds in small patches set by the operator at runtime via configuration directives.
+The pipeline must be capable of generating coadds in varying geometries and tessellations of the sky, plugged in at runtime via Python modules and configuration directives. To reduce its memory footprint, it shall be capable of generating the coadds in small patches set by the operator at runtime via configuration directives.
 
 For performance reasons, the pipeline shall be able to simultaneously generate multiple coadds from the same input stack, avoiding unnecessary rewarping of inputs to generate each coadd.
 
@@ -727,7 +727,7 @@ Instead, the following algorithm (following Huff et al.) will be implemented: th
 
 The coadd produced with the above algorithm will retain the extended astrophysical features at high signal-to-noise, and the background can be carefully removed over multiple patches at once. The subtracted image also provides an opportunity to identify sharp features such as optical ghosts, glints and other contaminants that can be masked.
 
-\paragraph{Sky Tesselation and Coadd Projections\label{alg:skymap}} 
+\paragraph{Sky Tessellation and Coadd Projections\label{alg:skymap}}
 
 The ``skymap'' is a tessellation of the sky, providing suitable pre-defined coordinate systems for operations on the sky such as coaddition.  The sky map divides the sky into ``tracts''.  For convenience and parallelism, each tract is sub-divided into ``patches''.  Tracts and patches may overlap, so that sources are not lost in the gaps. Tessellations will be pluggable Python modules.
 \\
