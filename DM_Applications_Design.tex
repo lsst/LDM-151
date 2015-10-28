@@ -686,36 +686,51 @@ The remaining components of the PSF Estimation pipeline have not been prototyped
 
 \subsubsection{Key Requirements}
 
-Image Coaddition Pipeline shall produce PSF-matched and non-PSF-matched coadds given a stack of input calibrated exposures. Generated coadds must be characterized, at a pixel level, for validity and variance (i.e., have a Mask plane and a Variance plane).
+Image Coaddition Pipeline will produce coadds given a stack of input calibrated exposures. Generated coadds must be characterized, at a pixel level, for validity and variance (i.e., have a Mask plane and a Variance plane). It must be capable of supporting these coaddition schemes within a single band:
+\begin{itemize}
+    \item{Direct;}
+    \item{PSF-matched;}
+    \item{Likelihood (``Kaiser'').}
+\end{itemize}
+
+It must be capable of combining coadds from mulitple bands into a single, multi-band, coadd. When doing so, it must support both the ``$\chi^2$'' scheme described by \cite{Szalay99} and scheme in which inputs are weighted by the expected SED.
 
 When non-PSF-matched coadds are produced, the effective PSF and its variation across the full coadd must be determined and retained. Outliers appearing in a small subset of input images (e.g., transients or moving objects) must not appear in the final co-adds. % RHL how we handle variables (e.g., RR Lyrae's) is not obvious
 
-The Image Coaddition Pipeline shall make it possible to generate the coadds with astrophysical backgrounds removed or retained, depending on runtime configuration directives.
+The Image Coaddition Pipeline must make it possible to generate the coadds with astrophysical backgrounds removed or retained, depending on runtime configuration directives.
 
-The pipeline must be capable of generating coadds in varying geometries and tessellations of the sky, plugged in at runtime via Python modules and configuration directives. To reduce its memory footprint, it shall be capable of generating the coadds in small patches set by the operator at runtime via configuration directives.
+The pipeline must be capable of generating coadds in varying geometries and tessellations of the sky, plugged in at runtime via Python modules and configuration directives. To reduce its memory footprint, it should be capable of generating the coadds in small patches set by the operator at runtime via configuration directives.
 
-For performance reasons, the pipeline shall be able to simultaneously generate multiple coadds from the same input stack, avoiding unnecessary rewarping of inputs to generate each coadd.
+The pipeline should be capable of co-adding undersampled images without aliasing.
+
+For performance reasons, the pipeline should be able to simultaneously generate multiple coadds from the same input stack, avoiding unnecessary rewarping of inputs to generate each coadd.
 
 \subsubsection{Baseline design}
 
-\paragraph{Coaddition} The Coaddition Pipeline will apply the results of the relative astrometric solution (developed as a part of Single Frame Pipeline, \wbsSFM) to the input images, warp (\S\ref{alg:warp}) them to a common coordinate system
-(``sky map''; \S\ref{alg:skymap}) and coadd the pixels. The warped images will be kept in memory. Using those images, multiple coadds will be created, each consisting of a subset of input images defined explicitly by the operator or algoritmically by quality cuts.
-\\
+\paragraph{Coaddition}
+\label{alg:coadd}
 
-Production of multi-band coadds will be supported by implementing the Szalay, Connolly, Szokoly (1999) algorithm \cite{Szalay99}. % RHL I'm not sure about this one.  My proposal at the apps review was more nuanced
-\\
+The Coaddition Pipeline will apply the results of the relative astrometric solution (developed as a part of Single Frame Pipeline, \wbsSFM) to the input images, warp (\S\ref{alg:warp}) them to a common coordinate system (``sky map''; \S\ref{alg:skymap}) and coadd the pixels. The warped images will be kept in memory. Using those images, multiple coadds will be created, each consisting of a subset of input images defined explicitly by the operator or algoritmically by quality cuts.
 
-Determining the background from individual visits separately is problematic (because different choices can be made in each, especially at the edge of a CCD; and because extended, faint astrophysical flux is misinterpreted as background), commonly manifesting as dark rings around very bright stars and the suppression of extended flux around galaxies. Therefore, the pipeline will include the capability to perform ``background matching'' (\S\ref{alg:backgroundMatching}) to produce a coadd with a high signal-to-noise realization of the background in a single reference exposure.  This background will be measured over large scales and be possible to subtract with a high degree of accuracy. Background matching will be the default mode of operation. Nevertheless, it will also be possible to produce coadds by subtracting the background first using Sky Background determination and substraction components developed in the Single Frame Processing Pipeline (\wbsSFM).
-\\
+To accurately measure the colors of galaxies (e.g., for photometric redshifts) in the presence of intra-object color gradients, seeing changes and imperfect galaxy models, the baseline implementation will be capable of producing ``PSF-matched coadds'' using well known PSF-matching algorithms. The Object Characterization Pipeline (\wbsObjChar) will measure object properties on both direct (centroids and shapes) and PSF-matched (fluxes) coadds, as well as fitting galaxy models to the direct coaads.
+
+Likelihood coaddition presents a possible alternative to direct and PSF-matched coaddition for both detection and measurement. Assessing the suitability of likelihood coadds for use in LSST data releases is contained within the Object Characterization Pipeline (\wbsObjChar); the Image Coaddition Pipeline will deliver likelihood coadds as required to satisfy that requirement.
+
+The Detection and Deblending system (\wbsDetDeblend) will make use of multi-band coadds. These may be generated either using the $\chi^2$ algorithm \cite{Szalay99} or based on SED-weighted combinations of per-band coadds. The Image Coaddition Pipeline will make it possible to generate either of these on demand.
 
 If the seeing is not constant it becomes impossible to produce a coadd with a PSF varying in a continuous fashion over the field, unless the data is deliberately degraded by convolving the inputs to a common PSF (known as ``PSF matching").  In order to enable dealing with the discontinuous PSF, the Coaddition Pipeline will construct a ``CoaddPsf'' (\S\ref{alg:coaddPsf}) PSF model, which is a sum of the PSFs of the input images at each point of interest (as proposed as part of `StackFit' \cite{Jee13}).
-\\
 
-To accurately measure the colors of galaxies (e.g., for photometric redshifts) in the presence of intra-object color gradients, seeing changes and imperfect galaxy models, the baseline implementation will be capable of producing ``PSF-matched coadds'' using well known PSF-matching algorithms.
+Determining the background from individual visits separately is problematic (because different choices can be made in each, especially at the edge of a CCD; and because extended, faint astrophysical flux is misinterpreted as background), commonly manifesting as dark rings around very bright stars and the suppression of extended flux around galaxies. Therefore, the pipeline will include the capability to perform ``background matching'' (\S\ref{alg:backgroundMatching}) to produce a coadd with a high signal-to-noise realization of the background in a single reference exposure.  This background will be measured over large scales and be possible to subtract with a high degree of accuracy. Background matching will be the default mode of operation. Nevertheless, it will also be possible to produce coadds by subtracting the background first using Sky Background determination and substraction components developed in the Single Frame Processing Pipeline (\wbsSFM).
+
+
+
 
 \paragraph{Warping}
 \label{alg:warp}
-To warp an image from the detector frame to the sky frame, a resampling kernel will be used. The kernel is set according to the sub-pixel position on the input image of the centre of the corresponding output pixel.  The code will support using Lanczos (of configurable order), bilinear or nearest-neighbour kernels, with the default being a 3rd-order Lanczos (with $10^6$ cache realizations), as a compromise between the infinite \emph{sinc} function and the need for speed. % RHL I think Huff et al. (== Hirata) use polynomial interpolation.  We should investigate.
+
+To warp an image from the detector frame to the sky frame, a resampling kernel will be used. The kernel is set according to the sub-pixel position on the input image of the centre of the corresponding output pixel.  The must will support using Lanczos (of configurable order), bilinear or nearest-neighbour kernels, with the default being a 3rd-order Lanczos (with $10^6$ cache realizations), as a compromise between the infinite {\em sinc} function and the need for speed. Other schemes (e.g. polynomial interpolation) may also be available.
+
+The LSST focal plane will be undersampled at seeing less than 0.4''. It must be possible to warp and coadd undersampled images without introducing aliasing. The approach taken should provide the best possible image quality while maintaining adequate computational throughput; a slightly loss of image quality is acceptable.
 
 \paragraph{Background Matching}
 \label{alg:backgroundMatching}
@@ -774,6 +789,10 @@ of an individual object.
 %stacking and aggressive clipping will cause the PSF of the coadd to be
 %poorly-defined, and a poor match to the model produced by the CoaddPsf
 %approach.
+
+\paragraph{Differential Chromatic Refraction}
+
+The baseline design for difference imaging (\wbsDiffim) calls for creation of coadds in bins of different airmass to account for differential chromatic refraction. However, initial work suggests better results may be achieved by modelling and compensating for DCR when templates are being constructed \cite{Becker14}. A similar approach will also be investigated when building coadds for deep detection (\wbsDetDeblend). A prototype DCR compensation algorithm should be developed in this WBS based on an assumed SED; further development will be driven by future requirements from other WBS elements.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -1182,6 +1201,10 @@ second readout time, and a second 15 second exposure.
 \bibitem{Ankerst99} M.~Ankerst, M.~M.~Breunig, H.-P.~Kriegel and J.~Sander,
   \textbf{OPTICS: Ordering Points To Identify the Clustering Structure},
   Proc ACM SIGMOD (1999).
+
+\bibitem{Becker14} A.~Becker,
+  \textbf{Report on Summer 2014 Production: Analysis of DCR},
+  \url{https://github.com/lsst-dm/S14DCR/blob/master/report/S14report_V0-00.pdf}.
 
 \bibitem{Bloom12} J.~S.~Bloom et al,
   \textbf{Automating discovery and classification of transients and variable stars in the synoptic survey era},
