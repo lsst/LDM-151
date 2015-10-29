@@ -157,7 +157,7 @@ To carry out this mission the Data Management System (DMS) performs the followin
 The overall architecture of the DMS is discussed in more detail in the Data Management System Design (\DMSD) document. The overall architecture of the DMS is shown in Figure~\ref{fig:DMS}.
 \\
 
-This document discusses the role of the Applications layer in the first three functions listed above (the functions involving {\em science pipelines}).  The fourth is discussed separately in the SUI Conceptual Design Document (\SUI).
+This document discusses the role of the Applications layer in the first three functions listed above (the functions involving \emph{science pipelines}).  The fourth is discussed separately in the SUI Conceptual Design Document (\SUI).
 
 \begin{figure}
 \centering
@@ -222,34 +222,34 @@ We recognize four major groups of science pipelines residing in the Applications
 \begin{itemize}
     \item {\bf Level 1 Pipelines}, grouped under the {\bf Alert Production} element of the WBS, are designed to generate Level 1 data products. These include:
     \begin{itemize}
-    \item {\bf \em Single Frame Processing (``SFM'') Pipeline}, (\wbsSFM) to reduce acquired visits and detect and characterize astrophysical sources present in these visits.
-    \item {\bf \em Image Differencing Pipeline} (\wbsDiffim), to create difference images, and detect and characterize sources in them.
-    \item {\bf \em Association Pipeline} (\wbsAssocP), to associate sources detected in the difference images with known objects.
-    \item {\bf \em Alert Generation Pipeline} (\wbsAP), to generate and transmit alerts to time-domain events (e.g., transients) to the astronomical community, and
-    \item {\bf \em Moving Object Pipeline} (\wbsMOPS), to identify, link and compute orbits for Solar System objects detected in difference images.
+    \item {\bf \emph{Single Frame Processing (``SFM'') Pipeline}} (\wbsSFM), to reduce acquired visits and detect and characterize astrophysical sources present in these visits.
+    \item {\bf \emph{Image Differencing Pipeline}} (\wbsDiffim), to create difference images, and detect and characterize sources in them.
+    \item {\bf \emph{Association Pipeline}} (\wbsAssocP), to associate sources detected in the difference images with known objects.
+    \item {\bf \emph{Alert Generation Pipeline}} (\wbsAP), to generate and transmit alerts to time-domain events (e.g., transients) to the astronomical community, and
+    \item {\bf \emph{Moving Object Pipeline}} (\wbsMOPS), to identify, link and compute orbits for Solar System objects detected in difference images.
     \end{itemize}
 Level 1 pipelines run as the data are being acquired. They primarily focus on image differencing, and the reduction of information extracted from difference images. The algorithms they employ are designed and chosen to complete processing on minute (alert production) to day (Solar System object pipelines) time scales. They are also rerun as a part of Data Release Production (DRP), potentially in somewhat different configurations to achieve greater precision at the expense of increased runtime.
     
     \item {\bf Level 2 Pipelines} run annually or semi-annualy (for the first year of data), and are designed to generate deep co-adds and catalogs stemming from analysis of direct image data.  These include:
     \begin{itemize}
-        \item {\bf \em PSF Estimation Pipeline}, (\wbsPSF), to estimate the PSF properties and variation across the focal plane for each visit, to the degree of precision required by the \SRD\@. Note that the work of this pipeline goes beyond the typical single-CCD PSF estimation present in the SFM pipeline.
-        \item {\bf \em Image Coaddition Pipeline}, (\wbsCoadd), to generate and characterize coadded images of the sky, as well as create templates for image differencing.
-        \item {\bf \em Object Detection and Deblending}, (\wbsDetDeblend), to detect sources in images of the sky and decompose them individual astronomical objects.
-        \item {\bf \em Object Characterization Pipeline}, (\wbsObjChar), to characterize (perform measurements of) astrophysical objects detected in LSST imaging (both in single frames and coadds).
+        \item {\bf \emph{PSF Estimation Pipeline}} (\wbsPSF), to estimate the PSF properties and variation across the focal plane for each visit, to the degree of precision required by the \SRD. Note that the work of this pipeline goes beyond the typical single-CCD PSF estimation present in the SFM pipeline.
+        \item {\bf \emph{Image Coaddition Pipeline}} (\wbsCoadd), to generate and characterize coadded images of the sky, as well as create templates for image differencing.
+        \item {\bf \emph{Object Detection and Deblending}} (\wbsDetDeblend), to detect sources in images of the sky and decompose them individual astronomical objects.
+        \item {\bf \emph{Object Characterization Pipeline}} (\wbsObjChar), to characterize (perform measurements of) astrophysical objects detected in LSST imaging (both in single frames and coadds).
     \end{itemize}
     
     \item {\bf Calibration Pipelines} process the collected calibration data and perform calibration of LSST instruments and data products. These include:
     \begin{itemize}
-        \item {\bf \em Calibration Products Pipeline}, (\wbsCPP), that generates the necessary calibration data products (e.g., master flats, biases, atmospheric models, etc.). It is run periodically as new calibration data are acquired.
-        \item {\bf \em Photometric Calibration Pipeline}, (\wbsPhotoCal), that performs global photometric self-calibration of the Level 2 dataset.
-        \item {\bf \em Astrometric Calibration Pipeline}, (\wbsAstroCal), that performs global astrometric self-calibration of the Level 2 dataset.
+        \item {\bf \emph{Calibration Products Pipeline}} (\wbsCPP), that generates the necessary calibration data products (e.g., master flats, biases, atmospheric models, etc.). It is run periodically as new calibration data are acquired.
+        \item {\bf \emph{Photometric Calibration Pipeline}} (\wbsPhotoCal), that performs global photometric self-calibration of the Level 2 dataset.
+        \item {\bf \emph{Astrometric Calibration Pipeline}} (\wbsAstroCal), that performs global astrometric self-calibration of the Level 2 dataset.
     \end{itemize}
     The calibration products pipeline is also rerun as a part of Data Release Processing. Global self-calibration steps run in DRP only.
 
        \item {\bf Science Data Quality Assessment (SDQA) pipelines and toolkits}, to enable collection, computation, visualization, monitoring and analysis of data quality metrics across all pipelines. These are divided into:
        \begin{itemize}
-           \item {\bf \em Science Data Quality Assessment Pipeline}, (\wbsSDQAP), that provides low-level data collection functionality for SDQA and
-           \item {\bf \em Science Data Quality Analyst Toolkit}, (\wbsSDQAT), that provides the visualization, analysis and monitoring capabilities for SDQA.
+           \item {\bf \emph{Science Data Quality Assessment Pipeline}} (\wbsSDQAP), that provides low-level data collection functionality for SDQA and
+           \item {\bf \emph{Science Data Quality Analyst Toolkit}} (\wbsSDQAT), that provides the visualization, analysis and monitoring capabilities for SDQA.
        \end{itemize}
 
 \end{itemize}
@@ -257,9 +257,9 @@ Level 1 pipelines run as the data are being acquired. They primarily focus on im
 In addition to these four, we recognize two other, cross-cutting, elements of DMS functionality:
 
 \begin{itemize}
-       \item {\bf Common Image and Catalog Processing framework}, known as the {\bf Application Framework (afw)}, (\wbsAFW), that collects base classes and algorithms % RHL need a better word than algorithms
+       \item {\bf \emph{Common Image and Catalog Processing framework}} (\wbsAFW), known as the {\bf Application Framework (afw)}, that collects base classes and algorithms % RHL need a better word than algorithms
          used by the DM Applications layer. The framework is split in two WBS elements, to reflect the multi-institutional nature of the work, but is functionally viewed as a single, integrated, component (class library).
-       \item The {\bf Science Pipeline Toolkit}, (\wbsSPT), a collection of software components (and design principles) designed to enable construction of Level 3 pipelines relying on reusable lower-level components produced in support of other LSST DM software.
+       \item The {\bf \emph{Science Pipeline Toolkit}} (\wbsSPT), a collection of software components (and design principles) designed to enable construction of Level 3 pipelines relying on reusable lower-level components produced in support of other LSST DM software.
 \end{itemize}
 
 \subsubsection{Level 1 Pipelines Overview}
@@ -297,11 +297,11 @@ If the \DIASource has been associated to an \SSObject (a known Solar System obje
 
 \item An alert is issued (\uc{Generate and Distribute Alerts}) that includes all required components, as described in the \DPDD.
 
-\item For all \DIAObjects overlapping the field of view to which a \DIASource from this visit has {\em not} been associated, forced photometry will be performed (\uc{Perform Difference Image Forced Photometry}).  No alerts will be issued for these measurements.
+\item For all \DIAObjects overlapping the field of view to which a \DIASource from this visit has \emph{not} been associated, forced photometry will be performed (\uc{Perform Difference Image Forced Photometry}).  No alerts will be issued for these measurements.
 
 \end{enumerate}
 
-Within 24 hours of discovery, LSST DM system will perform {\em precovery} PSF forced photometry on any prior difference image overlapping the predicted position of new \DIAObjects taken within the past 30 days (\uc{Perform Precovery Forced Photometry}).
+Within 24 hours of discovery, LSST DM system will perform \emph{precovery} PSF forced photometry on any prior difference image overlapping the predicted position of new \DIAObjects taken within the past 30 days (\uc{Perform Precovery Forced Photometry}).
 \\
 
 Similarly, in daytime after the nightly observing run, atmospheric models from the calibration telescope spectra will be calculated (\uc{Calculate Atmospheric Models from Calibration Telescope Spectra}) and made available to the users.
@@ -322,15 +322,15 @@ Figure~\ref{fig:level2dp} presents a high-level overview of the Level 2 data pro
 
 The following is a high-level description of steps which occur during regular Level 2 data processing:
 \begin{enumerate}
-    \item {\em Single Frame Processing}: Raw exposures are reduced to {\em calibrated visit exposures}, and \Sources are independently detected, deblended, and measured on all visits. Their measurements (instrumental fluxes and shapes) are stored in the \Source table. This step is performed by the {\bf \em Single Frame Processing Pipeline} (\wbsSFM).
-    \item {\em Relative calibration}: The survey is internally calibrated, both photometrically and astrometrically using the {\bf \em Astrometric} (\wbsAstroCal) and {\bf \em Photometric Calibration Pipelines} (\wbsPhotoCal). Relative zero points over the focal plane and astrometric corrections are computed for every visit.
-    \item {\em Coadd creation}: Deep, seeing optimized, and short-period per-band coadds are created in $ugrizy$ bands, as well as deeper, multi-color, coadds. This task is performed by the {\bf \em Image Coaddition Pipeline} (\wbsCoadd). Transient sources (including Solar System objects, explosive transients, etc), will be rejected from the coadds.
-    \item {\em Coadd source detection}. Sources will be detected on all coadds generated in the previous step. The source detection algorithm will detect regions of connected pixels, known as {\em footprints}, above the nominal $S/N$ threshold in {\em co-added PSF-likelihood images}. Each footprint may have one or more {\em peaks}, and the collection of these peaks (and their membership in the footprints) are the output of this stage. This information will be stored in a catalog of \CoaddSources. The detection is performed by the {\bf \em Object Detection and Deblending} system (\wbsDetDeblend).
-    \item {\em Coadd source deblending and characterization}. The next stage in the pipeline will decompose the \CoaddSources into a set of individual astronomical sources which is consistent across all bands, a process known as {\em deblending}. The deblender may make use of the catalogs of \Sources and \CoaddSources, catalogs of \DIASources, \DIAObjects and \SSObjects detected on difference images, and objects from external. The deblended objects will then be characterized by measuring their positions, shapes and fluxes on the coadded images and by fitting galaxy models. This functionality is contained within the {\bf \em Object Detection and Deblending} system (\wbsDetDeblend) and the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
-    \item {\em Multi-epoch object characterization}. A set of measurements (including predefined classes of model fits) will be performed on each of the \Objects identified in the previous step, taking all available multi-epoch data into account. Model fits will be performed using {\em MultiFit}-type algorithms. Rather than coadding a set of images and measuring object characteristics on the coadd, MultiFit simultaneously fits PSF-convolved models to the objects multiple observations. This reduces systematic errors, improves the overall $S/N$, and allows for fitting of time-dependent quantities degenerate with shape on the coadds (for example, the proper motion). The models we plan to fit will {\em not} allow for flux variability. Object characterization is a part of the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
-    \item {\em Forced Photometry}. Source fluxes will be measured on every visit, with the position, motion, structural parameters, and deblending characterized in the previous step kept fixed.
+    \item \emph{Single Frame Processing}: Raw exposures are reduced to \emph{calibrated visit exposures}, and \Sources are independently detected, deblended, and measured on all visits. Their measurements (instrumental fluxes and shapes) are stored in the \Source table. This step is performed by the {\bf \emph{Single Frame Processing Pipeline}} (\wbsSFM).
+    \item \emph{Relative calibration}: The survey is internally calibrated, both photometrically and astrometrically using the {\bf \emph{Astrometric}} (\wbsAstroCal) and {\bf \emph{Photometric Calibration Pipelines}} (\wbsPhotoCal). Relative zero points over the focal plane and astrometric corrections are computed for every visit.
+    \item \emph{Coadd creation}: Deep, seeing optimized, and short-period per-band coadds are created in $ugrizy$ bands, as well as deeper, multi-color, coadds. This task is performed by the {\bf \emph{Image Coaddition Pipeline}} (\wbsCoadd). Transient sources (including Solar System objects, explosive transients, etc), will be rejected from the coadds.
+    \item \emph{Coadd source detection}. Sources will be detected on all coadds generated in the previous step. The source detection algorithm will detect regions of connected pixels, known as \emph{footprints}, above the nominal $S/N$ threshold in \emph{co-added PSF-likelihood images}. Each footprint may have one or more \emph{peaks}, and the collection of these peaks (and their membership in the footprints) are the output of this stage. This information will be stored in a catalog of \CoaddSources. The detection is performed by the {\bf \emph{Object Detection and Deblending}} system (\wbsDetDeblend).
+    \item \emph{Coadd source deblending and characterization}. The next stage in the pipeline will decompose the \CoaddSources into a set of individual astronomical sources which is consistent across all bands, a process known as \emph{deblending}. The deblender may make use of the catalogs of \Sources and \CoaddSources, catalogs of \DIASources, \DIAObjects and \SSObjects detected on difference images, and objects from external. The deblended objects will then be characterized by measuring their positions, shapes and fluxes on the coadded images and by fitting galaxy models. This functionality is contained within the {\bf \emph{Object Detection and Deblending}} system (\wbsDetDeblend) and the {\bf \emph{Object Characterization Pipeline}} (\wbsObjChar).
+    \item \emph{Multi-epoch object characterization}. A set of measurements (including predefined classes of model fits) will be performed on each of the \Objects identified in the previous step, taking all available multi-epoch data into account. Model fits will be performed using {\em MultiFit}-type algorithms. Rather than coadding a set of images and measuring object characteristics on the coadd, MultiFit simultaneously fits PSF-convolved models to the objects multiple observations. This reduces systematic errors, improves the overall $S/N$, and allows for fitting of time-dependent quantities degenerate with shape on the coadds (for example, the proper motion). The models we plan to fit will \emph{not} allow for flux variability. Object characterization is a part of the {\bf \emph{Object Characterization Pipeline}} (\wbsObjChar).
+    \item \emph{Forced Photometry}. Source fluxes will be measured on every visit, with the position, motion, structural parameters, and deblending characterized in the previous step kept fixed.
       % RHL we're not clear about which model we'll use for this forced photometry. The best-fit Sersic? 
-      This process of {\em forced photometry}, will result in the characterization of the light-curve for each object in the survey. Forced photometry is functionally a part of the {\bf \em Object Characterization Pipeline} (\wbsObjChar).
+      This process of \emph{forced photometry}, will result in the characterization of the light-curve for each object in the survey. Forced photometry is functionally a part of the {\bf \emph{Object Characterization Pipeline}} (\wbsObjChar).
 \end{enumerate}
 
 
@@ -342,11 +342,11 @@ Level 3 capabilities are envisioned to enable science cases requiring further cu
 
 To enable Level 3 use cases, LSST Data Management pipelines will be designed in a modular fashion to maximize the potential for reusability and synergy between Level 3 and Levels 1 and 2.
 
-For example, a typical Level 3 use case will be to perform a different kind of measurement on objects detected in the course of Level 2 processing. A user will be able to do this by reusing the desired components of Level 2 processing, plugging in (via Python {\tt import} directives in the appropriate configuration file) the modules for their custom measurement, and executing the pipeline. The {\bf \em Science Pipeline Toolkit} (\wbsSPT) will provide the necessary components to support user-driven construction and execution of custom pipelines.
+For example, a typical Level 3 use case will be to perform a different kind of measurement on objects detected in the course of Level 2 processing. A user will be able to do this by reusing the desired components of Level 2 processing, plugging in (via Python {\tt import} directives in the appropriate configuration file) the modules for their custom measurement, and executing the pipeline. The {\bf \emph{Science Pipeline Toolkit}} (\wbsSPT) will provide the necessary components to support user-driven construction and execution of custom pipelines.
 
 \subsubsection{Science Data Quality Analysis Pipeline and Toolkit}
 
-Science Data Quality Analysis requirements are described in the Data Quality Assurance Plan (\SDQAP) document. They will be implemented by the {\bf \em SDQA Pipeline} (\wbsSDQAP; the data collection backend) and the {\bf \em SDQA Toolkit} (\wbsSDQAT; the data analysis front-end).
+Science Data Quality Analysis requirements are described in the Data Quality Assurance Plan (\SDQAP) document. They will be implemented by the {\bf \emph{SDQA Pipeline}} (\wbsSDQAP; the data collection backend) and the {\bf \emph{SDQA Toolkit}} (\wbsSDQAT; the data analysis front-end).
 \\
 
 LSST QA will include four main components, which to some extent reflect the Level 1-3 structure of LSST data products. Level 0 QA is software development related, Level 1 QA relates to nightly operations, Level 2 QA relates to data releases, and Level 3 QA is science based.
@@ -372,7 +372,7 @@ LSST QA will include four main components, which to some extent reflect the Leve
 
 \subsubsection{Key Requirements}
 
-The {\bf \em LSST Applications Framework} ({\tt afw}) is to provide the basic functionality needed by an image processing system. In particular, it shall provide:
+The {\bf \emph{LSST Applications Framework}} ({\tt afw}) is to provide the basic functionality needed by an image processing system. In particular, it shall provide:
 %
 \begin{itemize}
     \item Classes to represent and manipulate mappings between device and astronomical coordinates.
@@ -380,7 +380,7 @@ The {\bf \em LSST Applications Framework} ({\tt afw}) is to provide the basic fu
     \item Classes to represent and estimate backgrounds on images
     \item Classes to represent the geometry of the camera
     \item Base classes to represent and manipulate the point spread function (PSF)
-    \item Routines to perform detection of sources on images, and classes to represent these detections ({\em ``footprints"})
+    \item Routines to perform detection of sources on images, and classes to represent these detections (\emph{``footprints''})
     \item Classes to represent astronomical objects
     \item Classes to represent and manipulate tables of astronomical objects
     \item Other low-level operations as needed by LSST science pipelines 
@@ -457,7 +457,7 @@ It will consist of three primary components:
     \item A top-level Task to run the SFM pipeline.
 \end{itemize}
 
-In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS {\em Photo} pipeline \cite{LuptonPhoto}.
+In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS \emph{Photo} pipeline \cite{LuptonPhoto}.
 
 \paragraph{Instrumental Signature Removal:}
 
@@ -502,9 +502,9 @@ Background models will be saved, for later subtraction or restoration (e.g., in 
 
 \paragraph{WCS determination and image registration}
 
-The absolute World Coordinate System (WCS) will be determined using an {\em astrometry.net} type algorithm \cite{Lang09}, seeded with the approximate position of the boresight.  % RHL I doubt if we'll use a.n in production (except as a fallback when all else fails)
+The absolute World Coordinate System (WCS) will be determined using an \emph{astrometry.net} type algorithm \cite{Lang09}, seeded with the approximate position of the boresight.  % RHL I doubt if we'll use a.n in production (except as a fallback when all else fails)
 
-This module will also include the capability to perform relative registration of a set of images to enable coaddition and image differencing, using the {\em meas\_mosaic} registration algorithm developed by Furusawa et al. \cite{Furusawa14} as the baseline.
+This module will also include the capability to perform relative registration of a set of images to enable coaddition and image differencing, using the \emph{meas\_mosaic} registration algorithm developed by Furusawa et al. \cite{Furusawa14} as the baseline.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -541,7 +541,7 @@ Differencing will be performed against a deeper template, and differential chrom
 All \DIASource measurements described in the \DPDD, including post-processing such as variability characterization, will be performed for all sources detected in this manner. The measurements will be performed on the pre-convolved likelihood image. The measurement code will reside in a separate module in the Object Characterization Pipeline (\wbsObjChar).
 \\
 
-If necessary a {\em spuriousness metric} using machine-learning techniques (e.g., Bloom et al. \cite{Bloom12}) will be developed to help in the discrimination of real sources from those caused by artifacts.
+If necessary a \emph{spuriousness metric} using machine-learning techniques (e.g., Bloom et al. \cite{Bloom12}) will be developed to help in the discrimination of real sources from those caused by artifacts.
 \\
 
 Details of this baseline design have been captured in the \uc{Detect and Characterize DIA Sources} and related diagrams, presented in Figure~\ref{fig:diffimUML}.
@@ -596,7 +596,7 @@ The prototype code is available at \url{https://github.com/lsst/ap}. The current
 Alert Generation Pipeline shall take the newly discovered \DIASources and all associated metadata as described in the \DPDD, and generate alert packets in \VOEvent format. It will transmit these packets to VO Event Brokers, using standard IVOA protocols (eg., VOEvent Transport Protocol; VTP\@. End-users will primarily use these brokers to classify and filter events for subsets fitting their science goals.
 % RHL I thought that we were being careful to say we'll use whatever's the standard, e.g. VO?
 
-To directly serve the end-users, the Alert Generation Pipeline shall provide a basic, limited capacity, alert filtering service. This service will run at the LSST U.S. Archive Center (at NCSA). It will let astronomers create simple filters that limit what alerts are ultimately forwarded to them. These {\em user defined filters} will be possible to specify using an SQL-like declarative language, or short snippets of (likely Python) code.
+To directly serve the end-users, the Alert Generation Pipeline shall provide a basic, limited capacity, alert filtering service. This service will run at the LSST U.S. Archive Center (at NCSA). It will let astronomers create simple filters that limit what alerts are ultimately forwarded to them. These \emph{user defined filters} will be possible to specify using an SQL-like declarative language, or short snippets of (likely Python) code.
 
 \subsubsection{Baseline design}
 
@@ -728,7 +728,7 @@ Determining the background from individual visits separately is problematic (bec
 \paragraph{Warping}
 \label{alg:warp}
 
-To warp an image from the detector frame to the sky frame, a resampling kernel will be used. The kernel is set according to the sub-pixel position on the input image of the centre of the corresponding output pixel.  The must will support using Lanczos (of configurable order), bilinear or nearest-neighbour kernels, with the default being a 3rd-order Lanczos (with $10^6$ cache realizations), as a compromise between the infinite {\em sinc} function and the need for speed. Other schemes (e.g. polynomial interpolation) may also be available.
+To warp an image from the detector frame to the sky frame, a resampling kernel will be used. The kernel is set according to the sub-pixel position on the input image of the centre of the corresponding output pixel.  The must will support using Lanczos (of configurable order), bilinear or nearest-neighbour kernels, with the default being a 3rd-order Lanczos (with $10^6$ cache realizations), as a compromise between the infinite \emph{sinc} function and the need for speed. Other schemes (e.g.\ polynomial interpolation) may also be available.
 \\
 
 The LSST focal plane will be undersampled at seeing less than 0.4''. It must be possible to warp and coadd undersampled images without introducing aliasing. The approach taken should provide the best possible image quality while maintaining adequate computational throughput; a slightly loss of image quality is acceptable.
@@ -961,9 +961,9 @@ The pipeline shall be capable of fitting a dipole object model, as described in 
 
 \paragraph{Adaptive moments} Adaptive moments will be computed using information from all epochs, independently for each band, using the algorithm of Bernstein \& Jarvis (2002).
 
-\paragraph{Petrosian and Kron fluxes} Petrosian and Kron radii and fluxes will be measured in standard seeing using self-similar elliptical apertures computed from adaptive moments. The apertures will be PSF-corrected and {\em homogenized}, convolved to a canonical circular PSF\@. This is in order to derive a definition of elliptical apertures that does not depend on seeing. For example, for a large galaxy, the correction to standard seeing will introduce little change to measured ellipticity. Corrected apertures for small galaxies will tend to be circular (due to smearing by the PSF). In the intermediate regime, this method results in derived apertures that are relatively seeing-independent. Note that this is only the case for {\em apertures}; the measured flux will still be seeing dependent and it is up to the user to take this into account.
+\paragraph{Petrosian and Kron fluxes} Petrosian and Kron radii and fluxes will be measured in standard seeing using self-similar elliptical apertures computed from adaptive moments. The apertures will be PSF-corrected and \emph{homogenized}, convolved to a canonical circular PSF\@. This is in order to derive a definition of elliptical apertures that does not depend on seeing. For example, for a large galaxy, the correction to standard seeing will introduce little change to measured ellipticity. Corrected apertures for small galaxies will tend to be circular (due to smearing by the PSF). In the intermediate regime, this method results in derived apertures that are relatively seeing-independent. Note that this is only the case for \emph{apertures}; the measured flux will still be seeing dependent and it is up to the user to take this into account.
 
-The radii will be computed independently for each band. Fluxes will be computed in each band, by integrating the light within some multiple of {\em the radius measured in the canonical band}. The shape of the aperture in all bands will be set by the profile of the galaxy in the canonical band alone. This procedure ensures that the color measured by comparing the flux in different bands is measured through a consistent aperture. See \url{http://www.sdss.org/dr7/algorithms/photometry.html} for details. The pipeline shall be capable of computing radii enclosing 50\% and 90\% of light.
+The radii will be computed independently for each band. Fluxes will be computed in each band, by integrating the light within some multiple of \emph{the radius measured in the canonical band}. The shape of the aperture in all bands will be set by the profile of the galaxy in the canonical band alone. This procedure ensures that the color measured by comparing the flux in different bands is measured through a consistent aperture. See \url{http://www.sdss.org/dr7/algorithms/photometry.html} for details. The pipeline shall be capable of computing radii enclosing 50\% and 90\% of light.
 
 The baseline for both Petrosian and Kron flux implementation is to derive these as an a mathematical transformation of aperture surface brightness measurements (see below).
 
@@ -1145,7 +1145,7 @@ The toolkit will enable automation of tests and monitoring, and issuance of warn
 
 The core of the toolkit will be designed around a pluggable Python framework generating, a web-based, interactive, visualization interface. This framework has already been implemented in the final design phase as ``pipeQA".
 
-Standard data visualization {\em aspects} will be realized with predefined set of web pages with tests/analyses executed on a given SDQA repository. These aspects will allow the browsing and drill-down of data collected in Data Release Production runs, or monitoring of live data (for Level 1).
+Standard data visualization \emph{aspects} will be realized with predefined set of web pages with tests/analyses executed on a given SDQA repository. These aspects will allow the browsing and drill-down of data collected in Data Release Production runs, or monitoring of live data (for Level 1).
 
 Data analysts and users will be able to create new QA tests to examine particular anomalies discovered in the data. It will be possible to add these tests to the library of predefined aspects, to be executed or monitored in Level 1 and Level 2 productions.
 
