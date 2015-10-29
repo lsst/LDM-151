@@ -956,7 +956,7 @@ The radii will be computed independently for each band. Fluxes will be computed 
 
 The baseline for both Petrosian and Kron flux implementation is to derive these as an a mathematical transformation of aperture surface brightness measurements (see below).
 
-\paragraph{Aperture surface brightness}. Aperture surface brightness will be computed in a variable number, depending on the size of the source, of concentric, logarithmically spaced, PSF-homogenized, elliptical apertures, convolved to standard seeing.
+\paragraph{Aperture surface brightness} Aperture surface brightness will be computed in a variable number, depending on the size of the source, of concentric, logarithmically spaced, PSF-homogenized, elliptical apertures, convolved to standard seeing.
 
 \paragraph{Resolved/Unresolved object separation}
 \label{alg:star-galaxy}
@@ -968,7 +968,12 @@ We baseline the resolved/unresolved object separation algorithm based on the rat
 
 \paragraph{Variability Characterization}
 
-       Two groups of parameters are required to be provided (see {\tt lcPeriodic} and {\tt lcNonPeriodic} in the \DPDD), designed to characterize periodic and aperiodic variability features. We baseline the metrics and algorithms described in \cite{Richards11} for production of these data products.
+Two groups of parameters are required to be provided (see {\tt lcPeriodic} and {\tt lcNonPeriodic} in the \DPDD), designed to characterize periodic and aperiodic variability features. We baseline the metrics and algorithms described in \cite{Richards11} for production of these data products.
+
+\paragraph{Photometric Redshifts}
+
+% TODO: Define properly.
+DMS-REQ-0046 requires that a photometric redshift be calculated for all Objects. The \DPDD{} requires that we provide 100 pairs of ($z$, $\log L$) likelihood samples for each object using an algorithm which is ``widely accepted at the time of LSST commissioning''.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
