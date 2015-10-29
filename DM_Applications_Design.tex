@@ -655,7 +655,7 @@ PSF Estimation pipeline must enable the estimation of the point spread function 
 
 \subsubsection{Baseline design}
 
-LSST's PSF models will be implemented as a plugin. Simple PSF estimation algorithms (e.g., {\tt pcaPsf}) will be implemented by the Single Frame Processing pipeline (\wbsSFM). CoaddPsf ({\tt stackfitPsf}) algorithm will be implemented in the Image Coaddition Pipeline (\wbsCoadd).
+LSST's PSF models will be implemented as a plugin. Simple PSF estimation algorithms (e.g., {\tt pcaPsf}) will be implemented by the Single Frame Processing pipeline (\wbsSFM). The CoaddPsf algorithm will be implemented in the Image Coaddition Pipeline (\wbsCoadd).
 \\
 
 Current state-of-the-art PSF estimation methods typically use some basis functions (e.g., $\delta$-functions, PCA) and a spatial model (e.g., polynomials) to estimate the PSF\@. This is not expected to be sufficient to reach LSST requirements. We've therefore adopted a baseline algorithm as follows:
