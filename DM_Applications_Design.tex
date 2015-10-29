@@ -802,6 +802,11 @@ The Object Detection and Deblending system is responsible for the detection of
 sources on coadds produced by the Coaddition Pipeline and for disentangling
 collections of superimposed objects into their constitutent parts.
 
+
+% TODO: There are no requirements specified for the coverage maps. For now, I am adding a vague statement here. We should make this more concrete, perhaps by updating the DMSR.
+It must also construct maps describing completeness and selection effects in
+the LSST survey.
+
 \subsubsection{Baseline design}
 
 The baseline is taken from the SDSS detection and deblending algorithms
@@ -840,6 +845,9 @@ This SDSS-style deblender will be run on the set of single-band coadds, then a s
 
 In areas of significant stellar crowding (i.e., Galactic plane, star clusters), this approach lends itself to imposition of appropriate template priors (i.e., the correct template being that of a point source convolved with the PSF). This, effectively, makes the deblender into a crowded field code, allowing this baseline to satisfy the requirements for crowded field photometry.
 
+\paragraph{Sky coverage}
+
+This is an area of active and ongoing research in DES and HSC. We intend to learn from their experience before baselining a design. Relevant prior work includes STOMP\footnote{\url{https://code.google.com/p/astro-stomp/}}, Mangle\footnote{\url{http://space.mit.edu/~molly/mangle/}} and Venice.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 % TODO The UML models are comprehensively outdated.
