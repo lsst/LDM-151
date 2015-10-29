@@ -406,20 +406,20 @@ Prototype code is available at \url{https://github.com/lsst/afw/}. The documenta
 
 \subsubsection{Key Requirements}
 
-Single Frame Processing (SFM) Pipeline is responsible for reducing raw image data to {\em calibrated exposures}, and detection and measurement of \Sources (using the components functionally a part of the Object Characterization Pipeline).
+Single Frame Processing (SFM) Pipeline is responsible for reducing raw image data to \emph{calibrated exposures}, and detection and measurement of \Sources (using the components functionally a part of the Object Characterization Pipeline).
 \\
 
 SFM pipeline functions include:
 %
 \begin{itemize}
-    \item Assembly of per-amplifier images to an image of the entire CCD.
-    \item Instrumental Signature Removal
-    \item Cosmic ray rejection and snap combining
-    \item Per-CCD Determination of zeropoint and aperture corrections
-    \item Per-CCD PSF determination
-    \item Per-CCD WCS determination and astrometric registration of images
-    \item Per-CCD sky background determination 
-    \item Source detection
+    \item Assembly of per-amplifier images to an image of the entire CCD;
+    \item Instrumental Signature Removal;
+    \item Cosmic ray rejection and snap combining;
+    \item Per-CCD Determination of zeropoint and aperture corrections;
+    \item Per-CCD PSF determination;
+    \item Per-CCD WCS determination and astrometric registration of images;
+    \item Per-CCD sky background determination;
+    \item Source detection.
 \end{itemize}
 
 Calibrated exposure produced by the SFM pipeline must possess all information necessary for measurement of source properties by single-epoch Object Characterization algorithms.
@@ -849,7 +849,7 @@ In areas of significant stellar crowding (i.e., Galactic plane, star clusters), 
 
 \paragraph{Sky coverage}
 
-This is an area of active and ongoing research in DES and HSC. We intend to learn from their experience before baselining a design. Relevant prior work includes STOMP\footnote{\url{https://code.google.com/p/astro-stomp/}}, Mangle\footnote{\url{http://space.mit.edu/~molly/mangle/}} and Venice.
+This is an area of active and ongoing research in DES and HSC\@. We intend to learn from their experience before baselining a design. Relevant prior work includes STOMP\footnote{\url{https://code.google.com/p/astro-stomp/}}, Mangle\footnote{\url{http://space.mit.edu/~molly/mangle/}} and Venice.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 % TODO The UML models are comprehensively outdated.
