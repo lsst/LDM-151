@@ -989,17 +989,31 @@ To further make the multifit approach computationally tractable, we baseline use
 
 \paragraph{Point source model fit} To satisfy the point-source model fit requirements, we model each observed object as a point source with finite proper motion and parallax and with constant flux (allowed to be different in each band). This model is a good description for stars and other unresolved sources. Its 11 parameters will be simultaneously constrained using information from all available observations in all bands. The fitting procedure will account for differential chromatic refraction. Multifit will be used to perform the fit.
 
-\paragraph{Bulge-disk model fit} To satisfy the bulge-disk model fit requirements, the pipeline will be capable of modelling objects as a sum of a de Vaucouleurs (Sersic $n=4$) and an exponential (Sersic $n=1$) component. This model is a reasonable description of galaxies. The object is assumed not to move (i.e., have zero proper motion). The components share the same ellipticity and center. The model is independently fit to each band. There are a total of 8 free parameters, which will be simultaneously constrained using information from all available epochs for each band. Where there's insufficient data to constrain the likelihood (eg., small, poorly resolved, galaxies, or very few epochs), the pipeline will have the capability to take into account priors that limit the range of its sampling.
+\paragraph{Bulge-disk model fit}
+
+\begin{note}
+Deprecated by Bosch.
+\end{note}
+
+To satisfy the bulge-disk model fit requirements, the pipeline will be capable of modelling objects as a sum of a de Vaucouleurs (Sersic $n=4$) and an exponential (Sersic $n=1$) component. This model is a reasonable description of galaxies. The object is assumed not to move (i.e., have zero proper motion). The components share the same ellipticity and center. The model is independently fit to each band. There are a total of 8 free parameters, which will be simultaneously constrained using information from all available epochs for each band. Where there's insufficient data to constrain the likelihood (eg., small, poorly resolved, galaxies, or very few epochs), the pipeline will have the capability to take into account priors that limit the range of its sampling.
 
 In addition to the maximum likelihood values of fitted parameters and their covariance matrix, the pipeline shall be capable of sampling independent samples from the likelihood function (or posterior). Multifit will be used to perform the fit.
 
 \paragraph{Trailed model fit}
 
-The pipeline shall be capable of fitting a trailed object model, as described in the \DPDD\@. The baseline algorithm is analogous to that employed by the bulge-disk model fit, but with the model being a line segment instead of a mixture of Sersic profiles.
+The pipeline shall be capable of fitting a trailed object model, as described in the \DPDD{}. The baseline algorithm is analogous to that employed by the bulge-disk model fit, but with the model being a line segment instead of a mixture of Sersic profiles.
 
 \paragraph{Dipole model fit}
 
-The pipeline shall be capable of fitting a dipole object model, as described in the \DPDD\@. The baseline algorithm is analogous to that employed by the bulge-disk model fit, but with the model being a mixture of positive and negative point sources, instead of Sersic profiles.
+The pipeline shall be capable of fitting a dipole object model, as described in the \DPDD{}. The baseline algorithm is analogous to that employed by the bulge-disk model fit, but with the model being a mixture of positive and negative point sources, instead of Sersic profiles.
+
+\paragraph{Hybrid model fit}
+
+\begin{note}
+Required by Bosch.
+\end{note}
+
+The pipeline shall be capable of fitting a hybrid model that transitions between a moving point source and a galaxy model. Because a static point source is a limit shared by both models, the transition is continuous. Fitting will be performed by both numerical optimization and Monte Carlo sampling; where there iss insufficient data to constrain the likelihood (eg., small, poorly resolved, galaxies, or very few epochs), the pipeline will have the capability to take into account priors that limit the range of sampling. The model is independently fit to each band.
 
 \paragraph{Centroids} Centroids will be computed independently for each band using an algorithm similar to that employed by SDSS \cite{LuptonPhoto}. Information from all epochs will be used to derive the estimate. These centroids will be used for adaptive moment, Petrosian, Kron, standard color, and aperture measurements.
 
@@ -1020,6 +1034,14 @@ We baseline the resolved/unresolved object separation algorithm based on the rat
 \begin{equation}
 {\rm extendedness} = (0.95\times {\rm flux.gaussian} < {\rm flux.psf})\, ?\, 0.0 : 1.0 \nonumber
 \end{equation}
+
+\paragraph{Star-Galaxy classification}
+
+\begin{note}
+Not explicitly required in any of the requirements documents, but common consensus is that this will be necessary. Should expl
+\end{note}
+
+We expect to adopt the technique used by HSC\@: a sigmoid based on the difference between the model and Gaussian flux, trained using Support Vector Machines.
 
 \paragraph{Variability Characterization}
 
