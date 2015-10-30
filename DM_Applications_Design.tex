@@ -74,13 +74,13 @@
 \newcommand{\wbsPhotoCal}{WBS 02C.03.07}
 \newcommand{\wbsAstroCal}{WBS 02C.03.08}
 
-\newenvironment{note}
+\newenvironment{note}[1][Note]
 {
   \begin{displaymath}
     \left[ \qquad
     \begin{minipage}[h]{.75\linewidth}
       \color{red} \footnotesize
-      \textbf{Note:} \newline
+      \textbf{#1:} \newline
       \color{black}
 }
 {
@@ -820,7 +820,10 @@ The Object Detection and Deblending system is responsible for the detection of
 sources on coadds produced by the Coaddition Pipeline and for disentangling
 collections of superimposed objects into their constitutent parts.
 
-% TODO: There are no requirements specified for the coverage maps. For now, I am adding a vague statement here. We should make this more concrete, perhaps by updating the DMSR.
+\begin{note}[TODO]
+There are no requirements specified for the coverage maps. For now, I am adding a vague statement here. We should make this more concrete, perhaps by updating the DMSR.
+\end{note}
+
 It must also construct maps describing completeness and selection effects in
 the LSST survey.
 
@@ -870,7 +873,10 @@ In areas of significant stellar crowding (i.e., Galactic plane, star clusters), 
 This is an area of active and ongoing research in DES and HSC\@. We intend to learn from their experience before baselining a design. Relevant prior work includes STOMP\footnote{\url{https://code.google.com/p/astro-stomp/}}, Mangle\footnote{\url{http://space.mit.edu/~molly/mangle/}} and Venice.
 
 \subsubsection{Constituent Use Cases and Diagrams}
-% TODO The UML models are comprehensively outdated.
+
+\begin{note}[TODO]
+The UML models are comprehensively outdated.
+\end{note}
 
 Detect and Characterize AstroObjects;
 Detect Sources on Coadds;
@@ -1041,7 +1047,7 @@ We baseline the resolved/unresolved object separation algorithm based on the rat
 \paragraph{Star-Galaxy classification}
 
 \begin{note}
-Not explicitly required in any of the requirements documents, but common consensus is that this will be necessary. Should expl
+Not explicitly required in any of the requirements documents, but common consensus is that this will be necessary. Should expand the below.
 \end{note}
 
 We expect to adopt the technique used by HSC\@: a sigmoid based on the difference between the model and Gaussian flux, trained using Support Vector Machines.
@@ -1052,7 +1058,10 @@ Two groups of parameters are required to be provided (see {\tt lcPeriodic} and {
 
 \paragraph{Photometric Redshifts}
 
-% TODO: Define properly.
+\begin{note}[TODO]
+Define properly.
+\end{note}
+
 DMS-REQ-0046 requires that a photometric redshift be calculated for all Objects. The \DPDD{} requires that we provide 100 pairs of ($z$, $\log L$) likelihood samples for each object using an algorithm which is ``widely accepted at the time of LSST commissioning''.
 
 \subsubsection{Constituent Use Cases and Diagrams}
