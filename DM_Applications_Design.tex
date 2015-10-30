@@ -13,6 +13,7 @@
 \usepackage[usenames]{color} 
 \usepackage{datetime}
 \usepackage{microtype}
+\usepackage{notes}
 
 \newcommand{\vstretch}[1]{\vspace*{\stretch{#1}}}
 \newcommand{\code}[1]{\texttt{#1}}
@@ -72,6 +73,22 @@
 \newcommand{\wbsCPP}{WBS 02C.04.02}
 \newcommand{\wbsPhotoCal}{WBS 02C.03.07}
 \newcommand{\wbsAstroCal}{WBS 02C.03.08}
+
+\newenvironment{note}
+{
+  \begin{displaymath}
+    \left[ \qquad
+    \begin{minipage}[h]{.75\linewidth}
+      \color{red} \footnotesize
+      \textbf{Note:} \newline
+      \color{black}
+}
+{
+    \end{minipage}
+    \normalsize
+    \qquad \right]
+  \end{displaymath}
+}
 
 \newcommand{\uc}[1]{{\tt #1}}
 
@@ -639,7 +656,6 @@ PSF Estimation pipeline must enable the estimation of the point spread function 
 \subsubsection{Baseline design}
 
 LSST's PSF models will be implemented as a plugin. Simple PSF estimation algorithms (e.g., {\tt pcaPsf}) will be implemented by the Single Frame Processing pipeline (\wbsSFM). The CoaddPsf algorithm will be implemented in the Image Coaddition Pipeline (\wbsCoadd).
-\\
 
 Current state-of-the-art PSF estimation methods typically use some basis functions (e.g., $\delta$-functions, PCA) and a spatial model (e.g., polynomials) to estimate the PSF\@. This is not expected to be sufficient to reach LSST requirements. We've therefore adopted a baseline algorithm as follows:
 \begin{itemize}
@@ -804,7 +820,6 @@ The Object Detection and Deblending system is responsible for the detection of
 sources on coadds produced by the Coaddition Pipeline and for disentangling
 collections of superimposed objects into their constitutent parts.
 
-
 % TODO: There are no requirements specified for the coverage maps. For now, I am adding a vague statement here. We should make this more concrete, perhaps by updating the DMSR.
 It must also construct maps describing completeness and selection effects in
 the LSST survey.
@@ -813,7 +828,6 @@ the LSST survey.
 
 The baseline is taken from the SDSS detection and deblending algorithms
 \cite{Lupton05, LuptonPhoto}.
-\\
 
 \paragraph{Object detection}
 
@@ -821,9 +835,13 @@ Object detection is performed by correlating the deep coadd image with the
 CoaddPsf PSF and searching for peaks above the preset threshold. Multiple
 adjacent peaks will be detected and merged to reduce spuriously detected
 objects due to noise or object substructure.
-\\
 
-To enable detection of extended objects, the Pipeline will perform detection on recursively binned coadds.
+To enable detection of extended objects, the Pipeline will perform detection on
+recursively binned coadds.
+
+The \DPDD{} requires that the resultant collection of peaks and their
+membership in the footprints be provided to end users as a \texttt{CoaddSource}
+data product.
 
 \paragraph{Deblender}
 \label{alg:deblender}
@@ -873,10 +891,48 @@ meas\_deblender} package at \url{https://github.com/lsst/meas_deblender}.
 
 \subsubsection{Key Requirements}
 
-Given one or more cutouts of a detected object, observed in one or more epochs, the Object Characterization Pipeline will perform all measurements required by the \DPDD, within the computational budget allotted by the LSST sizing model.
-\\
+\begin{note}
+Here we account to itemize all the pieces of functionality that the Obj Char Pipeline needs to meet the DPDD (or some Bosch Blended Measurement \cite{Bosch15} modified version thereof). Some of these are arguably design decisions rather than requirements on the output, but the contents of the DPDD are explicitly driven by the algorithmic and design decisions -- we commit to providing the results of certain measurements, which makes the measurements requirements.
+\end{note}
 
-Functionally, the components of this pipeline may be incorporated into or invoked by other pipelines.
+Given one or more cutouts of a detected object, observed in one or more epochs, the Object Characterization Pipeline must perform all measurements required to generate the Level 2 Catalogs as described by the \DPDD{}, within the computational budget allotted by the LSST sizing model.
+
+Functionally, the components of this pipeline must be available for incorporation into or use by other pipelines. In particular, both the Single Frame Processing Pipeline (\wbsSFM) and the Difference Imaging Pipeline (\wbsDiffim) will delegate source characterization to the algorithms defined herein.
+
+The Object Characterization Pipeline must be capable of:\footnote{The \DPDD{} specifies detailed algorithmic requirements for each of these measurements}
+\begin{itemize}
+  \item{Measurement of surface brightness in an elliptical aperture;}
+  \item{Measurement of Petrosian flux and radius;}
+  \item{Measurement of Kron flux and radius.}
+\end{itemize}
+
+The Object Characterization Pipeline must be capable of fitting the following source models:
+\begin{itemize}
+  \item{Moving point source (required by Single Frame Processing);}
+  \item{Trailed point source (required by the Difference Imaging Pipeline);}
+  \item{Hybrid galaxy-moving point source (required for Level 2 Catalogs).
+    \begin{note}
+    The DPDD specifies separate point source and galaxy models; here we follow Bosch.
+    \end{note}
+  }
+\end{itemize}
+
+It must be possible to fit a point source model to an image while holding the postion, motion, shape and deblending parameters (if applicable) fixed (to perform ``forced photometry'').
+
+It must be possible to perform \textit{simultaneous fitting}, whereby we fit the models for multiple objects simultaneously.
+
+It must be possible to fit objects using either numerical optimization or by Monte Carlo sampling.
+
+It must be possible to derive the following quantities based on the measurements made using ``best practice'' algorithms at the time of commissioning:
+\begin{itemize}
+  \item{Color of the object measured in the ``standard seeing'';}
+  \item{Extendedness of the object;}
+  \item{Photmetric redshift likelihood samples;}
+\end{itemize}
+
+It must be possible to characterize a time series of forced photometry measurements of the same object for aperiodic and periodic variability\footnote{The \DPDD{} suggests specific metrics, but cautions they should be revised during construction.}.
+
+When constructing Level 2 Catalogs, a probabalistic star-galaxy classification should be available for each object.
 
 \subsubsection{Baseline design}
 
@@ -1215,6 +1271,9 @@ second readout time, and a second 15 second exposure.
 \bibitem{Bosch13} J.~Bosch, P.~Gee, R.~Owen, M.~Juric and the LSST DM team,
   \textbf{LSST DM S13 Report: Shape measurement plans and prototypes},
   \url{https://docushare.lsstcorp.org/docushare/dsweb/ImageStoreViewer/Document-15298}
+
+\bibitem{Bosch15} J.~Bosch,
+  \textbf{Measurement of Blended Objects in LSST}.
 
 \bibitem{Huff11} E.~M.~Huff et al,
   \textbf{Seeing in the dark -- I. Multi-epoch alchemy},
