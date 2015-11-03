@@ -692,11 +692,15 @@ The Image Coaddition Pipeline will produce coadds given a stack of input calibra
     \item{Likelihood (``Kaiser'').}
 \end{itemize}
 
+The implementation of likelihood coaddition used to generate coadds suitable for the Detection and Deblending system (\wbsDetDeblend{}) may utilize extensive approximations that limit the applicability of the coadds in the Object Characterization Pipeline (\wbsObjChar{}). A prototype version of likelihood coaddition algorithm suitable for object characterization must also be developed within this WBS; whether that more advanced algorithm progresses beyond prototype stage will be determined within \wbsObjChar{}.
+
 The baseline implementation of likelihood coaddition may utilize extensive approximations that limits the applicability of the coadds in the Object Characterization Pipeline (\wbsObjChar). A higher quality implementation need only be implemented in response to emergent object characterization requirements during construction.
 
 The Image Coaddition Pipeline must be capable of combining coadds from mulitple bands into a single, multi-band, coadd. When doing so, it must support both the ``$\chi^2$'' scheme described by \cite{Szalay99} and scheme in which inputs are weighted by the expected SED.
 
-When non-PSF-matched coadds are produced, the effective PSF and its variation across the full coadd must be determined and retained. Outliers appearing in a small subset of input images (e.g., transients or moving objects) must not appear in the final co-adds. % RHL how we handle variables (e.g., RR Lyrae's) is not obvious
+When non-PSF-matched coadds are produced, the effective PSF and its variation across the full coadd must be determined and retained.
+
+Outliers appearing in a small subset of input images (e.g. transients or moving objects) must not appear in the final co-adds. % RHL how we handle variables (e.g., RR Lyrae's) is not obvious
 
 The Image Coaddition Pipeline must make it possible to generate the coadds with astrophysical backgrounds removed or retained, depending on runtime configuration directives.
 
@@ -711,7 +715,7 @@ For performance reasons, the pipeline should be able to simultaneously generate 
 \paragraph{Coaddition}
 \label{alg:coadd}
 
-The Coaddition Pipeline will apply the results of the relative astrometric solution (developed as a part of Single Frame Pipeline, \wbsSFM) to the input images, warp (\S\ref{alg:warp}) them to a common coordinate system (``sky map''; \S\ref{alg:skymap}) and coadd the pixels. Using those images, multiple coadds will be created, each consisting of a subset of input images defined explicitly by the operator or algoritmically by quality cuts.
+The Coaddition Pipeline will apply the results of the relative astrometric solution (developed as a part of Single Frame Pipeline, \wbsSFM) to the input images, warp (\S\ref{alg:warp}) them to a common coordinate system (``sky map''; \S\ref{alg:skymap}) and coadd the pixels. Multiple coadds may be created from a given set of input images by combining subsets of the input defined explicitly by the operator or algoritmically by quality cuts.
 
 To accurately measure the colors of galaxies (e.g., for photometric redshifts) in the presence of intra-object color gradients, seeing changes and imperfect galaxy models, the baseline implementation will be capable of producing ``PSF-matched coadds'' using well known PSF-matching algorithms. The Object Characterization Pipeline (\wbsObjChar) will measure object properties on both direct (centroids and shapes) and PSF-matched (fluxes) coadds, as well as fitting galaxy models to the direct coaads.
 
@@ -788,6 +792,22 @@ of an individual object.
 %poorly-defined, and a poor match to the model produced by the CoaddPsf
 %approach.
 
+\paragraph{Image artifact rejection}
+
+\begin{note}[TODO]
+This is a placeholder by JDS --- a fuller description of the approach is required.
+\end{note}
+
+Artifacts which may be seen on images include:
+
+\begin{itemize}
+  \item{Optical ghosts;}
+  \item{Satellite and asteroid trails;}
+  \item{Transient and variable sources.}
+\end{itemize}
+
+These must not be included in coadds. Furthermore, the \texttt{CoaddPsf} must be updated to take account of their removal.
+
 \paragraph{Differential Chromatic Refraction}
 
 The baseline design for difference imaging (\wbsDiffim) calls for creation of coadds in bins of different airmass to account for differential chromatic refraction. However, initial work suggests better results may be achieved by modelling and compensating for DCR when templates are being constructed \cite{Becker14}. A similar approach will also be investigated when building coadds for deep detection (\wbsDetDeblend). A prototype DCR compensation algorithm should be developed in this WBS based on an assumed SED; further development will be driven by future requirements from other WBS elements.
@@ -805,7 +825,7 @@ A prototype implementation of all major components of the Coaddition Pipeline ba
 The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82). Using Stripe 82 data, it demonstrated the benefits of background matching and CoaddPsf approaches.
 \\
 
-The design and performance of the current prototype pipeline is described in the Summer 2012 Data Challenge (\url{http://ls.st/vho}) and Winter 2013 Data Challenge Report (\url{http://ls.st/ofk}). The prototype codes are available in the {\tt coadd\_*} git repositories browsable through the LSST git repository browser at \url{https://github.com/lsst}.
+The design and performance of the current prototype pipeline is described in the Summer 2012 Data Challnge (\url{http://ls.st/vho}) and Winter 2013 Data Challenge Report (\url{http://ls.st/ofk}). The prototype codes are available in the {\tt coadd\_*} git repositories browsable through the LSST git repository browser at \url{https://github.com/lsst}.
 
 \clearpage
 
