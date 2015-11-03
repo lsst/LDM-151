@@ -671,8 +671,10 @@ The PSF of thick deep depletion devices such as LSST's is known to be intensity 
 % RHL [As you know] it's more accurate to say that the as-detected image is an intensity-dependent mapping of the image incident on the CCD (I must be able to find a better way to express that!).  A consequence is that the PSF is intensity dependent.
 
 \begin{note}
-There is no mention of color-dependence here.
+The text below transplanted from DLP-83 by JDS; requires editing/correcting/detail.
 \end{note}
+
+It is necessary to take account of chromatic effects from both the atmosphere and the telescope optics when creating the PSF model. It is well understood how the optical and atmospheric components of the PSF should depend on wavelength, so one approach would be to create a PSF model at a particular wavelength, then use that a priori knowledge to compute a PSF model for a given SED, using that same approach to constrain the single-wavelength PSF from the stars via forward modeling. However, it may also be necessary to use stars to constrain the wavelength dependence at some level.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
