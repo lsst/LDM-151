@@ -1,3 +1,4 @@
+% vim: tw=0:wrap:linebreak
 \documentclass[12pt]{article}
 
 % \setcitestyle{numbers}
@@ -650,26 +651,31 @@ Prototype MOPS codes are available at \url{https://github.com/lsst/mops_daymops}
 
 \subsubsection{Key Requirements}
 
-PSF Estimation pipeline must enable the estimation of the point spread function with residual ellipticity correlations at the levels required by LSR-REQ-0097.
+PSF Estimation pipeline must enable the estimation of the zero-intensity point spread function at any point on the focal plane with residual ellipticity correlations at the levels required by LSR-REQ-0097.
 
 \subsubsection{Baseline design}
 
 LSST's PSF models will be implemented as a plugin. Simple PSF estimation algorithms (e.g., {\tt pcaPsf}) will be implemented by the Single Frame Processing pipeline (\wbsSFM). The CoaddPsf algorithm will be implemented in the Image Coaddition Pipeline (\wbsCoadd).
 
-Current state-of-the-art PSF estimation methods typically use some basis functions (e.g., $\delta$-functions, PCA) and a spatial model (e.g., polynomials) to estimate the PSF\@. This is not expected to be sufficient to reach LSST requirements. We've therefore adopted a baseline algorithm as follows:
+Current state-of-the-art PSF estimation methods typically use some basis functions (e.g., $\delta$-functions, PCA) and a spatial model (e.g., polynomials) to estimate the PSF\@. This is not expected to be sufficient to reach LSST requirements. We have therefore adopted the following baseline:
 \begin{itemize}
     \item Decompose the PSF into a component due to the atmosphere and a component due to the telescope and camera system.
     \item Estimate the telescope+camera component using the wavefront sensor information (the reconstructed wavefront) and camera metrology (the laboratory or on-sky measurement of $z$ offsets of individual sensors)
     \item Estimate the atmospheric contribution by modelling the PSF from bright, isolated, stars, and interpolating using Kriging. % RHL PCA \'a la Jarvis and Jain only works for the camera part
 \end{itemize}
-This estimation will be performed on the full focal plane, and use the per-CCD estimates of the PSF and cutouts of bright stars (PSF estimation candidates) as inputs.
-\\
-The PSF of thick deep depletion devices such as LSST's is known to be intensity dependent. We will estimate the zero-intensity PSF by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same forward-modelling algorithm will allow us to estimate the PSF in undersampled imaging, as is expected for roughly the best quartile of the seeing distribution.
+
+This estimation will be performed on the full focal plane. It will make use of wavefront sensor information and camera metrology provided by the Telescope \& Site subsystem, and use the per-CCD estimates of the PSF and cutouts of bright stars (PSF estimation candidates) to determine the atmospheric contribution. The latter may be augmented by including a physical model of the atmosphere.
+
+The PSF of thick deep depletion devices such as LSST's is known to be intensity dependent. We will estimate the zero-intensity PSF by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same forward-modelling algorithm will allow us to estimate the PSF in undersampled imaging, as is expected for roughly the best quartile of the seeing distribution; the resulting estimate should not be of lower quality that of an equivalent well-sampled PSF assuming that enough stars are included in the model.
 % RHL [As you know] it's more accurate to say that the as-detected image is an intensity-dependent mapping of the image incident on the CCD (I must be able to find a better way to express that!).  A consequence is that the PSF is intensity dependent.
+
+\begin{note}
+There is no mention of color-dependence here.
+\end{note}
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Perform Full Focal Plane PSF Estimation;
+Perform Full Focal Plane PSF Estimation.
 
 \subsubsection{Prototype Implementation}
 
