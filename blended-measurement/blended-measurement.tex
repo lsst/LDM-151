@@ -532,6 +532,11 @@ multi-epoch processing (but probably not eliminate it). If they prove viable,
 likelihood coadds would replace direct coadds in most or all of the places the
 latter are currently used.
 
+Evaluation of likelihood coadds will begin simply with analytical calculations
+and a small-scale prototype that operates only on postage stamp images.  An
+evaluation of whether a full-scale optimized implemention is useful will be
+determined later.
+
 \subsubsection{Model Fluxes on PSF-Matched Coadds}
 
 \label{sec:models-on-psf-matched-coadds}
@@ -547,6 +552,13 @@ If fitting to PSF-matched coadds produces better galaxy colors, we will do
 this in addition to fitting on direct coadds, as the latter will still produce
 better estimates of structural parameters and a better starting point for
 Monte Carlo sampling.
+
+Given that PSF-matched coadds are needed for other purposes, and our galaxy
+fitting code must be robust enough that running on both direct coadds and
+PSF-matched coadds will require no new code, we will have the opportunity
+to evaluate both options in this area extensively before selecting one for
+final tuning.  The development of fast metrics to evaluate the quality of
+galaxy color measurements will be critically important.
 
 \subsubsection{Consistent Cross-Filter Galaxy Structural Parameters}
 
@@ -573,6 +585,11 @@ colors.  These colors may also be higher S/N than those measured using the
 same model across filters on PSF-matched coadds; this depends on how
 the extra degrees of freedom from including more parameters compares to the
 loss of information in PSF-matched coadds.
+
+Evaluating the options here is largely a matter of ensuring the galaxy-fitting
+code is sufficiently flexible that slightly different models and priors can
+be tested easily.  Again, we will need good metrics for quantifying the
+quality of galaxy color measurements.
 
 \subsubsection{Variability in Multi-Epoch Modeling}
 
