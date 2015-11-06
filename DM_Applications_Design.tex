@@ -668,12 +668,7 @@ This estimation will be performed on the full focal plane. It will make use of w
 
 In thick deep depletion devices such as LSST, the electric field from photoelectrons distorts the pixel grid, giving bright objects a broader effective PSF than faint objects.  We expect most and perhaps all correction for this effect to happen in Instrument Signature Removal (part of \wbsSFM), but we may need to mitigate residuals from that correction in PSF estimation, likely by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same forward-modelling algorithm will allow us to estimate the PSF in undersampled imaging, as is expected for roughly the best quartile of the seeing distribution; the resulting estimate should not be of lower quality that of an equivalent well-sampled PSF assuming that enough stars are included in the model.
 
-
-\begin{note}
-The text below transplanted from DLP-83 by JDS; requires editing/correcting/detail.
-\end{note}
-
-It is necessary to take account of chromatic effects from both the atmosphere and the telescope optics when creating the PSF model. It is well understood how the optical and atmospheric components of the PSF should depend on wavelength, so one approach would be to create a PSF model at a particular wavelength, then use that a priori knowledge to compute a PSF model for a given SED, using that same approach to constrain the single-wavelength PSF from the stars via forward modeling. However, it may also be necessary to use stars to constrain the wavelength dependence at some level.
+It is necessary to take account of chromatic effects from both the atmosphere and the telescope optics when creating the PSF model. It is well understood how the optical and atmospheric components of the PSF should depend on wavelength, so any model that separates these components effectively should automatically include the correct chromatic dependency, allowing it to be evaluated at any wavelength or (assuming color-indepedent morphology) the SED of a particular source.  This will allow us to validate and constrain the chromatic dependence of the model using the known or inferred SEDs of stars.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
