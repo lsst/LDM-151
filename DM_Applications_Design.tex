@@ -705,7 +705,7 @@ When non-PSF-matched coadds are produced, the effective PSF and its variation ac
 
 Outliers appearing in a small subset of input images (e.g.\ transients or moving objects) must not appear in the final co-adds. % RHL how we handle variables (e.g., RR Lyrae's) is not obvious
 
-The Image Coaddition Pipeline must make it possible to generate the coadds with astrophysical backgrounds removed or retained, depending on runtime configuration directives.
+The Image Coaddition Pipeline must make it possible to generate the coadds from background-subtracted input images or perform partial background subtraction via matching during coaddition (\ref{alg:backgroundMatching}).
 
 The pipeline must be capable of generating coadds in varying geometries and tessellations of the sky, plugged in at runtime via Python modules and configuration directives. To reduce its memory footprint, it should be capable of generating the coadds in small patches set by the operator at runtime via configuration directives.
 
