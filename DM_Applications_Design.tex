@@ -884,10 +884,10 @@ the flux in each pixel is split among the blended source in proportion
 to their templates.  The deblender produces cutouts of each
 source in a blended group, so that the measurement algorithms (fluxes,
 galaxy shapes, etc) need not know that the source was blended. This deblending algorithm works well in practice for moderately crowded fields (as demonstrated by SDSS).
-\\
 
-This SDSS-style deblender will be run on the set of single-band coadds, then a set of PSF-convolved models will be fit to the deblended the children. The initial templates with then be replaced by these models, convolved with the appropriate PSF, and flux assigned as before. The use of physically-motivated templates will help with identification and reduction of non-physical deblends, generalization to multi-epoch data, and data with very different image quality.  Fitting these model templates will also allow us to improve centroids of objects whose positions were affected by their neighbors. % RHL I even spelt it in American
-\\
+This SDSS-style deblender will be run on one or more single-band coadds. When deblending across multiple bands, the deblender must ensure that consistent results are achieved across all bands.
+
+After deblending, a set of PSF-convolved models will be fit to the deblended children. The initial templates with then be replaced by these models, convolved with the appropriate PSF, and flux assigned as before. The use of physically-motivated templates will help with identification and reduction of non-physical deblends, generalization to multi-epoch data, and data with very different image quality.  Fitting these model templates will also allow us to improve centroids of objects whose positions were affected by their neighbors. % RHL I even spelt it in American
 
 In areas of significant stellar crowding (i.e., Galactic plane, star clusters), this approach lends itself to imposition of appropriate template priors (i.e., the correct template being that of a point source convolved with the PSF). This, effectively, makes the deblender into a crowded field code, allowing this baseline to satisfy the requirements for crowded field photometry.
 
