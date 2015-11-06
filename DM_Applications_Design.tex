@@ -866,6 +866,10 @@ To construct the object catalog, detection may be performed on multiple differen
 
 Per \S\ref{alg:skymap}, the sky is tessllated into overlapping tracts and patches. In general, these may be processed independently, but care is required to ensure that objects which appear in the overlapping regions appropriately merged rather than being duplicated.
 
+\begin{note}[TODO]
+Define how this merge will take place.
+\end{note}
+
 The \DPDD{} requires that the resultant collection of peaks and their
 membership in the footprints be provided to end users as a \texttt{CoaddSource}
 
@@ -890,6 +894,12 @@ This SDSS-style deblender will be run on one or more single-band coadds. When de
 After deblending, a set of PSF-convolved models will be fit to the deblended children. The initial templates with then be replaced by these models, convolved with the appropriate PSF, and flux assigned as before. The use of physically-motivated templates will help with identification and reduction of non-physical deblends, generalization to multi-epoch data, and data with very different image quality.  Fitting these model templates will also allow us to improve centroids of objects whose positions were affected by their neighbors. % RHL I even spelt it in American
 
 In areas of significant stellar crowding (i.e., Galactic plane, star clusters), this approach lends itself to imposition of appropriate template priors (i.e., the correct template being that of a point source convolved with the PSF). This, effectively, makes the deblender into a crowded field code, allowing this baseline to satisfy the requirements for crowded field photometry.
+
+\begin{note}
+The ``divide and conquer'' technique needs to be properly fleshed out.
+\end{note}
+
+The deblender must be capable of handling extremely large blended sources using a so-called ``divide-and-conquer'' approach to split them up and handle them in manageable pieces.
 
 \paragraph{Sky coverage}
 
