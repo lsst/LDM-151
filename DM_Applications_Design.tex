@@ -666,8 +666,8 @@ Current state-of-the-art PSF estimation methods typically use some basis functio
 
 This estimation will be performed on the full focal plane. It will make use of wavefront sensor information and camera metrology provided by the Telescope \& Site subsystem, and use the per-CCD estimates of the PSF and cutouts of bright stars (PSF estimation candidates) to determine the atmospheric contribution. The latter may be augmented by including a physical model of the atmosphere.
 
-The PSF of thick deep depletion devices such as LSST's is known to be intensity dependent. We will estimate the zero-intensity PSF by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same forward-modelling algorithm will allow us to estimate the PSF in undersampled imaging, as is expected for roughly the best quartile of the seeing distribution; the resulting estimate should not be of lower quality that of an equivalent well-sampled PSF assuming that enough stars are included in the model.
-% RHL [As you know] it's more accurate to say that the as-detected image is an intensity-dependent mapping of the image incident on the CCD (I must be able to find a better way to express that!).  A consequence is that the PSF is intensity dependent.
+In thick deep depletion devices such as LSST, the electric field from photoelectrons distorts the pixel grid, giving bright objects a broader effective PSF than faint objects.  We expect most and perhaps all correction for this effect to happen in Instrument Signature Removal (part of \wbsSFM), but we may need to mitigate residuals from that correction in PSF estimation, likely by iteratively forward-modeling the estimated zero-intensity PSF until convergence is achieved. The same forward-modelling algorithm will allow us to estimate the PSF in undersampled imaging, as is expected for roughly the best quartile of the seeing distribution; the resulting estimate should not be of lower quality that of an equivalent well-sampled PSF assuming that enough stars are included in the model.
+
 
 \begin{note}
 The text below transplanted from DLP-83 by JDS; requires editing/correcting/detail.
