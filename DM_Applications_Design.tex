@@ -1154,17 +1154,33 @@ An initial cross-talk correction matrix will be determined by laboratory measure
 
 Multiple reflections between the layers of the CCD give rise to spatial variability with fine scale structure in images which may vary with time \cite[\S2.5.1]{Lupton15}. These can be characterized by white light flat-fields. Preliminary analysis indicates that these effects may be insignificant in LSST \cite{Rasmussen15}; however, the baseline calls for a a routine developed in this WBS to analyse the flat field data and generate fringe frames on demand. This requirement may be relaxed if further analysis (outside the scope of thie WBS) demonstrates it to be unnecessary.
 
-This WBS will develop algorithms to characterize and mitigate anomalies due to the nature of the camera's CCDs. The effects we anticipate include:
+
+This WBS will develop algorithms to characterize and mitigate anomalies due to the nature of the camera's CCDs.
+
+\begin{note}
+There's a complex inter-WBS situation here: the actual mitigation of CCD anomalies will generally be performed in SFM (\wbsSFM{}), based on products provided by this WBS which, in turn, may rely on laboratory based research which is broadly outside the scope of DM\@. We baseline the work required to develop the corrective algorithms here. We consider moving it to \wbsSFM{} in future.
+\end{note}
+
+The effects we anticipate include:
 
 \begin{itemize}
   \item{QE variation between pixels;}
   \item{Static non-uniform pixel sizes (e.g.\ ``tree rings'' \cite{Stubbs14});}
   \item{Dynamic electric fields (e.g.\ ``brighter-fatter'' \cite{Antilogus14});}
   \item{Time dependent effects in the camera (e.g.\ hot pixels, changing cross-talk coefficients);}
-  \item{Charge transfer inefficiency.}
+  \item{Charge transfer (in)efficiency (CTE).}
 \end{itemize}
 
-Laboratory work required to understand these effects is outwith the scope of this WBS\@. In some cases, this work may establish that the impact of the effect may be neglected in LSST.
+Laboratory work required to understand these effects is outwith the scope of this WBS\@. In some cases, this work may establish that the impact of the effect may be neglected in LSST\@. The baseline plan addresses these issues through the following steps:
+
+\begin{itemize}
+  \item{Separate QE from pixel size variations\footnote{Refer to work by Rudman.} and model both as a function of position (and possibly time);}
+  \item{Learn how to account for pixel size variation over the scale of objects (e.g.\ by redistributing charge);}
+  \item{Develop a correction for the brighter-fatter effect and develop models for any features which cannot be removed;}
+  \item{Handle edge/bloom using masking or charge redistribution;}
+  \item{Identify and track defects (hot pixels);}
+  \item{Handle CTE, including when interpolating over bleed trails.}
+\end{itemize}
 
 \paragraph{Ghost catalog}
 
@@ -1326,6 +1342,7 @@ The prototype code is available in the \url{https://github.com/lsst/testing_disp
 \item[API] Applications Programming Interface  
 \item[CBP] Collimated Beam Projector
 \item[CCOB] Camera Calibration Optical Bench
+\item[CTE] Charge Transfer Efficiency
 \item[DAC] Data Access Center
 \item[DAQ] Data Acquisition
 \item[DMS] Data Management System
