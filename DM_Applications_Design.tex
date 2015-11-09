@@ -949,7 +949,7 @@ The Object Characterization Pipeline must be capable of fitting the following so
   \item{Trailed point source (required by the Difference Imaging Pipeline);}
   \item{Hybrid galaxy-moving point source (required for Level 2 Catalogs).
     \begin{note}
-    The DPDD specifies separate point source and galaxy models; here we follow Bosch.
+    The \DPDD{} specifies separate point source and galaxy models; here we follow Bosch.
     \end{note}
   }
 \end{itemize}
@@ -959,6 +959,8 @@ It must be possible to fit a point source model to an image while holding the po
 It must be possible to perform \textit{simultaneous fitting}, whereby we fit the models for multiple objects simultaneously.
 
 It must be possible to fit objects using either numerical optimization or by Monte Carlo sampling.
+
+It must be possible to characterize sources in multiple epochs by fitting a parameterized model to each epoch (rather than co-adding the data and fitting to the result). This approach, which we term ``MultiFit'', is explored further in \S\ref{sec:multifit}.
 
 It must be possible to derive the following quantities based on the measurements made using ``best practice'' algorithms at the time of commissioning:
 \begin{itemize}
@@ -984,7 +986,8 @@ Single-epoch (including coadd) object characterization will primarily rely on fo
 %errors, MF is exactly equivalent to least squares. If the PSF is known (which is a
 %separate problem solved by the PSF Estimation pipeline, \wbsPSF), implementation is straightforward and easy to write. This is, however, computationally challenging as each iteration of the model fitter requires a convolution of potentially hundreds of models (one for each epoch), on a grid that oversamples the pixel grid by a factor of few.
 
-\paragraph{Multifit}
+\paragraph{MultiFit}
+\label{sec:multifit}
 
 For multi-epoch characterization and some science measurements --- particularly shape measurement for weak
 lensing --- measurement on a coadd image may not provide the necessary
@@ -995,7 +998,7 @@ to all of the data in which that object appears.  Rather than
 transform and combine the data, we instead transform the model to the
 coordinate system of each exposure, convolve it by the appropriate
 PSF, and compare it to the data from that exposure.  Measurements from
-the coadd will be used as a starting point, so the multifit processing
+the coadd will be used as a starting point, so the MultiFit processing
 will proceed by iterating over the catalog generated from the coadd,
 loading postage stamps from the original images, and fitting to these
 data.  Note that the output measurements will generally have the same
@@ -1006,7 +1009,7 @@ for each exposure in which it appears.
 
 Because it does not involve transforming noisy data (which is usually
 lossy in some sense), and instead transforms analytic models, a
-multifit approach is theoretically optimal for measurements that can
+MultiFit approach is theoretically optimal for measurements that can
 be framed as the results of model-based fits to the data (note that
 not all measurements can be framed in such a way, but those that
 cannot usually do not properly account for the PSF). % RHL I think that this is correct, but things like Petro quantities that are measured from apertures can probably be estimated from psf-corrected apertures, measured in a multifit way.  I'm not sure if I think this is a good idea
@@ -1018,16 +1021,16 @@ introduced by resampling to a common pixel grid) would be prohibitively
 complex.  On the other hand, for many measurements a non-optimal coadd
 may be practically
 sufficient, in the sense that the improvement produced by a
-multifit-based measurement of the same would be negligible.  In these
+MultiFit-based measurement of the same would be negligible.  In these
 cases, the coadd measurement is likely to be far more efficient
 computationally.  Whenever possible, then, we will do as much work as
-possible on the coadd first, and only use a multifit approach to ``tune up''
+possible on the coadd first, and only use a MultiFit approach to ``tune up''
 the final result.  And when this final tuning is determined to be
 unnecessary, it can be skipped entirely.
 
-To further make the multifit approach computationally tractable, we baseline use the multi-shapelet multifit algorithm implementation, as described in \cite{Bosch13}.
+To further make the MultiFit approach computationally tractable, we baseline use the multi-shapelet MultiFit algorithm implementation, as described in \cite{Bosch13}.
 
-\paragraph{Point source model fit} To satisfy the point-source model fit requirements, we model each observed object as a point source with finite proper motion and parallax and with constant flux (allowed to be different in each band). This model is a good description for stars and other unresolved sources. Its 11 parameters will be simultaneously constrained using information from all available observations in all bands. The fitting procedure will account for differential chromatic refraction. Multifit will be used to perform the fit.
+\paragraph{Point source model fit} To satisfy the point-source model fit requirements, we model each observed object as a point source with finite proper motion and parallax and with constant flux (allowed to be different in each band). This model is a good description for stars and other unresolved sources. Its 11 parameters will be simultaneously constrained using information from all available observations in all bands. The fitting procedure will account for differential chromatic refraction. MultiFit will be used to perform the fit.
 
 \paragraph{Bulge-disk model fit}
 
@@ -1037,7 +1040,7 @@ Deprecated by Bosch.
 
 To satisfy the bulge-disk model fit requirements, the pipeline will be capable of modelling objects as a sum of a de Vaucouleurs (Sersic $n=4$) and an exponential (Sersic $n=1$) component. This model is a reasonable description of galaxies. The object is assumed not to move (i.e., have zero proper motion). The components share the same ellipticity and center. The model is independently fit to each band. There are a total of 8 free parameters, which will be simultaneously constrained using information from all available epochs for each band. Where there's insufficient data to constrain the likelihood (eg., small, poorly resolved, galaxies, or very few epochs), the pipeline will have the capability to take into account priors that limit the range of its sampling.
 
-In addition to the maximum likelihood values of fitted parameters and their covariance matrix, the pipeline shall be capable of sampling independent samples from the likelihood function (or posterior). Multifit will be used to perform the fit.
+In addition to the maximum likelihood values of fitted parameters and their covariance matrix, the pipeline shall be capable of sampling independent samples from the likelihood function (or posterior). MultiFit will be used to perform the fit.
 
 \paragraph{Trailed model fit}
 
