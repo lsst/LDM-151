@@ -538,13 +538,18 @@ The image differencing pipeline shall difference a visit image against a deeper 
 The Image Differencing pipeline will difference, detect, and deblend objects in the resulting image using the ``preconvolution'' algorithm as described in Becker et al. (\url{http://ls.st/x9f}).
 Differencing will be performed against a deeper template, and differential chromatic refraction (DCR) will be handled by having templates in several bins of airmass.
 
-All \DIASource measurements described in the \DPDD, including post-processing such as variability characterization, will be performed for all sources detected in this manner. The measurements will be performed on the pre-convolved likelihood image. The measurement code will reside in a separate module in the Object Characterization Pipeline (\wbsObjChar).
+All \DIASource measurements described in the \DPDD, including post-processing such as variability characterization, will be performed for all sources detected in this manner. The measurements will be performed on the pre-convolved likelihood image. This involves invoking some algorithms defined in the Object Characterization Pipeline (\wbsObjChar{}) as well as algorithms specific to difference images, which are defined in this WBS (see \S\ref{alg:dipole}).
 \\
 
 If necessary a \emph{spuriousness metric} using machine-learning techniques (e.g., Bloom et al. \cite{Bloom12}) will be developed to help in the discrimination of real sources from those caused by artifacts.
 \\
 
 Details of this baseline design have been captured in the \uc{Detect and Characterize DIA Sources} and related diagrams, presented in Figure~\ref{fig:diffimUML}.
+
+\paragraph{Dipole model fit}
+\label{alg:dipole}
+
+The pipeline shall be capable of fitting a dipole object model, as described in the \DPDD{}. The baseline algorithm is analogous to that employed by the bulge-disk model fit (\S\ref{alg:bulgedisk}, but with the model being a mixture of positive and negative point sources, instead of S\'ersic profiles.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -935,7 +940,7 @@ Here we account to itemize all the pieces of functionality that the Obj Char Pip
 
 Given one or more cutouts of a detected object, observed in one or more epochs, the Object Characterization Pipeline must perform all measurements required to generate the Level 2 Catalogs as described by the \DPDD{}, within the computational budget allotted by the LSST sizing model.
 
-Functionally, the components of this pipeline must be available for incorporation into or use by other pipelines. In particular, both the Single Frame Processing Pipeline (\wbsSFM) and the Difference Imaging Pipeline (\wbsDiffim) will delegate source characterization to the algorithms defined herein.
+Functionally, the components of this pipeline must be available for incorporation into or use by other pipelines. In particular, both the Single Frame Processing Pipeline (\wbsSFM) and the Imaging Differencing Pipeline (\wbsDiffim) will delegate source characterization to the algorithms defined herein.
 
 The Object Characterization Pipeline must be capable of:\footnote{The \DPDD{} specifies detailed algorithmic requirements for each of these measurements}
 \begin{itemize}
@@ -949,7 +954,7 @@ The Object Characterization Pipeline must be capable of:\footnote{The \DPDD{} sp
 The Object Characterization Pipeline must be capable of fitting the following source models:
 \begin{itemize}
   \item{Moving point source (required by Single Frame Processing);}
-  \item{Trailed point source (required by the Difference Imaging Pipeline);}
+  \item{Trailed point source (required by the Image Differencing Pipeline);}
   \item{Hybrid galaxy-moving point source (required for Level 2 Catalogs).
     \begin{note}
     The \DPDD{} specifies separate point source and galaxy models; here we follow Bosch.
@@ -1050,22 +1055,23 @@ To further make the MultiFit approach computationally tractable, we baseline use
 To satisfy the point-source model fit requirements, we model each observed object as a point source with finite proper motion and parallax and with constant flux (allowed to be different in each band). This model is a good description for stars and other unresolved sources. Its 11 parameters will be simultaneously constrained using information from all available observations in all bands. Per \S5.2.1 of the DPDD, the fitting procedure will account for differential chromatic refraction. The fitting procedure will account for differential chromatic refraction. MultiFit will be used to perform the fit.
 
 \paragraph{Bulge-disk model fit}
+\label{alg:bulgedisk}
 
 \begin{note}
 Deprecated by Bosch.
 \end{note}
 
-To satisfy the bulge-disk model fit requirements, the pipeline will be capable of modelling objects as a sum of a de Vaucouleurs (Sersic $n=4$) and an exponential (Sersic $n=1$) component. This model is a reasonable description of galaxies. The object is assumed not to move (i.e., have zero proper motion). The components share the same ellipticity and center. The model is independently fit to each band. There are a total of 8 free parameters, which will be simultaneously constrained using information from all available epochs for each band. Where there's insufficient data to constrain the likelihood (eg., small, poorly resolved, galaxies, or very few epochs), the pipeline will have the capability to take into account priors that limit the range of its sampling.
+To satisfy the bulge-disk model fit requirements, the pipeline will be capable of modelling objects as a sum of a de Vaucouleurs (S\'ersic $n=4$) and an exponential (S\'ersic $n=1$) component. This model is a reasonable description of galaxies. The object is assumed not to move (i.e., have zero proper motion). The components share the same ellipticity and center. The model is independently fit to each band. There are a total of 8 free parameters, which will be simultaneously constrained using information from all available epochs for each band. Where there's insufficient data to constrain the likelihood (eg., small, poorly resolved, galaxies, or very few epochs), the pipeline will have the capability to take into account priors that limit the range of its sampling.
 
 In addition to the maximum likelihood values of fitted parameters and their covariance matrix, the pipeline shall be capable of sampling independent samples from the likelihood function (or posterior). MultiFit will be used to perform the fit.
 
 \paragraph{Trailed model fit}
 
-The pipeline shall be capable of fitting a trailed object model, as described in the \DPDD{}. The baseline algorithm is analogous to that employed by the bulge-disk model fit, but with the model being a line segment instead of a mixture of Sersic profiles.
+The pipeline shall be capable of fitting a trailed object model, as described in the \DPDD{}. The baseline algorithm is analogous to that employed by the bulge-disk model fit, but with the model being a line segment instead of a mixture of S\'ersic profiles.
 
 \paragraph{Dipole model fit}
 
-The pipeline shall be capable of fitting a dipole object model, as described in the \DPDD{}. The baseline algorithm is analogous to that employed by the bulge-disk model fit, but with the model being a mixture of positive and negative point sources, instead of Sersic profiles.
+Dipole model fitting is provided directly within the Image Differencing Pipeline (\wbsDiffim{}; \S\ref{alg:dipole}); this section is maintained to avoid renumbering breaking references to this document.
 
 \paragraph{Hybrid model fit}
 
