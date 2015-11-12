@@ -73,6 +73,9 @@
 \newcommand{\wbsCPP}{WBS 02C.04.02}
 \newcommand{\wbsPhotoCal}{WBS 02C.03.07}
 \newcommand{\wbsAstroCal}{WBS 02C.03.08}
+\newcommand{\note}[1]{\noindent{\bf{\color{red} [NOTE: #1]}}}
+\newcommand{\dlplink}[1]{{\color{blue}\href{http://jira.lsstcorp.org/browse/#1}{#1}}} % extra curly braces
+                                                                                      % needed to color only the link blue
 
 \newenvironment{note}[1][Note]
 {
@@ -453,13 +456,14 @@ It will consist of three primary components:
 \begin{itemize}
     \item A library of useful methods that wrap a small number of atomic operations (e.g., {\tt interpolateFromMask}, {\tt overscanCorrection}, {\tt biasCorrection}, etc.) % RHL things like overscanCorrection aren't atomic (or at least, they use afw::math and afw::cameraGeom primitives)
     \item A set of classes ({\tt Task}s) that perform higher level jobs
-    (e.g., {\tt AssembleCcdTask}, or {\tt FringeTask}), and a top level class to apply corrections to the input data in the proper order. This top level class can be overridden in the instrument specific {\tt obs\_*} packages, making the core SFM pipeline camera agnostic.
-    \item A top-level Task to run the SFM pipeline.
+    (e.g., {\tt AssembleCcdTask}, or {\tt CalibrateTask}).
+    \item A top level class to apply corrections to the input data in the proper order. This top level class
+    (and any sub-task therein) can be overridden in the instrument specific {\tt obs\_*} packages, making the core SFM pipeline camera agnostic.
 \end{itemize}
 
 In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS \emph{Photo} pipeline \cite{LuptonPhoto}.
 
-\paragraph{Instrumental Signature Removal:}
+\paragraph{Instrumental Signature Removal:} \note{\dlplink{DLP-262}}
 
 The adopted pipeline design allows for straightforward addition of correction for instrumental effects that will be discovered in the as-built Camera. The effects currently baselined to be corrected are:
 
@@ -481,7 +485,8 @@ The adopted pipeline design allows for straightforward addition of correction fo
 \item Cosmic ray rejection and snap combining: Exposures will be taken in pairs separated by the readout time. The two images and the expected statistics on those images are used to reject pixels that are significant outliers. Once cosmic rays are flagged the two snaps will be added to produce an image with a longer effective exposure.  % RHL There'll probably also be a significant morphological component.  Esp. if we want snap-to-snap transients...
 \end{itemize}
 
-\paragraph{PSF determination:} We will run separate algorithms to select candidate stars and determine the point-spread function (PSF, the light distribution for a point source, a critical ingredient to understanding the data and measuring accurate fluxes and shapes).  Both the star selector and PSF determiner algorithms will be pluggable Python modules, so that different algorithms can be run as desired for different analysis needs.
+\paragraph{PSF determination:} \note{Both DRM and AP will need PSF determination.  Likely they will use the
+same algorithm.  It's important that this not get lost because everyone thinks it's someone else's job.} We will run separate algorithms to select candidate stars and determine the point-spread function (PSF, the light distribution for a point source, a critical ingredient to understanding the data and measuring accurate fluxes and shapes).  Both the star selector and PSF determiner algorithms will be pluggable Python modules, so that different algorithms can be run as desired for different analysis needs.
 
 Three selectors will be implemented. % RHL I bet that these will change dramatically before construction.  I was tempted to change ``will be implemented'' to ``will be implemented initially'' but didn't.
 The ``second-moment'' star selector will builds a histogram of the X and Y second moments of flux, search for a peak, and select sources in the peak as point source candidates.  The ``catalog'' star selector, in contrast, will make use of an external catalog of point sources and use astrometric matching to select point source candidates.  The ``objectSize'' star selector will identify point source candidates from the cluster of sources with similar sizes regardless of magnitude.  When selecting point source candidates by size (i.e., for the ``second-moment'' and ``objectSize'' algorithms), the sizes will be corrected by the known optical distortion of the camera.  % RHL objectSize has superceded secondMoment already.
@@ -493,22 +498,28 @@ Given the irregularly sampled grid of PSFs represented by selected stars, the va
 These algorithms are intended to be sufficient to enable Level 1 processing. More advanced PSF determination algorithms will be developed in the PSF Estimation Pipeline (\wbsPSF).
 % RHL We'll have to be careful, as I think these fluxes/positions are the inputs into global calibration
 
-\paragraph{Sky Background Determination:}
+\paragraph{Sky Background Determination:} \note{\dlplink{DLP-263}}
 
 We will estimate the smooth sky background by measuring the background level in cells (typically 256 or 512 pixels square) % RHL I'm sure 256 will be too small.  512 may well be too.
 using (by default) a clipped mean, and ignoring pixels that are part of detected sources.  An interpolating spline (an Akima spline, by default) will be constructed to estimate the background level in each pixel. Backgrounds will be possible to estimate simultaneously over multiple sensors, including the full focal plane.
 
 Background models will be saved, for later subtraction or restoration (e.g., in background matching, as implemented by the Coaddition Pipeline, \wbsCoadd).
 
-\paragraph{WCS determination and image registration}
+\paragraph{WCS determination and image registration} \note{This is actually a different WBS(02C.03.08), though
+\dlplink{DLP-264} is in this WBS}
 
-The absolute World Coordinate System (WCS) will be determined using an \emph{astrometry.net} type algorithm \cite{Lang09}, seeded with the approximate position of the boresight.  % RHL I doubt if we'll use a.n in production (except as a fallback when all else fails)
+Initial absolute WCS determination will be done by matching with an appropriate reference catalog using an
+optimized algorithm like the one described in \cite{tabur07}.  The WCS used internally will comprise multiple
+transforms taking into account knowledge of the distortions inherent in the optical system.
 
 This module will also include the capability to perform relative registration of a set of images to enable coaddition and image differencing, using the \emph{meas\_mosaic} registration algorithm developed by Furusawa et al. \cite{Furusawa14} as the baseline.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
-Assemble CCD; Determine Aperture Correction; Determine PSF; Remove Instrument Signature; Detect Sources; Determine Photometric Zeropoint; Measure Single Visit Sources; Determine WCS; Sum Exposures, Combine Raw Exposures, Remove Exposure Artifacts; Determine Sky Background Model; Calibrate Exposure; Process Raw Exposures to Calibrated Exposure; Perform Single Visit Processing;
+Assemble CCD; Determine Aperture Correction; Determine PSF; Remove Instrument Signature; Detect Sources;
+Determine Photometric Zeropoint; Measure Single Visit Sources; Determine WCS; Sum Exposures, Combine Raw
+Exposures, Remove Exposure Artifacts; Determine Sky Background Model; Calibrate Exposure; Process Raw
+Exposures to Calibrated Exposure; Perform Single Visit Processing; 
 
 \subsubsection{Prototype Implementation}
 
@@ -526,9 +537,26 @@ The prototype codes are available in the following repositories: \url{https://gi
 
 \subsubsection{Key Requirements}
 
-The image differencing pipeline shall difference a visit image against a deeper template, and detect and characterize sources in the difference image in the time required to achieve the 60 second design goal for Level 1 alert processing (current timing allocation: 24 seconds). The algorithms employed by the pipeline shall result in purity and completeness of the sample as required by the \DMSR\@. Image differencing shall perform as well in crowded as in uncrowded fields.
-
+The image differencing pipeline shall difference a visit image against a deeper template, and detect and characterize sources in the difference image in the time required to achieve the 60 second design goal for Level 1 alert processing (current timing allocation: 24 seconds). The algorithms employed by the pipeline shall result in purity and completeness of the sample as required by the \DMSR. Image differencing shall perform as well in crowded as in uncrowded fields.
 \subsubsection{Baseline design}
+The current baseline describes handling DCR by binning the sky. It is fairly apparent this will not work in
+practice.  We should come up with another baseline design that is more likely to work in the context of our
+assumed observation strategy.
+\paragraph{Template generation}\note{This is in 02C.04, but will be informed by \dlplink{DLP-278}, \dlplink{DLP-277}, and \dlplink{DLP-281}}
+This will require taking into account differential chromatic refraction.
+\paragraph{SFM}\note{\dlplink{DLP-267}}
+Reduce the images using the single frame processing pipeline
+
+\paragraph{Construct Difference} \note{\dlplink{DLP-274}}
+Using calibrated exposure, select the appropriate template and map the template to the exposure airmass and
+paralactic angle. In cases of particularly good seeing, correlate
+the science image with its own PSF to prepare it for matched filter detection (so called pre-convolution). Warp template to the science
+frame coordinate system. Compute the matching kernel between the template PSF and the (possibly smoothed) science
+image PSF. Subtract the two images.
+
+\paragraph{Detect and Measure} \note{\dlplink{DLP-277}}
+Detect and measure any sources on the difference image. This will include point source, dipole and moving
+source (trailed) measurement.  
 
 \begin{figure}
 \includegraphics[angle=0,scale=0.44]{detect_and_characterize_dia_sources.png}
@@ -541,6 +569,7 @@ Differencing will be performed against a deeper template, and differential chrom
 All \DIASource measurements described in the \DPDD, including post-processing such as variability characterization, will be performed for all sources detected in this manner. The measurements will be performed on the pre-convolved likelihood image. This involves invoking some algorithms defined in the Object Characterization Pipeline (\wbsObjChar{}) as well as algorithms specific to difference images, which are defined in this WBS (see \S\ref{alg:dipole}).
 \\
 
+\paragraph{Spuriousness Engine} \note{\dlplink{DLP-285}}
 If necessary a \emph{spuriousness metric} using machine-learning techniques (e.g., Bloom et al. \cite{Bloom12}) will be developed to help in the discrimination of real sources from those caused by artifacts.
 \\
 
@@ -572,13 +601,18 @@ The prototype code is available at \url{https://github.com/lsst/ip_diffim}. The 
 
 The Association Pipeline has two key responsibilities: i) it must be able to associate newly discovered \DIASources with previously known \DIAObjects and \SSObjects, and ii) it must be able to associate \DIAObjects with known \Objects from the Level 2 catalogs.
 
-\subsubsection{Baseline design}
+\subsubsection{Baseline design} \note{\dlplink{DLP-268}; This also requires NightMOPS (02C.03.06)
+\dlplink{DLP-293}}
 
-The baseline design for \DIASources to \DIAObject association and \DIAObject to \Object association is to use simple nearest-neighbor search while taking proper motions and positional errors ellipses into account.
+The baseline design for \DIASources to \DIAObject association and \DIAObject to \Object association is to use
+simple nearest-neighbor search (with a proper probabilitstic foundation \citep{budavari08}) while taking proper motions and positional errors ellipses into account.
 
 For matches to \SSObjects, the \SSObject's ephemeris are to be computed by NightMOPS (functionally a part of the Moving Object Pipeline, \wbsMOPS). Matching to the computed ephemeris is to be performed as if they were \DIAObjects.
 
-When Level 1 data is reprocessed, a more sophisticated clustering algorithm \cite{Ankerst99} will be employed.
+The \DIASources and \SSObjects will be merged into a single table and matching will be carried out in memory
+on the node doing the processing (rather than in the database).
+
+When Level 1 data is reprocessed, a more sophisticated clustering algorithm (OPTICS; Ankerst et al. 1999) will be employed.
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -587,10 +621,12 @@ Perform DIA Object Association; Perform DIA Source Association;
 
 \subsubsection{Prototype Implementation}
 
-Prototype implementation of the baseline design has been completed in LSST Final Design Phase. The nearest-neighbor matching has been implemented as a part of the Application Framework, while clustering using OPTICS resides in the database-related ingest modules.
+Prototype implementation of the baseline design has been completed in LSST Final Design Phase. A version of
+the nearest-neighbor matching has been implemented as a part of the Application Framework, 
+while clustering using OPTICS resides in the database-related ingest modules.
 \\
 
-The prototype code is available at \url{https://github.com/lsst/ap}. The current prototype, while functional, will require a partial redesign in Construction to address scalability and performance.
+\note{I don't think this is true anymore} The prototype code is available at \url{https://github.com/lsst/ap}. The current prototype, while functional, will require a partial redesign in Construction to address scalability and performance.
 
 \clearpage
 
@@ -605,7 +641,11 @@ To directly serve the end-users, the Alert Generation Pipeline shall provide a b
 
 \subsubsection{Baseline design}
 
-The baseline design is to adopt and upgrade for performance and functionallity the Skyalert package (\url{http://lib.skyalert.org/skyalert/}).
+\paragraph{Event packet construction} \note{\dlplink{DLP-271}}
+
+\paragraph{Event packet distribution} \note{\dlplink{DLP-273}}
+
+\paragraph{Simple filtering engine} \note{\dlplink{DLP-272}}
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
@@ -635,6 +675,14 @@ The baseline NightMOPS design is to adopt and adapt an existing ephemeris comput
 \\
 
 The design of these components are explained in detail in the MOPS Design Document (\MOPSD).
+
+\paragraph{Tracklet generation and collapse} \note{\dlplink{DLP-294} and \dlplink{DLP-296}}
+
+\paragraph{Link tracklets} \note{\dlplink{DLP-306}}
+
+\paragraph{Orbit fitting} \note{\dlplink{DLP-297}}
+This will include situations where the sources are trailed in a single exposure.  In those cases, we will use
+the extra information to further constrain the orbits.(\dlplink{DLP-298})
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
