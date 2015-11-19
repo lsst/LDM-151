@@ -529,13 +529,14 @@ The prototype codes are available in the following repositories: \url{https://gi
 The image differencing pipeline shall difference a visit image against a deeper template, and detect and characterize sources in the difference image in the time required to achieve the 60 second design goal for Level 1 alert processing (current timing allocation: 24 seconds). The algorithms employed by the pipeline shall result in purity and completeness of the sample as required by the \DMSR\@. Image differencing shall perform as well in crowded as in uncrowded fields.
 
 \subsubsection{Baseline design}
+\label{sec:diffimDesign}
 
 \begin{figure}
 \includegraphics[angle=0,scale=0.44]{detect_and_characterize_dia_sources.png}
 \caption{Image Differencing Pipeline Use Case Diagram\label{fig:diffimUML}}
 \end{figure}
 
-The Image Differencing pipeline will difference, detect, and deblend objects in the resulting image using the ``preconvolution'' algorithm as described in Becker et al. (\url{http://ls.st/x9f}).
+The Image Differencing pipeline will difference, detect, and deblend objects in the resulting image using the ``preconvolution'' algorithm as described in Becker et al. \cite{Becker13}.
 Differencing will be performed against a deeper template, and differential chromatic refraction (DCR) will be handled by having templates in several bins of airmass.
 
 All \DIASource measurements described in the \DPDD, including post-processing such as variability characterization, will be performed for all sources detected in this manner. The measurements will be performed on the pre-convolved likelihood image. This involves invoking some algorithms defined in the Object Characterization Pipeline (\wbsObjChar{}) as well as algorithms specific to difference images, which are defined in this WBS (see \S\ref{alg:dipole}).
@@ -727,7 +728,7 @@ The Coaddition Pipeline will apply the results of the relative astrometric solut
 
 To accurately measure the colors of galaxies (e.g., for photometric redshifts) in the presence of intra-object color gradients, seeing changes and imperfect galaxy models, the baseline implementation will be capable of producing ``PSF-matched coadds'' using well known PSF-matching algorithms. The Object Characterization Pipeline (\wbsObjChar) will measure object properties on both direct (centroids and shapes) and PSF-matched (fluxes) coadds, as well as fitting galaxy models to the direct coaads.
 
-Likelihood coaddition presents a possible alternative to direct and PSF-matched coaddition for both detection and measurement. Assessing the suitability of likelihood coadds for use in LSST data releases is contained within the Object Characterization Pipeline (\wbsObjChar); the Image Coaddition Pipeline will deliver likelihood coadds as required to satisfy that requirement.
+Likelihood coaddition is required for detection in both the Image Difference Pipeline (\wbsDiffim{}) and the Detection and Deblending system (\wbsDetDeblend{}). It also presents a possible alternative to direct and PSF-matched coaddition for object characterization. Assessing the suitability of likelihood coadds for use in LSST data releases is contained within the Object Characterization Pipeline (\wbsObjChar); the Image Coaddition Pipeline will deliver likelihood coadds as required to satisfy that requirement.
 
 The Detection and Deblending system (\wbsDetDeblend) will make use of multi-band coadds. These may be generated either using the $\chi^2$ algorithm \cite{Szalay99} or based on SED-weighted combinations of per-band coadds. The Image Coaddition Pipeline will make it possible to generate either of these on demand.
 
@@ -987,7 +988,7 @@ When constructing Level 2 Catalogs, a probabalistic star-galaxy classification s
 The \DPDD{} only specifically calls out DCR in the context of MultiFit for a point source model. That is presumably incomplete; our requirements for DCR in object characterization require fleshing out.
 \end{note}
 
-It is possible that much of this baseline design may be reconsidered and replaced with measurements made on likelihood coadds (also known as Kaiser coadds or detection maps) \cite[\S8.2.1]{Bosch15}; see also the discussion of the Image Coaddition Pipeline, \wbsCoadd{}. To facilitate the best possible science outputs, this baseline allocates time to explore the scientific potential of likelihood coaddition in terms of both theoretical work the mathematical formalism and the development of proof-of-concept measurements, with the possibility of rebaslining during construction if necessary.
+Per \S\ref{sec:diffimDesign}, the baseline design requires that measurement of point sources on likelihood coadds (also known as Kaiser coadds or detection maps) must be possible. It is possible that much of the other object characterization techniques described in this baseline may be reconsidered and replaced with measurements made on likelihood coadds \cite[\S8.2.1]{Bosch15}; see also the discussion of the Image Coaddition Pipeline, \wbsCoadd{}. To facilitate the best possible science outputs, this baseline allocates time to explore the scientific potential of likelihood coaddition in terms of both theoretical work the mathematical formalism and the development of proof-of-concept measurements, with the possibility of rebaslining during construction if necessary.
 
 \begin{note}
 Can we define specific success criteria for experimenting with likelihood coaddition?
@@ -1422,6 +1423,10 @@ second readout time, and a second 15 second exposure.
 \bibitem{Antilogus14} P.~Antilogus, P.~Astier, P~.Doherty, A.~Guyonnet and N.~Regnault
   \textbf{The brighter-fatter effect and pixel correlations in CCD sensors}
   Journal of Instrumentation, Volume 9, Issue 3, article id. C03048 (2014).
+
+\bibitem{Becker13} A.~Becker et al,
+  \textbf{Report on Late Winter 2013 Production: Image Differencing}
+  \url{http://ls.st/x9f}.
 
 \bibitem{Becker14} A.~Becker,
   \textbf{Report on Summer 2014 Production: Analysis of DCR},
