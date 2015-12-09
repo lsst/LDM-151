@@ -811,7 +811,7 @@ This is a placeholder by JDS --- a fuller description of the approach is require
 Artifacts which may be seen on images include:
 
 \begin{itemize}
-  \item{Optical ghosts;}
+  \item{Optical ghosts and glints;}
   \item{Satellite and asteroid trails;}
   \item{Transient and variable sources.}
 \end{itemize}
@@ -1157,7 +1157,7 @@ The work performed in this WBS serves two complementary roles:
 \begin{itemize}
   \item{It will enable the production of calibration data products as required by the Level 2 Photometric Calibration Plan (\NewPCP{}) and other planning documents \cite{Lupton15}\footnote{Resolving contradictions between these documents is out of scope here.}. This includes both characterization of the sensitivity of the LSST system (optics, filters and detector) and the transmissivity of the atmosphere.}
   \item{It will characterize of detector anomalies in such a way that they can be corrected either by the instrument signature removal routines in the Single Frame Processing Pipeline (\wbsSFM) or, if appropriate, elsewhere in the system;}
-  \item{It will manage and provide a catalog of optical ghosts to other parts of the system upon demand.}
+  \item{It will manage and provide a catalog of optical ghosts and glints to other parts of the system upon demand.}
 \end{itemize}
 
 \subsubsection{Baseline design}
@@ -1224,7 +1224,11 @@ Laboratory work required to understand these effects is outwith the scope of thi
 
 \paragraph{Ghost catalog}
 
-The Calibration Products Pipeline must produce a catalog of optical ghosts which is available for use in other parts of the system. Detailed characterization of ghosts in the LSST system will only be possible when the system is operational. Our baseline design therefore calls for this system to be prototyped using data from precursor instrumentation; we note that ghosts in e.g. HSC are well known and more significant than are expected in LSST.
+The Calibration Products Pipeline must provide a catalog of optical ghosts and glints which is available for use in other parts of the system. Detailed characterization of ghosts in the LSST system will only be possible when the system is operational. Our baseline design therefore calls for this system to be prototyped using data from precursor instrumentation; we note that ghosts in e.g. HSC are well known and more significant than are expected in LSST.
+
+\begin{note}
+It is not currently clear where the responsibility for characterizing ghosts and glints in the system lies. We assume it is outwith this WBS.
+\end{note}
 
 \subsubsection{Constituent Use Cases and Diagrams}
 
