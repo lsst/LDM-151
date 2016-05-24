@@ -1,66 +1,133 @@
-\section{Science Data Quality Analysis Pipelines}
+\section{Science Data Quality Analysis Pipeline}
 
-\subsection{SDQA Pipeline (\wbsSDQAP)}
+\subsection{Key Requirements}
+\begin{itemize}
+\item SDQA Pipeline shall provide low-level data collection functionality for science
+data quality analysis of Level 1, 2, and Calibration Processing pipelines.
 
-\subsubsection{Key Requirements}
+\item In addition, SDQA Pipeline shall provide low-level data collection functionality to support software development in Construction and Operations.
 
-SDQA Pipeline shall provide low-level data collection functionality for science data quality analysis of Level 1, 2, and Calibration Processing pipelines.
+\item SDQA Pipeline shall provide the visualization, analysis and monitoring capabilities for science quality data analysis. Its inputs will be provided by the SDQA Pipeline.
+
+\item The toolkit capabilities shall be made flexible, to provide the analyst with the ability to easily construct custom tests and analyses, and ``drill down" into various aspects of the data being analyzed.
+
+\item The toolkit will enable automation of tests and monitoring, and issuance of warnings when alerting thresholds are met.
+
+\item SDQA Pipeline implementation will monitor and harvest the outputs and logs of execution of other science pipelines, computing user-defined metrics.
+
+\item The outputs of SDQA Pipeline runs will be stored into a SDQA repository (RDBMS or filesystem based).
+\end{itemize}
+
+
+\subsection{Key Tasks for Each Level of QA}
+
+The SDQA system will be an integrated framework that is capable of providing useful information at four different levels of the data system.
+
+\begin{itemize}
+\item QA Level 0 - Testing and Validation of DM sub-system in pre-commissioning
+\item QA Level 1 - Real-time data quality and system assesment during commissioning + operations
+\item QA Level 2 - Quality assessment of Data Releases
+\item QA Level 3 - Tools for the community to evaluate the data quality of their own analyses.
+  These will be made available as well-documented and packaged versions of QA Levels 0--2.
+\end{itemize}
+
+\subsubsection{QA0}
+
+Test the DM software during pre-commissioning as well as test software improvements during commissioning and operations, quantifying the software performance against known expected outputs.
+Validating the software and its performance on (selected) data.
+
+(“Make me a three-color diagram, compute the width of point sources in the blue part of the locus”)
+
+(“I have 20 visits all over the sky, I want to match up the results”)
+
+The main components:
+\begin{enumerate}
+\item CI system that compiles code
+\item Test execution harness – that runs test up to “weekly” scale? 3: Library of validation metrics codes – some has to come from Science Pipelines, but KPMs are delivered by SQuaRE
+\item Instrumentation capability for computational performance metrics
+\item Library of “instrumentations”
+\item Interface to data products and QA metrics (including visualization)
+    \begin{enumerate}
+    \item Tabular query result interface
+    \item Visualizer for images
+    \item Plotter
+    \item SuperTask execution on selected data
+    \end{enumerate}
+\item Curated datasets to use in tests
+\item Toolkit for analysis of QA outputs (drilldown into existing tests, ad hoc tests, ad hoc afterburners) – some has to come from Science Pipelines or SUIT but SQuaRE provides examples [move to Shared Software Components section]
+    \begin{enumerate}
+    \item Tools that perform computations
+    \item Tools that perform visualization (using Butler if astronomical, maybe direct database if not)
+    \end{enumerate}
+\item Connection from analysis toolkit to validation metrics (attach common interactive plots to validation metrics)
+\item QA database including ingestion
+\item Notification system for threshold crossings
+\end{enumerate}
+
+Prototypes for all of these exist except ``Toolkit for analysis of QA outputs'' and ``Connection from analysis toolkit to validation metrics''
+
+``Toolkit for analysis of QA outputs'' will take more resources than the others listed above, but some may be already scheduled in other teams
+
+\subsubsection{QA1}
+Data quality in real time during commissioning and operations. Analyzes the data stream in real time, information about observing conditions (sky brightness, transparency, seeing, magnitude limit) as well as characterize subtle deterioration in system performance.
+
+Validating the operational system.
+
+Main components from above:
+\begin{enumerate}
+\item Library of validation metrics codes
+\item Instrumentation capability for computational performance metrics
+\item Library of “instrumentations”
+\item Interface to results (including visualization)
+\item Curated datasets to use in tests
+\item Toolkit for analysis of failures (drilldown into existing tests, ad hoc tests, ad hoc afterburners) – some has to come from Science Pipelines or SUIT but SQuaRE provides examples
+\item Connection from analysis toolkit to validation metrics
+\item QA database including ingestion
+\end{enumerate}
+
+New main components:
+\begin{enumerate}
+\item Harness for analyzing alert contents (and perhaps format)
+\item Faster metrics codes to meet overall 60 second performance requirement for alert publication (but not necessarily for all QA processing, which must meet only throughput requirements)
+\item Additional metrics/instrumentation codes (that must not disturb production system, including its performance, when dynamically inserted)
+\item Output interface to “comfort” display (aggregation, trending, etc.)
+\item Output interface to automated systems (drop alerts, reschedule field, etc.)
+\item Correlator between telemetry streams and metrics
+\item Input interface from sources of data not already present in Prompt Processing system
+\item Fake source injection and analysis
+\item Metrics codes specific for calibration/engineering/special- purpose images
+\end{enumerate}
+
+\subsubsection{QA2}
+assesses the quality of data releases (including the co-added image data products) performing quality assessment for astrometric and photometric calibration and derived products, looking for problems with the image processing pipelines and systematic problems with the instrument.
+Validating the Data Release products.
+All components from QA0
+New main components:
+\begin{enumerate}
+\item DRP-specific dataset
+\item Release data product editing tools (including provenance tracking)
+\item Output interface to workflow system based on QA results and provenance
+\item Provenance analysis tools
+\item Output interface to Science Pipelines, including from QA database
+\item Comparison tools for overlap areas due to satellite processing 
+\item Metrics/products for science users to understand quality of science data products (depth mask/selection function, etc.)
+\item Characterization report for Data Release
+\end{enumerate}
+
+\subsubsection{QA3}
+data quality based on science analysis performed by the LSST Science Collaborations and the community. Level 0-2 visualization and data exploration tools will be made available to the community.
+Make all results from the above available. Make all of the above components available to some part of the community (could be just affiliated data centers or could be individual scientists) as a supported product.
+Ingest external science analysis data as Level 3 data products; ingest useful external science analysis tools.
+
+\subsubsection{Prototype Implementation of PipeQA}
+
+The pipeQA prototype is a useful reference for exploring ideas and we mention
+it here to capture this prototype work.
+
+A prototype implementation of the SDQA was implemented in LSST Final Design Phase. The existing prototype was tested with image simulation inputs, as well as real data (SDSS Stripe 82).
 \\
 
-In addition, SDQA Pipeline shall provide low-level data collection functionality to support software development in Construction and Operations.
-
-\subsubsection{Baseline Design}
-
-SDQA Pipeline implementation will monitor and harvest the outputs and logs of execution of other science pipelines, computing user-defined metrics.
-
-The metrics will be defined by extending appropriate SDQA Pipeline base classes, and configuring them in the SDQA Pipeline configuration file and/or on the command line.
-
-The outputs of SDQA Pipeline runs will be stored into a SDQA repository (RDBMS or filesystem based).
-
-\subsubsection{Constituent Use Cases and Diagrams}
-
-Assess Data Quality for Nightly Processing; Assess Data Quality for Calibration Products; Assess Data Quality for Data Release;
-Assess Data Quality for Nightly Processing at Archive;
-
-\subsubsection{Prototype Implementation}
-
-Prototype implementation of the SDQA Pipeline baseline design has been completed in LSST Final Design Phase. The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82). The existing prototype will be refactored to enhance performance and flexibility in Construction.
-\\
-
-The prototype code is available in the \url{https://github.com/lsst/testing_pipeQA} git repository.
-
-\clearpage
-
-\subsection{SDQA Toolkit (\wbsSDQAT)}
-
-\subsubsection{Key Requirements}
-
-SDQA Toolkit shall.provides the visualization, analysis and monitoring capabilities for science quality data analysis. Its inputs will be provided by the SDQA Pipeline.
-\\
-
-The toolkit capabilities shall be made flexible, to provide the analyst with the ability to easily construct custom tests and analyses, and ``drill down" into various aspects of the data being analyzed.
-\\
-
-The toolkit will enable automation of tests and monitoring, and issuance of warnings when alerting thresholds are met.
-
-\subsubsection{Baseline Design}
-
-The core of the toolkit will be designed around a pluggable Python framework generating, a web-based, interactive, visualization interface. This framework has already been implemented in the final design phase as ``pipeQA".
-
-Standard data visualization \emph{aspects} will be realized with predefined set of web pages with tests/analyses executed on a given SDQA repository. These aspects will allow the browsing and drill-down of data collected in Data Release Production runs, or monitoring of live data (for Level 1).
-
-Data analysts and users will be able to create new QA tests to examine particular anomalies discovered in the data. It will be possible to add these tests to the library of predefined aspects, to be executed or monitored in Level 1 and Level 2 productions.
-
-\subsubsection{Constituent Use Cases and Diagrams}
-
-Analyze SDQA Metrics; Correlate SDQA metric with other data; Correlate SDQA metrics; Display SDQA Metrics;
-
-\subsubsection{Prototype Implementation}
-
-Prototype implementation of the SDQA Toolkit has been implemented in LSST Final Design Phase. The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82).
-\\
-
-The existing prototype uses a set of statically and dynamically generated pages (written in php) to display the results of data production runs. While proving invaluable for data analysis, the prototype design was found it to be difficult to extend with new analyst-developed tests. The current baseline has been defined based on this experience and will be implemented in Construction.
+The prototype used a set of statically and dynamically generated pages (written in php) to display the results of data production runs. While proving invaluable for data analysis, the prototype design was found it to be difficult to extend with new analyst-developed tests.
 \\
 
 The prototype code is available in the \url{https://github.com/lsst/testing_displayQA} git repository.
