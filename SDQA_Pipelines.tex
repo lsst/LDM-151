@@ -1,0 +1,66 @@
+\section{Science Data Quality Analysis Pipelines}
+
+\subsection{SDQA Pipeline (\wbsSDQAP)}
+
+\subsubsection{Key Requirements}
+
+SDQA Pipeline shall provide low-level data collection functionality for science data quality analysis of Level 1, 2, and Calibration Processing pipelines.
+\\
+
+In addition, SDQA Pipeline shall provide low-level data collection functionality to support software development in Construction and Operations.
+
+\subsubsection{Baseline Design}
+
+SDQA Pipeline implementation will monitor and harvest the outputs and logs of execution of other science pipelines, computing user-defined metrics.
+
+The metrics will be defined by extending appropriate SDQA Pipeline base classes, and configuring them in the SDQA Pipeline configuration file and/or on the command line.
+
+The outputs of SDQA Pipeline runs will be stored into a SDQA repository (RDBMS or filesystem based).
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Assess Data Quality for Nightly Processing; Assess Data Quality for Calibration Products; Assess Data Quality for Data Release;
+Assess Data Quality for Nightly Processing at Archive;
+
+\subsubsection{Prototype Implementation}
+
+Prototype implementation of the SDQA Pipeline baseline design has been completed in LSST Final Design Phase. The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82). The existing prototype will be refactored to enhance performance and flexibility in Construction.
+\\
+
+The prototype code is available in the \url{https://github.com/lsst/testing_pipeQA} git repository.
+
+\clearpage
+
+\subsection{SDQA Toolkit (\wbsSDQAT)}
+
+\subsubsection{Key Requirements}
+
+SDQA Toolkit shall.provides the visualization, analysis and monitoring capabilities for science quality data analysis. Its inputs will be provided by the SDQA Pipeline.
+\\
+
+The toolkit capabilities shall be made flexible, to provide the analyst with the ability to easily construct custom tests and analyses, and ``drill down" into various aspects of the data being analyzed.
+\\
+
+The toolkit will enable automation of tests and monitoring, and issuance of warnings when alerting thresholds are met.
+
+\subsubsection{Baseline Design}
+
+The core of the toolkit will be designed around a pluggable Python framework generating, a web-based, interactive, visualization interface. This framework has already been implemented in the final design phase as ``pipeQA".
+
+Standard data visualization \emph{aspects} will be realized with predefined set of web pages with tests/analyses executed on a given SDQA repository. These aspects will allow the browsing and drill-down of data collected in Data Release Production runs, or monitoring of live data (for Level 1).
+
+Data analysts and users will be able to create new QA tests to examine particular anomalies discovered in the data. It will be possible to add these tests to the library of predefined aspects, to be executed or monitored in Level 1 and Level 2 productions.
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Analyze SDQA Metrics; Correlate SDQA metric with other data; Correlate SDQA metrics; Display SDQA Metrics;
+
+\subsubsection{Prototype Implementation}
+
+Prototype implementation of the SDQA Toolkit has been implemented in LSST Final Design Phase. The existing prototype has been extensively tested with image simulation inputs, as well as real data (SDSS Stripe 82).
+\\
+
+The existing prototype uses a set of statically and dynamically generated pages (written in php) to display the results of data production runs. While proving invaluable for data analysis, the prototype design was found it to be difficult to extend with new analyst-developed tests. The current baseline has been defined based on this experience and will be implemented in Construction.
+\\
+
+The prototype code is available in the \url{https://github.com/lsst/testing_displayQA} git repository.
