@@ -1,0 +1,137 @@
+\section{Calibration Pipelines}
+
+\subsection{Calibration Products Pipeline (\wbsCPP)}
+
+\subsubsection{Key Requirements}
+
+The work performed in this WBS serves two complementary roles:
+
+\begin{itemize}
+  \item{It will enable the production of calibration data products as required by the Level 2 Photometric Calibration Plan (\NewPCP{}) and other planning documents \cite{Lupton15}\footnote{Resolving contradictions between these documents is out of scope here.}. This includes both characterization of the sensitivity of the LSST system (optics, filters and detector) and the transmissivity of the atmosphere.}
+  \item{It will characterize of detector anomalies in such a way that they can be corrected either by the instrument signature removal routines in the Single Frame Processing Pipeline (\wbsSFM) or, if appropriate, elsewhere in the system;}
+  \item{It will manage and provide a catalog of optical ghosts and glints to other parts of the system upon demand.}
+\end{itemize}
+
+\subsubsection{Baseline Design}
+
+\paragraph{Instrumental sensitivity}
+
+We expect laboratory measurements of the filter profiles. We further baseline the development of a procedure for measuring the filter response at 1\,nm resolution using the approach described in \cite{Lupton15}.
+
+We baseline the following procedure for creating flat fields:
+
+\begin{enumerate}
+  \item{Record bias/dark frames;}
+  \item{Use ``monochromatic'' (1\,nm) flat field screen flats with no filter in the beam to measure the per-pixel sensitivity;}
+  \item{Use a collimated beam projector (CBP) to measure the quantum efficiency (QE) at a set of points in the focal plane, dithering those points to tie them together;}
+  \item{Combine the screen and CBP data to determine the broad band (10--100\,nm) QE of all pixels;}
+  \item{Fold in the filter response to determine the 1\,nm resolution effective QE of all pixels.}
+\end{enumerate}
+
+This WBS is responsible for the development of the data analysis algorithms and software required and the ultimate delivery of the flat fields. Development and commissioning of the CBP itself, together with any other infrastructure required to perform the above procedure, lies outwith Data Management (see 04C.08 \emph{Calibration System}).
+
+\paragraph{Atmospheric transmissivity}
+
+Measurements from the auxiliary instrumentation---to include the 1.2\,m ``Calypso'' telescope, a bore-sight mounted radiometer and satellite-based measurement of atmospheric parameters such as pressure and ozone---will be used to determine the atmospheric absorption along the line of sight to standard stars. The atmospheric transmission will be decomposed into a set of basis functions and interpolated in space in time to any position in the LSST focal plane.
+
+This WBS will develop a pipeline for accurate spectrophotometric measurement of stars with the auxiliary telescope. We expect to repurpose and build upon publicly available code e.g.\ from the PFS\footnote{Subaru's Prime Focus Spectrograph; \url{http://sumire.ipmu.jp/pfs/}.} project for this purpose.
+
+This WBS will construct the atmospheric model, which may be based either on \textsc{modtran} (as per \NewPCP{}) or a PCA-like decomposition of the data (suggested by \cite{Lupton15}).
+
+This WBS will define and develop the routine for fitting the atmospheric model to each exposure from the calibration telescope and providing estimates of the atmospheric transmission at any point in the focal plane upon request.
+
+\paragraph{Detector effects}
+
+An initial cross-talk correction matrix will be determined by laboratory measurements on the Camera Calibration Optical Bench (CCOB). However, to account for possibile instabilities, this WBS will develop an on-telescope method. We baseline this as being based on measurement with the CBP, but we note the alternative approach based on cosmic rays adopted by HSC \cite{Furusawa14}.
+
+Multiple reflections between the layers of the CCD give rise to spatial variability with fine scale structure in images which may vary with time \cite[\S2.5.1]{Lupton15}. These can be characterized by white light flat-fields. Preliminary analysis indicates that these effects may be insignificant in LSST \cite{Rasmussen15}; however, the baseline calls for a a routine developed in this WBS to analyse the flat field data and generate fringe frames on demand. This requirement may be relaxed if further analysis (outside the scope of thie WBS) demonstrates it to be unnecessary.
+
+
+This WBS will develop algorithms to characterize and mitigate anomalies due to the nature of the camera's CCDs.
+
+\begin{note}
+There's a complex inter-WBS situation here: the actual mitigation of CCD anomalies will generally be performed in SFM (\wbsSFM{}), based on products provided by this WBS which, in turn, may rely on laboratory based research which is broadly outside the scope of DM\@. We baseline the work required to develop the corrective algorithms here. We consider moving it to \wbsSFM{} in future.
+\end{note}
+
+The effects we anticipate include:
+
+\begin{itemize}
+  \item{QE variation between pixels;}
+  \item{Static non-uniform pixel sizes (e.g.\ ``tree rings'' \cite{Stubbs14});}
+  \item{Dynamic electric fields (e.g.\ ``brighter-fatter'' \cite{Antilogus14});}
+  \item{Time dependent effects in the camera (e.g.\ hot pixels, changing cross-talk coefficients);}
+  \item{Charge transfer (in)efficiency (CTE).}
+\end{itemize}
+
+Laboratory work required to understand these effects is outwith the scope of this WBS\@. In some cases, this work may establish that the impact of the effect may be neglected in LSST\@. The baseline plan addresses these issues through the following steps:
+
+\begin{itemize}
+  \item{Separate QE from pixel size variations\footnote{Refer to work by Rudman.} and model both as a function of position (and possibly time);}
+  \item{Learn how to account for pixel size variation over the scale of objects (e.g.\ by redistributing charge);}
+  \item{Develop a correction for the brighter-fatter effect and develop models for any features which cannot be removed;}
+  \item{Handle edge/bloom using masking or charge redistribution;}
+  \item{Track defects (hot pixels);}
+  \item{Handle CTE, including when interpolating over bleed trails.}
+\end{itemize}
+
+\paragraph{Ghost catalog}
+
+The Calibration Products Pipeline must provide a catalog of optical ghosts and glints which is available for use in other parts of the system. Detailed characterization of ghosts in the LSST system will only be possible when the system is operational. Our baseline design therefore calls for this system to be prototyped using data from precursor instrumentation; we note that ghosts in e.g. HSC are well known and more significant than are expected in LSST.
+
+\begin{note}
+It is not currently clear where the responsibility for characterizing ghosts and glints in the system lies. We assume it is outwith this WBS.
+\end{note}
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Produce Master Fringe Exposures; Produce Master Bias Exposure; Produce Master Dark Exposure; Calculate System Bandpasses; Calculate Telescope Bandpasses; Construct Defect Map; Produce Crosstalk Correction Matrix; Produce Optical Ghost Catalog; Produce Master Pupil Ghost Exposure; Determine CCOB-derived Illumination Correction; Determine Optical Model-derived Illumination Correction; Create Master Flat-Spectrum Flat; Determine Star Raster Photometry-derived Illumination Correction; Create Master Illumination Correction; Determine Self-calibration Correction-Derived Illumination Correction; Correct Monochromatic Flats; Reduce Spectrum Exposure; Prepare Nightly Flat Exposures;
+
+\subsubsection{Prototype Implementation}
+
+While parts of the Calibration Products Pipeline have been prototyped by the LSST Calibration Group (see the \NewPCP for discussion), these have not been written using LSST Data Management software framework or coding standards. We therefore expect to transfer the know-how, and rewrite the implementation.
+
+\clearpage
+
+\subsection{Photometric Calibration Pipeline (\wbsPhotoCal)}
+
+\subsubsection{Key Requirements}
+
+The Photometric Calibration Pipeline is required to internally calibrate the relative photometric zero-points of every observation, enabling the Level 2 catalogs to reach the required SRD precision.
+
+\subsubsection{Baseline Design}
+
+The adopted baseline algorithm is a variant of ``ubercal'' \cite{Padmanabhan08, Schlafly12}. This baseline is described in detail in the Photometric Self Calibration Design and Prototype Document (\UCAL).
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Perform Global Photometric Calibration;
+
+\subsubsection{Prototype Implementation}
+
+Photometric Calibration Pipeline has been fully prototyped by the LSST Calibration Group to the required level of accuracy and performance (see the \UCAL document for discussion). % RHL really?  I thought that they wrote a small-scale toy version.  But I may be totally out of date.
+\\
+
+As the prototype has not been written using LSST Data Management software framework or coding standards, we assume a non-negligible refactoring and coding effort will be needed to convert it to production code in LSST Construction.
+
+\clearpage
+
+\subsection{Astrometric Calibration Pipeline (\wbsAstroCal)}
+
+\subsubsection{Key Requirements}
+
+The Astrometric Calibration Pipeline is required to calibrate the relative and absolute astrometry of the LSST survey, enabling the Level 2 catalogs to reach the required SRD precision.
+
+\subsubsection{Baseline Design}
+
+Algorithms developed for the Photometric Calibration Pipeline (\wbsPhotoCal) will be repurposed for astrometric calibration by changing the relevant functions to minimize. This pipeline will further be aided by WCS and local astrometric registration modules developed as a component of the Single Frame Processing pipeline (\wbsSFM).
+\\
+
+Gaia standard stars will be used to fix the global astrometric system. It is likely that the existence of Gaia catalogs may make a separate Astrometric Calibration Pipeline unnecessary.
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Perform Global Astrometric Calibration;
+
+\subsubsection{Prototype Implementation}
+
+The Astrometric Calibration Pipeline has been partially prototyped by the LSST Calibration Group, but outside of LSST Data Management software framework. We expect to transfer the know-how, and rewrite the implementation.
