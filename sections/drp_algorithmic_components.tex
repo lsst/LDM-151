@@ -1,6 +1,5 @@
 \section{Algorithmic Components: DRP}
 
-
 \subsection{Instrument Signature Removal}
 \begin{itemize}
 \item All the usual stuff (bias, dark, linearity, crosstalk, fringing, ...?)
@@ -48,6 +47,15 @@
 \end{itemize}
 
 \subsection{Measurement}
+
+\begin{note}[NOTE]
+Each bullet here is really a subsubsubsection, but Latex doesn't like that.  Could we bump up Sections to Chapters or Parts to get another level, or do something equivalent?
+\end{note}
+
+\begin{note}[Measurement Algorithms Table]
+Matrix of measurement algorithms and the contexts in which they're run, indicating which combinations are supported
+\end{note}
+
 \subsubsection{Variants}
 \begin{itemize}
 \item Single Visit Measurement
@@ -76,16 +84,17 @@
 \item Hybrid Models
 \end{itemize}
 
-\begin{note}[Measurement Algorithms Table]
-Matrix of measurement algorithms and the contexts in which they're run, indicating which combinations are supported
-\end{note}
-
 \subsection{Background Estimation}
 \begin{itemize}
 \item Fit or interpolate large-scale variations while masking out detections.
 \item Needs to work in crowded fields.
 \item Needs to work on both difference images and direct images.
 \item Need to be able to compose backgrounds measured in different coordinate systems on different scales.
+\end{itemize}
+
+\subsection{Build Background Reference}
+\begin{itemize}
+\item Given multiple overlapping visit images (already warped to a common coordinate system), synthesize a continuous single-epoch image that can be used as a reference for background matching.
 \end{itemize}
 
 \subsection{PSF Estimation}
@@ -164,20 +173,77 @@ Matrix of measurement algorithms and the contexts in which they're run, indicati
 \item Can do outlier rejection (but usually doesn't).
 \item Needs to propagate full uncertainty somehow.
 \item May need to propagate larger-scale per-exposure masks to get right PSF model or other coadded quantities.
+\item Should be capable of combining coadds from different bands and/or epoch ranges ranges as well as combining individual exposures.
+\end{itemize}
+
+\subsection{DCR-Corrected Template Generation}
+\begin{itemize}
+\item Somwewhat like coaddition, but may need to add dimensions for wavelength or airmass, and may involve solving an inverse problem instead of just compute means.
+\end{itemize}
+
+\subsection{Image Decorrelation}
+\subsubsection{Difference Image Decorrelation}
+\begin{itemize}
+\item Fourier-space (?) deconvolution of preconvolved difference images before measurement - ZOGY as reinterpreted by Lupton.
+\item Need to test with small-scale research before committing to this approach.
+\end{itemize}
+\subsubsection{Coadd Decorrelation}
+\begin{itemize}
+\item Fourier-space/iterative deconvolution of likelihood coadds, as in DMTN-15.
+\item Need to test with small-scale research before committing to this approach.
 \end{itemize}
 
 \subsection{Star/Galaxy Classification}
 \subsubsection{Single Visit S/G, Pre-PSF}
+\begin{itemize}
+\item Select stars to be used in PSF estimation (mostly from moments).
+\end{itemize}
 \subsubsection{Single Visit S/G, Post-PSF}
+\begin{itemize}
+\item Extendedness or trace radius difference that classifies sources based on single frame measurements that can utilize the PSF model.  Used to select single-frame calibration stars, and probably aperture correction stars.
+\end{itemize}
 \subsubsection{Multi-Source S/G}
-\subsubsection{Object S/G Classification}
+\begin{itemize}
+\item Aggregate of single-visit S/G post-PSF numbers in jointcal.
+\end{itemize}
+\subsubsection{Object Classification}
+\begin{itemize}
+\item Best classification derived from multifit and possibly variability.
+\end{itemize}
 
 \subsection{Variability Classification}
+\begin{itemize}
+\item Periodograms derived from forced photometry.
+\end{itemize}
 
 \subsection{Association and Matching}
 \subsubsection{Single Visit to Reference Catalog, Semi-Blind}
+\begin{itemize}
+\item Run prior to single-visit WCS fitting, with only telescope's best guess as a starting WCS.
+\end{itemize}
 \subsubsection{Multiple Visits to Reference Catalog}
+\begin{itemize}
+\item Match sources from multiple visits to a single reference catalog, assuming good WCSs.
+\end{itemize}
 \subsubsection{DIAObject Generation}
+\begin{itemize}
+\item Match new DIASources to existing DIAObjects and generate new DIAObjects.  Definitely run in AP, maybe run in DRP.
+\end{itemize}
 \subsubsection{Object Generation}
+\begin{itemize}
+\item Match coadd detections from different bands/SEDs/epoch-ranges, merging Footprints and associating peaks.
+\item Also merge in DIASources or (if already self-associated) DIAObjects.
+\end{itemize}
 \subsubsection{Cross-Patch Merging}
+\begin{itemize}
+\item Resolve duplicates in patch overlap regions by flagging ``primary'' objects.  Difficult due to blending.
+\end{itemize}
 \subsubsection{Cross-Tract Merging}
+\begin{itemize}
+\item Resolve duplicates in tract overlap regions by flagging ``primary'' objects.  Difficult due to blending.
+\end{itemize}
+
+\subsection{MOPS}
+\begin{itemize}
+\item Link trailed (and other?) DIASources to form SSObjects, fit for orbits.
+\end{itemize}
