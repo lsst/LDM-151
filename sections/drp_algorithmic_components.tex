@@ -1,3 +1,249 @@
 \section{Algorithmic Components: DRP}
 
-{\bf Put algorithmic components for the data release production system here.}
+\subsection{Instrument Signature Removal}
+\begin{itemize}
+\item All the usual stuff (bias, dark, linearity, crosstalk, fringing, ...?)
+\item Includes B-F correction.
+\item Does not include frozen-in coordinate distortions.
+\item Flat-field to sky SED.
+\end{itemize}
+
+\subsection{Artifact Detection}
+\subsubsection{Single-Exposure Morphology}
+\begin{itemize}
+\item Find CRs via morphology.
+\item Find satellites via Hough transform.
+\item Find some optical ghosts (etc?) from bright star catalog and optics predictions.
+\end{itemize}
+\subsubsection{Snap Subtraction}
+\begin{itemize}
+\item All of the above, but improve by looking at both snaps.
+\end{itemize}
+\subsubsection{Warped Image Comparison}
+\begin{itemize}
+\item Find more optical artifacts by looking at differences between warped images (this is run during background matching).
+\item Find transient astronomical sources we don't want to include in coadds.
+\end{itemize}
+
+\subsection{Artifact Masking/Interpolation}
+\begin{itemize}
+\item Set mask planes for all artifacts.
+\item Eliminate small artifacts by interpolating them.
+\end{itemize}
+
+\subsection{Source Detection}
+\begin{itemize}
+\item Detect above-threshold regions and peaks in direct or difference images.
+\end{itemize}
+
+\subsection{Deblending}
+\subsubsection{Single Visit Deblending}
+\begin{itemize}
+\item Generate HeavyFootprint deblends using only a single image.
+\end{itemize}
+\subsubsection{Multi-Coadd Deblending}
+\begin{itemize}
+\item Generate consistent HeavyFootprint deblends from coadds over multiple bands and possibly epoch ranges.
+\end{itemize}
+
+\subsection{Measurement}
+
+\begin{note}[NOTE]
+Each bullet here is really a subsubsubsection, but Latex doesn't like that.  Could we bump up Sections to Chapters or Parts to get another level, or do something equivalent?
+\end{note}
+
+\begin{note}[Measurement Algorithms Table]
+Matrix of measurement algorithms and the contexts in which they're run, indicating which combinations are supported
+\end{note}
+
+\subsubsection{Variants}
+\begin{itemize}
+\item Single Visit Measurement
+\item Multi-Coadd Measurement
+\item Forced Measurement
+\item Difference Image Measurement
+\item Multi-Epoch Measurement
+\end{itemize}
+\subsubsection{Algorithms}
+\begin{itemize}
+\item Centroids
+\item Second-Moment Shapes
+\item Aperture Photometry
+\item Kron Apertures
+\item Petrosian Apertures
+\item Galaxy Models
+\item Moving Star Models
+\item Trailed Point Source Models
+\item Dipole Models
+\end{itemize}
+\subsubsection{Blended Measurement}
+\begin{itemize}
+\item Deblend Template Projection
+\item Neighbor Noise Replacement
+\item Simultaneous Fitting
+\item Hybrid Models
+\end{itemize}
+
+\subsection{Background Estimation}
+\begin{itemize}
+\item Fit or interpolate large-scale variations while masking out detections.
+\item Needs to work in crowded fields.
+\item Needs to work on both difference images and direct images.
+\item Need to be able to compose backgrounds measured in different coordinate systems on different scales.
+\end{itemize}
+
+\subsection{Build Background Reference}
+\begin{itemize}
+\item Given multiple overlapping visit images (already warped to a common coordinate system), synthesize a continuous single-epoch image that can be used as a reference for background matching.
+\end{itemize}
+
+\subsection{PSF Estimation}
+\subsubsection{Single CCD PSF Estimation}
+\begin{itemize}
+\item Fit simple empirical PSF model to stars from a single exposure.
+\item No chromaticity.
+\item May use external star catalog, but doesn't rely on one.
+\item Used in Alert Production and BootstrapImChar in DRP.
+\end{itemize}
+\subsubsection{Full Visit PSF Estimation}
+\begin{itemize}
+\item Decompose PSF into optical + atmosphere.
+\item Constrain model with stars, telemetry, and wavefront data.
+\item Wavelength-dependent.
+\item Used in RefineImChar in DRP.
+\item Must include some approach to dealing with wings of bright stars.
+\end{itemize}
+
+\subsection{Aperture Correction}
+\begin{itemize}
+\item Measure curves of growth from bright stars.
+\item Correct various flux measurements to infinite.
+\item Propagate uncertainty in aperture correction to corrected fluxes; covariance is tricky.
+\end{itemize}
+
+\subsection{Astrometric Calibration}
+\subsubsection{Single Visit}
+\begin{itemize}
+\item Fit multi-component WCS to all CCDs in a single visit simultaneously after matching to reference catalog.
+\end{itemize}
+\subsubsection{Joint Multi-Visit}
+\begin{itemize}
+\item Fit multi-component WCS to all CCDs from multiple visits simultaneously after matching to reference catalog.
+\end{itemize}
+
+\subsection{Photometric Calibration}
+\subsubsection{Single Visit}
+\begin{itemize}
+\item Fit zeropoint (and some small spatial variation?) to all CCDs simultaneously after matching to reference catalog.
+\item Need for chromatic dependence unclear; probably driven by AP.
+\end{itemize}
+\subsubsection{Joint Multi-Visit}
+\begin{itemize}
+\item Derive SEDs for calibration stars from colors and reference catalog classifications.
+\item Utilize additional information from wavelenth dependent photometric calibration built by calibration products production.
+\item Fit zeropoint and possibly perturbations to all CCDs on multiple visits simultaneously after matching to reference catalog..
+\end{itemize}
+
+\subsection{PSF Matching}
+\subsubsection{Image Subtraction}
+\begin{itemize}
+\item Match template image to science image, as in Alert Production and DRP Difference Image processing.
+\end{itemize}
+\subsubsection{PSF Homogeniziation for Coaddition}
+\begin{itemize}
+\item Match science image to predetermined analytic PSF, as in PSF-matched coaddition.
+\end{itemize}
+
+\subsection{Image Warping}
+\subsubsection{Oversampled Images}
+\begin{itemize}
+\item Just use Lanczos.
+\end{itemize}
+\subsubsection{Undersampled Images}
+\begin{itemize}
+\item Can use PSF model as interpolant if we also want to convolve with PSF (as in likelihood coadds).  Otherwise impossible?
+\end{itemize}
+\subsubsection{Irregularly-Sampled Images}
+\begin{itemize}
+\item Approximate procedure for fixing small-scale distortions in pixel grid.
+\end{itemize}
+
+\subsection{Image Coaddition}
+\begin{itemize}
+\item Can do outlier rejection (but usually doesn't).
+\item Needs to propagate full uncertainty somehow.
+\item May need to propagate larger-scale per-exposure masks to get right PSF model or other coadded quantities.
+\item Should be capable of combining coadds from different bands and/or epoch ranges ranges as well as combining individual exposures.
+\end{itemize}
+
+\subsection{DCR-Corrected Template Generation}
+\begin{itemize}
+\item Somwewhat like coaddition, but may need to add dimensions for wavelength or airmass, and may involve solving an inverse problem instead of just compute means.
+\end{itemize}
+
+\subsection{Image Decorrelation}
+\subsubsection{Difference Image Decorrelation}
+\begin{itemize}
+\item Fourier-space (?) deconvolution of preconvolved difference images before measurement - ZOGY as reinterpreted by Lupton.
+\item Need to test with small-scale research before committing to this approach.
+\end{itemize}
+\subsubsection{Coadd Decorrelation}
+\begin{itemize}
+\item Fourier-space/iterative deconvolution of likelihood coadds, as in DMTN-15.
+\item Need to test with small-scale research before committing to this approach.
+\end{itemize}
+
+\subsection{Star/Galaxy Classification}
+\subsubsection{Single Visit S/G, Pre-PSF}
+\begin{itemize}
+\item Select stars to be used in PSF estimation (mostly from moments).
+\end{itemize}
+\subsubsection{Single Visit S/G, Post-PSF}
+\begin{itemize}
+\item Extendedness or trace radius difference that classifies sources based on single frame measurements that can utilize the PSF model.  Used to select single-frame calibration stars, and probably aperture correction stars.
+\end{itemize}
+\subsubsection{Multi-Source S/G}
+\begin{itemize}
+\item Aggregate of single-visit S/G post-PSF numbers in jointcal.
+\end{itemize}
+\subsubsection{Object Classification}
+\begin{itemize}
+\item Best classification derived from multifit and possibly variability.
+\end{itemize}
+
+\subsection{Variability Classification}
+\begin{itemize}
+\item Periodograms derived from forced photometry.
+\end{itemize}
+
+\subsection{Association and Matching}
+\subsubsection{Single Visit to Reference Catalog, Semi-Blind}
+\begin{itemize}
+\item Run prior to single-visit WCS fitting, with only telescope's best guess as a starting WCS.
+\end{itemize}
+\subsubsection{Multiple Visits to Reference Catalog}
+\begin{itemize}
+\item Match sources from multiple visits to a single reference catalog, assuming good WCSs.
+\end{itemize}
+\subsubsection{DIAObject Generation}
+\begin{itemize}
+\item Match new DIASources to existing DIAObjects and generate new DIAObjects.  Definitely run in AP, maybe run in DRP.
+\end{itemize}
+\subsubsection{Object Generation}
+\begin{itemize}
+\item Match coadd detections from different bands/SEDs/epoch-ranges, merging Footprints and associating peaks.
+\item Also merge in DIASources or (if already self-associated) DIAObjects.
+\end{itemize}
+\subsubsection{Cross-Patch Merging}
+\begin{itemize}
+\item Resolve duplicates in patch overlap regions by flagging ``primary'' objects.  Difficult due to blending.
+\end{itemize}
+\subsubsection{Cross-Tract Merging}
+\begin{itemize}
+\item Resolve duplicates in tract overlap regions by flagging ``primary'' objects.  Difficult due to blending.
+\end{itemize}
+
+\subsection{MOPS}
+\begin{itemize}
+\item Link trailed (and other?) DIASources to form SSObjects, fit for orbits.
+\end{itemize}
