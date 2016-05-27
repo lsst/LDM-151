@@ -1,0 +1,22 @@
+\section{Science User Interface and Toolkit}
+
+\subsection{Science Pipeline Toolkit (\wbsSPT)}
+
+\subsubsection{Key Requirements}
+
+The Science Pipeline Toolkit shall provide the software components, services, and documentation required to construct Level 3 science pipelines out of components built for Level 1 and 2 pipelines. These pipelines shall be executable on LSST computing resources or elsewhere.
+
+\subsubsection{Baseline Design}
+
+The baseline design assumes that Level 3 pipelines will use the same {\tt Tasks} infrastructure (see the Data Management Middleware Design document; \DMMD) as Level 1 and 2 pipelines\footnote{Another way of looking at this is that, functionally, there will be no fundamental difference between Level 2 and 3 pipelines, except for the level of privileges and access to software or hardware resources.}. Therefore, Level 3 pipelines will largely be automatically constructible as a byproduct of the overall design.
+\\
+
+The additional features unique to Level 3 involve the services to upload/download data to/from the LSST Data Access Center. The baseline for these is to build them on community standards (VOSpace).
+
+\subsubsection{Constituent Use Cases and Diagrams}
+
+Configure Pipeline Execution; Execute Pipeline; Incorporate User Code into Pipeline; Monitor Pipeline Execution; Science Pipeline Toolkit; Select Data to be Processed; Select Data to be Stored;
+
+\subsubsection{Prototype Implementation}
+
+While no explicit prototype implementation exists at this time, the majority of LSST pipeline prototypes have successfully been designed in modular and portable fashion. This has allowed a diverse set of users to customize and run the pipelines on platforms ranging from OS X laptops, to 10,000+ core clusters (e.g., BlueWaters), and to implement plugin algorithms (e.g., Kron photometry).
