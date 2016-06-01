@@ -88,10 +88,6 @@ The LSST data products are organized into three groups, based on their intended 
 
 \end{itemize}
 
-\begin{note}{JFB comment:}
-Should we mention intermediate data products as a category here, too?  Those will be an important part of the Pipeline descriptions that happen later in the document.
-\end{note}
-
 The organization of LSST Data Products is shown in Figure~\ref{fig:DP}.
 
 Level 1 and Level 2 data products that have passed quality control
@@ -100,30 +96,23 @@ Additionally, the source code used to generate them will be made
 available, and LSST will provide support for builds on selected
 platforms.
 
-\subsubsection{Data Units}
+The pipelines used to produce these public data products will also produce many intermediate data products that may not be made publically available (generally because they are fully superseded in quality by a public data product).  Intermediate products may be important for QA, however, and their specification is an important part of describing the pipelines themselves.
 
-\begin{note}[TODO]
-  This section still in outline form.
-\end{note}
+\subsection{Data Units}
 
-\begin{itemize}
-  \item Source vs. Object
-  \item Visit, CCD, Snap
-  \item Tract, Patch
-  \item Filters and object SEDs
-\end{itemize}
+In order to describe the components of our processing pipelines, we first need standard nomenclature for the units of data the pipeline will process.
+
+The smallest data units are those corresponding to individual astrophysical entities.  In keeping with LSST conventions, we use ``object'' to refer to the astrophysical entity itself (which typically implies aggregation of some sort over all exposures), and ``source'' to refer to the realization of an object on a particular exposure.  In the case of blending, of course, these are just our best attempts to define distinct astrophysical objects, and hence it is also useful to define terms that represent this process.  We use ``family'' to refer to group of blended objects (or, more rarely, sources), and ``child'' to refer to a particular deblended object within a family.  A ``parent'' is also created for each family, representing the alternate hypothesis that the blend is actually a single object.  Blends may be hierarchical; a child at one level may be a parent at the level below.
+
+LSST observations are taken as a pair of 15-second ``snaps''; together these constitute a ``visit''.  Because snaps are typically combined early in the processing (and some special programs and survey modes may take only a single snap), visit is much more frequently used as a unit for processing and data products.  The image data for to a visit is a set of 189 ``CCD'' or ``sensor'' images.  CCD-level data from the camera is further data divided across the 16 amplifiers within a CCD, but these are also combined at an early stage, and the 3$\times$3 CCD ``rafts'' that play an important role in the hardware design are relativley unimportant for the pipeline.  This leaves visit and CCD the main identifiers of most exposure-level data products and pipelines.
+
+Our convention for defining regions on the sky is deliberately vague; we hope to build a codebase capable of working with virtually any pixelization or projection scheme (though different schemes may have different performance or storage implications).  Our approach involves two region concepts: ``tracts'' and ``patches''.  A tract is a large region with a single Cartesian coordinate system; we assume it is larger than the LSST field of view, but its maximum size is essentially set by the point at which distortion in the projection becomes significant enough to affect the processing (by e.g. breaking the assumption that the PSF is well-sampled on the pixel grid).  Tracts are divided into patches, all of which share the tract coordinate system.  Most image processing is perfomed at the patch level, and hence patch sizes are chosen largely to ensure that patch-level data products and processing fit in memory.  Both tracts and patches are defined such that each region overlaps with its neighbors, and these overlap regions must be large enough that any individual astronomical object is wholly contained in at least one tract and patch.  In a patch overlap region, we expect pixel values to be numerically equivalent (i.e. equal up to floating point round-off errors) on both sides; in tract overlaps, this is impossible, but we expect the results to be scientifically consistent.  Selecting larger tracts and patches thus reduces the overall fraction of the area that falls in overlap regions and must be processed multiple times, while increasing the computational load for processing individual tracts and patches.
 
 \subsection{Science Pipelines Organization}
 
-\begin{note}[TODO]
-  This section still in outline form.  Expanded form should be short; I'm proposing we move the longer overviews that used to be in the introductions into the beginning of the sections for each Production, and shorten them to little more than a description of that Production's overview diagram.
-\end{note}
+As shown in Figure~\ref{fig:DMS}, the Applications Layer is itself split into three levels.  In sections~\ref{sec:ap}, \ref{sec:cpp}, and \ref{sec:drp}, we describe the Alert Production, Calibration Products Production, and Da
+ta Release Production (respectively), breaking them down into \emph{pipelines}.  In this document, a pipeline is a high-level combination of algorithms that is intrinsically tied to its role in the production in which it is run.  For instance, while both Alert Production and Data Release Production will include a pipeline for single-visit processing, these two pipelines are \emph{distinct}, because the details of their design depend very much on the context in which they are run.  Section~\ref{sec:sdqa} describes the Science Data Quality Analysis System, a collection of pipelines and mini-productions designed to assess and continuously validate the quality of both the data and the processing system.  The SDQA System is not a single production; its components are either directly integrated into other productions or part of a set of multiple mini-productions run on different cadences.
 
-\begin{itemize}
-\item In sections (bla) we describe Alert Production, Calibration Product Production, and Data Release Production by decomposing them Pipelines.  Pipelines are not reusable; they occupy a specific place in a Production.
-\item In section (bla) we describe the SDQA system, a set of smaller Productions as well as independent Pipelines within AP and DRP that verify the quality of the algoritms and data.
-\item In section (bla) we say something with scope TBD about SUIT and enabling Level 3.
-\item Pipelines are composed of reusable Algorithmic Components, which are described in section (bla).
-\item Algorithmic Components rely on shared software primitives, described in section (bla).
+Pipelines are laregly composed of Algorithmic Components: mid-level algorithmic code that we expect to reuse (possibly with different configuration) across different productions.  These components constitute the bulk of the new code and algorithms to be developed for Alert Production and Data Release Production, and are discussed in section~\ref{sec:algorithmic-components}.  Most algorithmic components are applicable to any sort of astronomical imaging data, but some will be customized for LSST.
 
-\end{itemize}
+The lowest level in the Applications Layer is made up of our shared software primitives: libraries that provide important data structures and low-level algorithms, such as images, tables, coordinate transformations, and nonlinear optimizers.  Much (but not all) of this content is astronomy-related, but essentially none of it is specific to LSST, and hence we can and will make use of third-party libraries whenever possible.  These primitives also play an important role in connecting the Science User Interface Toolkit and Level 3 processing environment with Level 1 and Level 2 data products, as they constitute the programmatic representation of those data products.  Shared software primitives are discussed in section~\ref{sec:software-primitives}.
