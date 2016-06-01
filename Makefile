@@ -2,8 +2,7 @@
 # Make sure 'pdfunite' is on your path.
 #
 
-DM_Applications_Design.pdf:  DM_Applications_Design.tex sections/data_release_production_pipelines.tex sections/survey_data_quality_analysis.tex sections/alert_production_pipelines.tex sections/algorithmic_components.tex sections/abstract.tex sections/introduction.tex sections/preface.tex sections/software_primitives.tex sections/suit.tex figures/DMS-Architecture.pdf
-
+DM_Applications_Design.pdf:  DM_Applications_Design.tex sections/data_release_production_pipelines.tex sections/survey_data_quality_analysis.tex sections/alert_production_pipelines.tex sections/algorithmic_components.tex sections/abstract.tex sections/introduction.tex sections/preface.tex sections/software_primitives.tex sections/suit.tex figures/DMS-Architecture.pdf figures/drp_summary.png
 	latexmk -bibtex -pdf -f DM_Applications_Design.tex
 
 cover: LDM-151.pdf
