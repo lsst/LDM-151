@@ -55,6 +55,18 @@ Output information for OCS telemetry: ACTION clarify OCS interactions
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Mask defects and saturation
+\item Assembly
+\item Full frame corrections: Dark, Flats (includes fringing)
+\item Pixel level corrections: Brighter fatter, static pixel size effects
+\item Interpolation of defects and saturation
+\item CR rejection
+\item Generate snap difference?
+\item Snap combination
+\end{itemize}
 
 
 \paragraph{PSF determination and background determination:}~
@@ -66,6 +78,19 @@ Output information for OCS telemetry: ACTION clarify OCS interactions
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Low order background estimation
+\item Source detection
+\item Selection of PSF candidate stars
+\item PSF determination
+\item Mask detected source
+\item Re-estimate background and re-detect: iterate to convergence
+\item Determine final PSF
+\end{itemize}
+
+
 \paragraph{Photometric and Astrometric calibration:}~
 
 \noindent
@@ -75,6 +100,17 @@ Output information for OCS telemetry: ACTION clarify OCS interactions
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Source measurement (Aperture Corrections)
+\item Source association
+\item Calculate zeropoint
+\item Remove known astrometric distortions
+\item Fit remaining residual
+\item Produce composed astrometric solution
+\item Output information for OCS telemetry: ACTION clarify OCS interactions
+\end{itemize}
 
 \noindent
 {\bf OUTPUT: Calibrated Exposure and Calibrated Catalog}
@@ -103,6 +139,13 @@ The alert detection pipeline shall difference a visit image against a deeper tem
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Determine appropriate template to use
+\item Generate template for observation
+\end{itemize}
+
 \paragraph{Image differencing}~
 
 \noindent
@@ -112,6 +155,23 @@ The alert detection pipeline shall difference a visit image against a deeper tem
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Obtain measurements of coadd sources
+\item Determine relative astrometric solution
+\item Warp template and measurements to science image frame
+\item Obtain science image PSF
+\item Correlate science image with science PSF
+\item Deterimine appropriate PSF matching sources
+\item Compute PSF matching model
+\item Difference science and template images
+\item Apply correction for correlated noise
+\item Difference image source detection
+\item Difference image source measurement: dipole fit, trailed source measurement
+\item Measure flux on snap difference for all DIASources?
+\item Spuriousness calculation
+\end{itemize}
 
 \paragraph{Ephemeris Calculation}~
 
@@ -122,6 +182,11 @@ The alert detection pipeline shall difference a visit image against a deeper tem
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Calculate positions for all solar system objects that may overlap the current exposure.
+\end{itemize}
 
 \paragraph{Source Association}~
 
@@ -132,6 +197,17 @@ The alert detection pipeline shall difference a visit image against a deeper tem
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Match all DIASources to predicted Solar System object positions and DIAObject catalog positions
+\item Perform forced photometry of un-associated DIAObjects.(Maybe not if we force photometer all DIAObjects?).
+SSObjects will not be force photometered because
+the precision of the prediction will not be good enough.  Force photometry for external DIAObjects?
+\item Update associated DIAObjects with aggregate quantities: e.g. parallax, proper motion, and variability
+metrics
+\item New spuriousness calculation?
+\end{itemize}
 
 \subsubsection{Prototype Implementation}
 
@@ -246,6 +322,13 @@ The Moving Object Pipeline System (MOPS) has two responsibilities within LSST Da
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Make all tracklet pairs
+\item Merge multiple chained observation into single longer tracklets
+\item Purge any tracklets inconsistent with the merged tracklets
+\end{itemize}
 
 \paragraph{Attribution and precovery}~
 
@@ -255,6 +338,14 @@ The Moving Object Pipeline System (MOPS) has two responsibilities within LSST Da
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Predict locations of known Solar System objects
+\item Match tracklet observation to predicted ephimerides taking into account velocity
+\item Update SSObjects
+\item Possibly iterate
+\end{itemize}
 
 \paragraph{Fit Orbits}~
 
@@ -264,6 +355,15 @@ The Moving Object Pipeline System (MOPS) has two responsibilities within LSST Da
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Merge unassociated tracklets into tracks.
+\item Fit orbits to all tracks.
+\item Purge unphysical tracks.
+\item Update SSObjects
+\item Possibly iterate
+\end{itemize}
 
 \paragraph{Association and Precovery: New SSObjects}~
 
