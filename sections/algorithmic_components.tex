@@ -52,6 +52,7 @@ AUTHOR: Jim
 \begin{itemize}
 \item Set mask planes for all artifacts.
 \item Eliminate small artifacts by interpolating them.
+\item Uses PSF model as interpolant.
 \end{itemize}
 
 \subsection{Source Detection}
@@ -59,10 +60,20 @@ AUTHOR: Jim
 \begin{itemize}
 \item Detect above-threshold regions and peaks in direct or difference images.
 \item Needs to work on preconvolved and unconvolved images.
+\item May need multi-pass variants: detect bright objects first, then faint; detect with approximate PSF, then improved.
 \end{itemize}
 
 \subsection{Deblending}
 AUTHOR: Jim
+
+For templates, try:
+\begin{itemize}
+\item symmetry ansatz with additional regularization
+\item simultaenous fit of galaxy models
+\item spline-based models with regularization?
+\item (multi-coadd only) optimize color uniformity
+\end{itemize}
+
 \subsubsection{Single Visit Deblending}
 \begin{itemize}
 \item Generate HeavyFootprint deblends using only a single image.
@@ -83,11 +94,43 @@ AUTHOR: Jim
 \end{figure}
 
 \subsubsection{Variants}
-\paragraph{Single Visit Measurement}
-\paragraph{Multi-Coadd Measurement}
-\paragraph{Difference Image Measurement}
-\paragraph{Multi-Epoch Measurement}
-\paragraph{Forced Measurement}
+Measurement is run in several contexts, but always consists of running an ordered list of algorithm plugins on either individual objects or families thereof.  Each context corresponds to different variant of the measurement driver code, and has a different set of plugin algorithms and approaches to measuring blended objects.
+
+\paragraph{Single Visit Measurement:} Measure a direct single-visit CCD image, assuming deblend information already exists and can be used to replace neighbors with noise (see \ref{sec:blending-replace-neighbors}).
+
+Single Visit Measurement is run in both \hyperref[sec:apSingleFrameProcessing]{AP's Single Frame Processing pipeline}) and DRP's \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}, \hyperref[sec:drpRefineImChar]{RefineImChar}, and \hyperref[sec:drpFinalImChar]{FinalImChar}.
+
+The driver for Single Visit Measurement is passed an input/output \hyperref[sec:spTablesSource]{SourceCatalog} and an \hyperref[sec:spImagesExposure]{Exposure} to measure.  Plugins take an input/output \hyperref[sec:spTablesSource]{SourceRecord} and an \hyperref[sec:spImagesExposure]{Exposure} containing only the object to be measured.
+
+\paragraph{Multi-Coadd Measurement:} Simultaneously measure a suite of coadds representing different bandpasses, epoch ranges, and flavors.  This is run only in DRP's \hyperref[sec:drpMeasureCoadds]{MeasureCoadds} pipeline.
+
+The driver for Multi-Coadd Measurement is passed an input/output \hyperref[sec:spTablesObject]{ObjectCatalog} and a dict of \hyperref[sec:spImagesExposure]{Exposures} to be measured.  Plugins take an input/output \hyperref[sec:spTablesObject]{ObjectRecord} and a dict of \hyperref[sec:spImagesExposure]{Exposures}, each containing only the object to be measured.  Some plugins will also support simultanous measurement of multiple objects, which requires they be provided the subset of the \hyperref[sec:spTablesObject]{ObjectCatalog} to be measured and a dict of \hyperref[sec:spImagesExposure]{Exposures} containing just those objects.
+
+\paragraph{Difference Image Measurement:} Measure a difference image, potentially using the associated direct image as well.  Difference image measurement is run in AP's \hyperref[sec:apAlertDetection]{Alert Detection} pipeline and DRP's \hyperref[sec:drpDiffIm]{DiffIm} pipeline.
+
+The signatures of difference image measurement's drivers and algorithms are at least somewhat TBD; they will take at least a difference image \hyperref[sec:spImagesExposure]{Exposures} and a \hyperref[sec:spTablesSource]{SourceCatalog/SourceRecord}, but some plugins such as dipole measurement may require access to a direct image as well.  Because difference imaging dramatically reduces blending, difference image measurement may require any approach to blended measurement (though any use of the associated direct image would require deblending).
+
+\paragraph{Multi-Epoch Measurement:} Measure multiple direct images simultaneously by fitting the same \hyperref[sec:apWCS]{WCS}-transformed, \hyperref[sec:apPSF]{PSF}-convolved model to them.  Blended objects in Multi-Epoch Measurement will be handled by \emph{at least} fitting them simutaneously (\ref{sec:blending-simultaneous-fitting}), which may in turn require hybrid galaxy/star models (\ref{sec:blending-hybrid-models}).  These models may then be used as templates for deblending and replace-with-noise (\ref{sec:blending-replace-neighbors}) measurement if this improves the results.
+
+Because the memory and I/O requirements for multi-epoch measurement of a single object or blend family are substantial, we will not provide a driver that accepts an \hyperref[sec:spTablesObject]{ObjectCatalog} and measures all objects within it; instead, the \hyperref{sec:drpMultiFit} pipeline will submit individual family-level jobs directly to the orchestration layer.  The multi-epoch measurement driver will thus just operate on one blend family at a time, and manage blending while executing its plugin algorithms.
+
+Multi-epoch measurement for DRP only includes two plugin algorithms, so it is tempting to simply hard-code these into the driver itself, but this driver will also need to support new plugins in Level 3.
+
+Multi-epoch measurement will also be responsible for actually performing forced photometry on direct images, which it can do by holding non-amplitude parameters for moving point-source models fixed and adding a new amplitude parameter for each observation.
+
+\paragraph{Forced Measurement:} Measure photometry on an image using positions and shapes from an existing catalog.
+
+In the baseline plan, we assume that forced measurement will only be run on difference images; while forced photometry on direct images will also be performed in DRP, this will be done by multi-epoch measurement.
+
+Because difference imaging reducing blending substantially, forced measurement may not require any special handling of blends.  If it does, simultaneous fitting (with point-source models) should be sufficient.
+
+The driver for Forced Measurement is passed an input/output \hyperref[sec:spTablesSource]{SourceCatalog}, an additional input \hyperref[sec:spTablesReference]{ReferenceCatalog}, and an \hyperref[sec:spImagesExposure]{Exposure} to measure.  Plugins take an input/output \hyperref[sec:spTablesSource]{SourceRecord}, an input \hyperref[sec:spTablesReference]{ReferenceRecord} and an \hyperref[sec:spImagesExposure]{Exposure}.  If simultaneous fitting is needed to measure blends, plugins will instead receive subsets of the catalogs passed to the driver instead of individual records.
+
+Forced measurement is used by the DRP \hyperref[sec:drpForcedPhotometry]{ForcedPhotometry} pipeline and numerous pipelines in AP.
+
+\begin{note}[TODO]
+Add references to specific AP pipelines that will use forced measurement.
+\end{note}
 
 \subsubsection{Algorithms}
 \paragraph{Centroids}
@@ -105,8 +148,11 @@ AUTHOR: Jim
 \subsubsection{Blended Measurement}
 \paragraph{Deblend Template Projection}
 \paragraph{Neighbor Noise Replacement}
+\label{sec:blending-replace-neighbors}
 \paragraph{Simultaneous Fitting}
+\label{sec:blending-simultaneous-fitting}
 \paragraph{Hybrid Models}
+\label{sec:blending-hybrid-models}
 
 \subsection{Background Estimation}
 AUTHOR: Simon
