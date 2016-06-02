@@ -1,44 +1,34 @@
 \section{Software Primitives}
 \label{sec:software-primitives}
 
-NEW STUFF:
-\begin{itemize}
-\item Convolution AND correlation
-\item Simple statistics on arrays
-\end{itemize}
+\subsection{Images}
+\label{sec:spImages}
 
+\subsubsection{Exposure}
+\label{sec:spImagesExposure}
 
+\subsection{Tables}
+\label{sec:spTables}
 
+\subsubsection{Source}
+\label{sec:spTablesSource}
 
+\subsubsection{Object}
+\label{sec:spTablesObject}
 
+\subsection{Footprints}
+\label{sec:spFootprints}
 
+\subsection{Convolution Kernels}
+\label{sec:spKernels}
+Must support correlation as well.
 
-\subsection{Applications Framework (\wbsAFW)}
+\subsection{Basic Statistics}
+\label{sec:spStatistics}
 
-\subsubsection{Key Requirements}
+\subsection{Point-Spread Functions}
+\label{sec:spPSF}
 
-The {\bf \emph{LSST Applications Framework}} ({\tt afw}) is to provide the basic functionality needed by an image processing system. In particular, it will provide:
+\subsection{Coordinate Transformations}
+\label{sec:spWCS}
 
-\begin{itemize}
-    \item Classes to represent and manipulate mappings between device and astronomical coordinates;
-    \item Classes to represent and manipulate images and exposures;\footnote{images with associated metadata.}
-    \item Classes to represent and estimate backgrounds on images;
-    \item Classes to represent the geometry of the camera;
-    \item Base classes to represent and manipulate the point spread function (PSF);
-    \item Routines to perform detection of sources on images, and classes to represent these detections (\emph{``footprints''});
-    \item Classes to represent astronomical objects;
-    \item Classes to represent and manipulate tables of astronomical objects;
-    \item Other low-level operations as needed by LSST science pipelines.
-\end{itemize}
-
-\subsubsection{Baseline Design}
-
-This library will form the basis for all image processing pipelines and algorithms used for LSST, so special attention will be paid to performance. For that reason, this baseline design calls for a library of C++ classes and functions. Throughout construction these low level routines will be continually upgraded and refined to meet the performance and algorithmic fidelity requirements driven by the algorithmic requirements in other WBSs. If it proves impossible to meet performance goals based on pure C++ code, GPU support for some functions has been prototyped.
-
-We expect that LSST stack developers, Level 3 pipeline developers, and a substantial group of end users will need to interact directly with the \texttt{afw} functionality. For that reason, it is exposed to Python callers through a Python module named \texttt{lsst.afw}. Throughout the construction period, we expect to devote effort to refining this interface layer to provide an idiomatic system which adheres to community norms and expectations.
-
-\subsubsection{Prototype Implementation}
-
-A prototype version of the required classes was described in the UML Domain Model (\appsUMLdomain{}) and implemented in LSST Final Design Phase, including prototype GPU (CUDA) support for major image processing functions (e.g., warping). A significant fraction of this code will be transferred into construction.
-
-Work-in-progress code is available at \url{https://github.com/lsst/afw/}. The documentation for this code is located at \url{http://ls.st/w3o} and \url{http://ls.st/6i0}.
