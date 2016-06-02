@@ -1,6 +1,15 @@
 \section{Level 1 Pipelines}
 \label{sec:ap}
 
+\begin{figure}[th]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Level_1_Processing_Flowchart.jpg}
+\caption{\label{fig:nightly} The nightly processing flowchart
+  describing the flow of images and data through single frame
+  processing, image differencing, alert generation and production}
+\end{center}
+\end{figure}
+
 \subsection{Single Frame Processing Pipeline (\wbsSFM)}
 
 \subsubsection{Key Requirements}
@@ -18,7 +27,7 @@ SFM pipeline functions include:
     \item Per-CCD PSF determination;
     \item Per-CCD WCS determination and astrometric registration of images;
     \item Per-CCD sky background determination;
-    \item Source detection.
+    \item Source detection and measurement
 \end{itemize}
 
 Calibrated exposure produced by the SFM pipeline must possess all information necessary for measurement of source properties by single-epoch Object Characterization algorithms.
@@ -48,10 +57,17 @@ Output information for OCS telemetry: ACTION clarify OCS interactions
 \noindent
 {\bf Clarify interaction with butler}\\
 
+{\bf Input Data}\\
+\begin{itemize}
+\item Camera corrected (crosstalk, overscan, linearity) images
+\item Sensor defect lists
+\item Metadata including electronic parameters (saturation limits, readnoise, electronic
+  footprint)
+\end{itemize}
+
 \noindent
-{\bf Input Data?}\\
 {\bf Output Data?}\\
-{\bf Anscillary Products?}\\
+{\bf Ancillary Products?}\\
 {\bf Actions in case of failure?}\\
 {\bf Alternative procedures?}\\
 
