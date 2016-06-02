@@ -75,25 +75,29 @@ AUTHOR: Jim
 \subsection{Measurement}
 AUTHOR: Jim
 
-\begin{note}[Measurement Algorithms Table]
-Matrix of measurement algorithms and the contexts in which they're run, indicating which combinations are supported
-\end{note}
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{figures/measurement-matrix.pdf}
+\caption{Matrix showing combinations of measurement variants, algorithms, and deblending approaches that will be implemented.
+\label{fig:measurement-matrix}}
+\end{figure}
 
 \subsubsection{Variants}
 \paragraph{Single Visit Measurement}
 \paragraph{Multi-Coadd Measurement}
-\paragraph{Forced Measurement}
 \paragraph{Difference Image Measurement}
 \paragraph{Multi-Epoch Measurement}
+\paragraph{Forced Measurement}
 
 \subsubsection{Algorithms}
 \paragraph{Centroids}
 \paragraph{Second-Moment Shapes}
 \paragraph{Aperture Photometry}
+\paragraph{Static Point Source Models}
 \paragraph{Kron Apertures}
 \paragraph{Petrosian Apertures}
 \paragraph{Galaxy Models}
-\paragraph{Moving Star Models}
+\paragraph{Moving Point Source Models}
 \paragraph{Trailed Point Source Models}
 \paragraph{Dipole Models}
 \paragraph{Spuriousness}
