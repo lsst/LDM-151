@@ -1,42 +1,68 @@
-\section{Algorithmic Components: DRP}
+\section{Algorithmic Components}
+\label{sec:algorithmic-components}
 
 \subsection{Instrument Signature Removal}
+AUTHOR: Merlin
 \begin{itemize}
-\item All the usual stuff (bias, dark, linearity, crosstalk, fringing, ...?)
-\item Includes B-F correction.
-\item Does not include frozen-in coordinate distortions.
-\item Flat-field to sky SED.
+\item Mask defects and saturation
+\item Assembly
+\item Overscan
+\item Linearity
+\item Crosstalk
+\item Full frame corrections: Dark, Flats (includes fringing)
+\item Pixel level corrections: Brighter fatter, static pixel size effects
+\item Interpolation of defects and saturation
+\item CR rejection
+\item Generate snap difference
+\item Snap combination
 \end{itemize}
 
+\subsubsection{AP: just skip some steps?}
+AUTHOR: Simon
+
+\subsubsection{DRP: do all the steps}
+AUTHOR: Merlin
+
+
 \subsection{Artifact Detection}
+
 \subsubsection{Single-Exposure Morphology}
+AUTHOR: Simon
 \begin{itemize}
 \item Find CRs via morphology.
 \item Find satellites via Hough transform.
 \item Find some optical ghosts (etc?) from bright star catalog and optics predictions.
 \end{itemize}
+
 \subsubsection{Snap Subtraction}
+AUTHOR: Simon
 \begin{itemize}
 \item All of the above, but improve by looking at both snaps.
 \end{itemize}
+
 \subsubsection{Warped Image Comparison}
+AUTHOR: Jim
 \begin{itemize}
 \item Find more optical artifacts by looking at differences between warped images (this is run during background matching).
 \item Find transient astronomical sources we don't want to include in coadds.
 \end{itemize}
 
 \subsection{Artifact Masking/Interpolation}
+AUTHOR: Jim
 \begin{itemize}
 \item Set mask planes for all artifacts.
 \item Eliminate small artifacts by interpolating them.
 \end{itemize}
 
 \subsection{Source Detection}
+AUTHOR: Jim
 \begin{itemize}
 \item Detect above-threshold regions and peaks in direct or difference images.
+\item Needs to work on preconvolved and unconvolved images.
 \end{itemize}
 
 \subsection{Deblending}
+AUTHOR: Jim
 \subsubsection{Single Visit Deblending}
 \begin{itemize}
 \item Generate HeavyFootprint deblends using only a single image.
@@ -47,7 +73,7 @@
 \end{itemize}
 
 \subsection{Measurement}
-
+AUTHOR: Jim
 \begin{note}[NOTE]
 Each bullet here is really a subsubsubsection, but Latex doesn't like that.  Could we bump up Sections to Chapters or Parts to get another level, or do something equivalent?
 \end{note}
@@ -75,6 +101,7 @@ Matrix of measurement algorithms and the contexts in which they're run, indicati
 \item Moving Star Models
 \item Trailed Point Source Models
 \item Dipole Models
+\item Spuriousness
 \end{itemize}
 \subsubsection{Blended Measurement}
 \begin{itemize}
@@ -85,27 +112,34 @@ Matrix of measurement algorithms and the contexts in which they're run, indicati
 \end{itemize}
 
 \subsection{Background Estimation}
+AUTHOR: Simon
 \begin{itemize}
 \item Fit or interpolate large-scale variations while masking out detections.
 \item Needs to work in crowded fields.
 \item Needs to work on both difference images and direct images.
 \item Need to be able to compose backgrounds measured in different coordinate systems on different scales.
+\item Needs to work on single CCDs for AP even if we use full FoV in DRP.
 \end{itemize}
 
 \subsection{Build Background Reference}
+AUTHOR: Simon
 \begin{itemize}
 \item Given multiple overlapping visit images (already warped to a common coordinate system), synthesize a continuous single-epoch image that can be used as a reference for background matching.
 \end{itemize}
 
 \subsection{PSF Estimation}
+
 \subsubsection{Single CCD PSF Estimation}
+AUTHOR: Simon
 \begin{itemize}
 \item Fit simple empirical PSF model to stars from a single exposure.
 \item No chromaticity.
 \item May use external star catalog, but doesn't rely on one.
 \item Used in Alert Production and BootstrapImChar in DRP.
 \end{itemize}
+
 \subsubsection{Full Visit PSF Estimation}
+AUTHOR: Jim
 \begin{itemize}
 \item Decompose PSF into optical + atmosphere.
 \item Constrain model with stars, telemetry, and wavefront data.
@@ -115,13 +149,19 @@ Matrix of measurement algorithms and the contexts in which they're run, indicati
 \end{itemize}
 
 \subsection{Aperture Correction}
+AUTHOR: Jim
 \begin{itemize}
 \item Measure curves of growth from bright stars.
 \item Correct various flux measurements to infinite.
 \item Propagate uncertainty in aperture correction to corrected fluxes; covariance is tricky.
 \end{itemize}
 
-\subsection{Astrometric Calibration}
+\subsection{Astrometric Solutions}
+AUTHOR: Simon
+\subsubsection{Single CCD (for AP)}
+\begin{itemize}
+\item If this uses DRP's internal reference catalog, this does all we need. THIS IS A NEW DEPENDENCY BETWEEN DRP AND AP.
+\end{itemize}
 \subsubsection{Single Visit}
 \begin{itemize}
 \item Fit multi-component WCS to all CCDs in a single visit simultaneously after matching to reference catalog.
@@ -131,7 +171,9 @@ Matrix of measurement algorithms and the contexts in which they're run, indicati
 \item Fit multi-component WCS to all CCDs from multiple visits simultaneously after matching to reference catalog.
 \end{itemize}
 
-\subsection{Photometric Calibration}
+\subsection{Photometric Solutions}
+AUTHOR: Simon (and Merlin?)
+\subsubsection{Single CCD (for AP)}
 \subsubsection{Single Visit}
 \begin{itemize}
 \item Fit zeropoint (and some small spatial variation?) to all CCDs simultaneously after matching to reference catalog.
@@ -141,20 +183,30 @@ Matrix of measurement algorithms and the contexts in which they're run, indicati
 \begin{itemize}
 \item Derive SEDs for calibration stars from colors and reference catalog classifications.
 \item Utilize additional information from wavelenth dependent photometric calibration built by calibration products production.
-\item Fit zeropoint and possibly perturbations to all CCDs on multiple visits simultaneously after matching to reference catalog..
+\item Fit zeropoint and possibly perturbations to all CCDs on multiple visits simultaneously after matching to reference catalog.
+\end{itemize}
+
+\subsection{Generate Diffim Template for a Visit}
+AUTHOR: Simon
+\begin{itemize}
+\item Determine appropriate template to use
+\item Generate template for observation (may include DCR correction)
 \end{itemize}
 
 \subsection{PSF Matching}
+AUTHOR: Simon
 \subsubsection{Image Subtraction}
 \begin{itemize}
 \item Match template image to science image, as in Alert Production and DRP Difference Image processing.
+\item Includes identifying sources to use to determine matching kernel, fitting the kernel, and convolving by it.
 \end{itemize}
-\subsubsection{PSF Homogeniziation for Coaddition}
+\subsubsection{PSF Homogenization for Coaddition}
 \begin{itemize}
 \item Match science image to predetermined analytic PSF, as in PSF-matched coaddition.
 \end{itemize}
 
 \subsection{Image Warping}
+AUTHOR: Jim
 \subsubsection{Oversampled Images}
 \begin{itemize}
 \item Just use Lanczos.
@@ -169,6 +221,7 @@ Matrix of measurement algorithms and the contexts in which they're run, indicati
 \end{itemize}
 
 \subsection{Image Coaddition}
+AUTHOR: Jim
 \begin{itemize}
 \item Can do outlier rejection (but usually doesn't).
 \item Needs to propagate full uncertainty somehow.
@@ -177,23 +230,28 @@ Matrix of measurement algorithms and the contexts in which they're run, indicati
 \end{itemize}
 
 \subsection{DCR-Corrected Template Generation}
+AUTHOR: Simon
 \begin{itemize}
 \item Somwewhat like coaddition, but may need to add dimensions for wavelength or airmass, and may involve solving an inverse problem instead of just compute means.
 \end{itemize}
 
 \subsection{Image Decorrelation}
 \subsubsection{Difference Image Decorrelation}
+AUTHOR: Simon
 \begin{itemize}
-\item Fourier-space (?) deconvolution of preconvolved difference images before measurement - ZOGY as reinterpreted by Lupton.
+\item Fourier-space (?) deconvolution of preconvolved difference images before measurement - ZOGY as reinterpreted by Lupton (could apply correction in real space, too)
 \item Need to test with small-scale research before committing to this approach.
 \end{itemize}
+
 \subsubsection{Coadd Decorrelation}
+AUTHOR: Jim
 \begin{itemize}
 \item Fourier-space/iterative deconvolution of likelihood coadds, as in DMTN-15.
 \item Need to test with small-scale research before committing to this approach.
 \end{itemize}
 
 \subsection{Star/Galaxy Classification}
+AUTHOR: Jim
 \subsubsection{Single Visit S/G, Pre-PSF}
 \begin{itemize}
 \item Select stars to be used in PSF estimation (mostly from moments).
@@ -212,38 +270,89 @@ Matrix of measurement algorithms and the contexts in which they're run, indicati
 \end{itemize}
 
 \subsection{Variability Classification}
-\begin{itemize}
-\item Periodograms derived from forced photometry.
-\end{itemize}
+AUTHOR: John
+\subsubsection{Using forced photometry}
+\subsubsection{Using DIASources}
+
+\subsection{Proper Motion and Parallax from DIASources}
+AUTHOR: Simon
 
 \subsection{Association and Matching}
-\subsubsection{Single Visit to Reference Catalog, Semi-Blind}
+\subsubsection{Single CCD to Reference Catalog, Semi-Blind}
+AUTHOR: Simon
 \begin{itemize}
+\item Want to match in image coordinates, so also needs to transform reference catalog.
+\item Run prior to single-visit WCS fitting, with only telescope's best guess as a starting WCS.
+\item Single CCD form needed by AP.
+\end{itemize}
+
+\subsubsection{Single Visit to Reference Catalog, Semi-Blind}
+AUTHOR: Simon
+\begin{itemize}
+\item Want to match in focal plane coordinates, so also needs to transform reference catalog.
 \item Run prior to single-visit WCS fitting, with only telescope's best guess as a starting WCS.
 \end{itemize}
+
 \subsubsection{Multiple Visits to Reference Catalog}
+AUTHOR: Jim
 \begin{itemize}
 \item Match sources from multiple visits to a single reference catalog, assuming good WCSs.
 \end{itemize}
+
 \subsubsection{DIAObject Generation}
+AUTHOR: Simon
 \begin{itemize}
-\item Match new DIASources to existing DIAObjects and generate new DIAObjects.  Definitely run in AP, maybe run in DRP.
+\item Match all DIASources to predicted Solar System object positions and existing DIAObjects and generate new DIAObjects.  Definitely run in AP, maybe run in DRP.
 \end{itemize}
+
 \subsubsection{Object Generation}
+AUTHOR: Jim
 \begin{itemize}
 \item Match coadd detections from different bands/SEDs/epoch-ranges, merging Footprints and associating peaks.
 \item Also merge in DIASources or (if already self-associated) DIAObjects.
 \end{itemize}
+
 \subsubsection{Cross-Patch Merging}
+AUTHOR: Jim
 \begin{itemize}
 \item Resolve duplicates in patch overlap regions by flagging ``primary'' objects.  Difficult due to blending.
 \end{itemize}
+
 \subsubsection{Cross-Tract Merging}
+AUTHOR: Jim
 \begin{itemize}
 \item Resolve duplicates in tract overlap regions by flagging ``primary'' objects.  Difficult due to blending.
 \end{itemize}
 
-\subsection{MOPS}
+\subsection{Ephemeris Calculation}
+AUTHOR: Simon
 \begin{itemize}
-\item Link trailed (and other?) DIASources to form SSObjects, fit for orbits.
+\item Calculate positions for all solar system objects in a region at a given time.
+\end{itemize}
+
+\subsection{Make Tracklets}
+AUTHOR: Simon
+\begin{itemize}
+\item Make all tracklet pairs
+\item Merge multiple chained observation into single longer tracklets
+\item Purge any tracklets inconsistent with the merged tracklets
+\end{itemize}
+
+\subsection{Attribution and precovery}
+AUTHOR: Simon
+\begin{itemize}
+\item Predict locations of known Solar System objects
+\item Match tracklet observation to predicted ephimerides taking into account velocity
+\item Update SSObjects
+\item Possibly iterate
+\end{itemize}
+
+\subsection{Orbit Fitting}
+AUTHOR: Simon
+\begin{itemize}
+\item Merge unassociated tracklets into tracks.
+\item Fit orbits to all tracks.
+\item Purge unphysical tracks.
+\item Update SSObjects
+\item Possibly iterate
 \end{itemize}
