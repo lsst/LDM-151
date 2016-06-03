@@ -20,21 +20,31 @@ AUTHOR: Merlin
 
 \subsubsection{AP: just skip some steps?}
 AUTHOR: Simon
+\begin{itemize}
+\item Indicate steps to be done by camera
+\item call out other steps that are omitted/modified relative to the DRP version
+\end{itemize}
 
 \subsubsection{DRP: do all the steps}
 AUTHOR: Merlin
 
 
 \subsection{Artifact Detection}
+\label{sec:artifact}
 
 \subsubsection{Single-Exposure Morphology}
 \label{sec:acMorphologicalArtifactDetection}
 AUTHOR: Simon
 \begin{itemize}
 \item Find CRs via morphology.
-\item Find satellites via Hough transform.
 \item Find some optical ghosts (etc?) from bright star catalog and optics predictions.
 \item Needs to work without PSF (amybe using placeholder PSF), but also make use of PSF if available.
+\end{itemize}
+
+\subsubsection{Single-Exposure Aggregation}
+AUTHOR: Simon
+\begin{itemize}
+\item Find satellites via Hough transform.
 \end{itemize}
 
 \subsubsection{Snap Subtraction}
@@ -293,6 +303,14 @@ AUTHOR: Jim
 \item Must include some approach to dealing with wings of bright stars.
 \end{itemize}
 
+\subsection{Model Spatial Variation of PSF}
+\subsubsection{Within a CCD}
+\begin{itemize}
+\item Estimate PSF at discrete locations using a set of basis functions
+\item Fit interpolation functions to fit coefficients to enable interpolation
+\end{itemize}
+\subsubsection{Over a focal plane -- Do we need this?}
+
 \subsection{Aperture Correction}
 \label{sec:acApCorr}
 AUTHOR: Jim
@@ -327,6 +345,10 @@ Used by AP, probably (RHL worries we might need full-visit)
 AUTHOR: Simon (and Merlin?)
 \subsubsection{Single CCD (for AP)}
 \label{sec:acSingleCCDPhotometricFit}
+\begin{itemize}
+\item Match to photometric calibration reference catalog
+\item Calculate single zeropoint using available color terms
+\end{itemize}
 \subsubsection{Single Visit}
 \label{sec:acSingleVisitPhotometricFit}
 \begin{itemize}
@@ -545,6 +567,9 @@ QSO similarity metrics, as defined by Butler \& Bloom \cite{Butler11}:
 \subsection{Proper Motion and Parallax from DIASources}
 \label{sec:acStellarMotionFitting}
 AUTHOR: Simon
+\begin{itemize}
+\item Fit proper motion and parallax models to all potisions of DIASources belonging to a DIAObject taking into account errors.
+\end{itemize}
 
 \subsection{Association and Matching}
 \label{sec:acMatching}
