@@ -66,9 +66,21 @@ Output information for OCS telemetry: ACTION clarify OCS interactions
 \end{itemize}
 
 \noindent
-{\bf Output Data?}\\
+{\bf Output Data}\\
+\begin{itemize}
+\item Calexp images
+\end{itemize}
+
 {\bf Ancillary Products?}\\
+\begin{itemize}
+\item Source detection and measurements
+\item ICExp background subtracted images
+\item Post ISR exposure
+\end{itemize}
+
 {\bf Actions in case of failure?}\\
+Actions in case camera data are not available due to network outage
+longer than buffer of data at summit
 {\bf Alternative procedures?}\\
 
 \noindent
@@ -78,9 +90,9 @@ Output information for OCS telemetry: ACTION clarify OCS interactions
 \item Assembly
 \item Full frame corrections: Dark, Flats (includes fringing)
 \item Pixel level corrections: Brighter fatter, static pixel size effects
-\item Interpolation of defects and saturation
-\item CR rejection
-\item Generate snap difference?
+\item {\bf QUESTION is this run prior to pixel level corrections} Interpolation of defects and saturation
+\item \hyperref[sec:artifact]{CR rejection}
+\item Generate snap difference
 \item Snap combination
 \end{itemize}
 
@@ -96,18 +108,16 @@ Output information for OCS telemetry: ACTION clarify OCS interactions
 
 \noindent
 {\bf Subtasks:}
+
+Iterate till convergence (convergence criteria TBD)
 \begin{itemize}
-\item Low order background estimation
+\item \hyperref[sec:background]{Background estimation}
 \item Source detection
 \item Selection of PSF candidate stars
 \item PSF determination
-\item Mask detected source
-\item Re-estimate background and re-detect: iterate to convergence
-\item Determine final PSF
 \end{itemize}
 
-
-\paragraph{Photometric and Astrometric calibration:}~
+\paragraph{Source measurement:}~
 
 \noindent
 {\bf Input Data?}\\
@@ -119,13 +129,31 @@ Output information for OCS telemetry: ACTION clarify OCS interactions
 \noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item Source measurement (Aperture Corrections)
-\item Source association
-\item Calculate zeropoint
+\item  Source measurement - \hyperref[sec:measurement]{Single Visit Measurement}
+\item  \hyperref[sec:apertureCorrection]{Aperture correction}
+\end{itemize}
+
+\paragraph{Photometric and Astrometric calibration:}~
+
+\noindent
+{\bf Input Data?}\\
+DRP's internal reference catalog
+{\bf Output Data?}\\
+OCS PSF, WCS, metadata (TBD) 
+{\bf Anscillary Products?}\\
+{\bf Actions in case of failure?}\\
+{\bf Alternative procedures?}\\
+
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item \hyperref[sec:association]{Source association}
+\item CCD level \hyperref[sec:photometric]{photometric solution}
+\item Visit level \hyperref[sec:photometric]{photometric solution}
 \item Remove known astrometric distortions
 \item Fit remaining residual
-\item Produce composed astrometric solution
-\item Output information for OCS telemetry: ACTION clarify OCS interactions
+\item Single visit composed \hyperref[sec:astrometric]{astrometric solution}
+\item Output information for OCS telemetry: WCS ACTION clarify OCS interactions
 \end{itemize}
 
 \noindent
@@ -150,6 +178,8 @@ The alert detection pipeline shall difference a visit image against a deeper tem
 
 \noindent
 {\bf Input Data?}\\
+Coadded CalExps or Series of CalExp from which to interpolate a
+template. 
 {\bf Output Data?}\\
 {\bf Anscillary Products?}\\
 {\bf Actions in case of failure?}\\
@@ -166,6 +196,8 @@ The alert detection pipeline shall difference a visit image against a deeper tem
 
 \noindent
 {\bf Input Data?}\\
+Internal reference catalog for CalExp from DRP 
+PSF for science image
 {\bf Output Data?}\\
 {\bf Anscillary Products?}\\
 {\bf Actions in case of failure?}\\
@@ -174,20 +206,39 @@ The alert detection pipeline shall difference a visit image against a deeper tem
 \noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item Obtain measurements of coadd sources
+\item match DRP sources and sources from SFP
 \item Determine relative astrometric solution
 \item Warp template and measurements to science image frame
-\item Obtain science image PSF
-\item Correlate science image with science PSF
-\item Deterimine appropriate PSF matching sources
-\item Compute PSF matching model
+\item Correlate science image with science PSF (pre-convolution)
+\item Determine appropriate PSF matching sources
+\item Compute PSF matching kernel and spatial model using ZOGY approach
 \item Difference science and template images
 \item Apply correction for correlated noise
-\item Difference image source detection
-\item Difference image source measurement: dipole fit, trailed source measurement
-\item Measure flux on snap difference for all DIASources?
-\item Spuriousness calculation
+\item Difference image \hyperref[sec:detection]{source detection}
+\item Difference image  \hyperref[sec:measurement]{source
+    measurement}: dipole fit, trailed source measurement
+\item Measure flux on snap difference for all DIASources
 \end{itemize}
+
+\paragraph{Real-Bogus classification}~
+
+\noindent
+{\bf Input Data?}\\
+Internal reference catalog for CalExp from DRP 
+PSF for science image
+{\bf Output Data?}\\
+{\bf Anscillary Products?}\\
+{\bf Actions in case of failure?}\\
+{\bf Alternative procedures?}\\
+
+\noindent
+{\bf Subtasks:}
+\begin{itemize}
+\item Application of random forest or other classification algorithm
+\item Update DIASources with probabilistic classification 
+\item Filter DIASource list based on classifier
+\end{itemize}
+
 
 \paragraph{Ephemeris Calculation}~
 
