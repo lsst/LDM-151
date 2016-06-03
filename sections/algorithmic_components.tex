@@ -20,6 +20,10 @@ AUTHOR: Merlin
 
 \subsubsection{AP: just skip some steps?}
 AUTHOR: Simon
+\begin{itemize}
+\item Indicate steps to be done by camera
+\item call out other steps that are omitted/modified relative to the DRP version
+\end{itemize}
 
 \subsubsection{DRP: do all the steps}
 AUTHOR: Merlin
@@ -160,6 +164,14 @@ AUTHOR: Jim
 \item Must include some approach to dealing with wings of bright stars.
 \end{itemize}
 
+\subsection{Model Spatial Variation of PSF}
+\subsubsection{Within a CCD}
+\begin{itemize}
+\item Estimate PSF at discrete locations using a set of basis functions
+\item Fit interpolation functions to fit coefficients to enable interpolation
+\end{itemize}
+\subsubsection{Over a focal plane -- Do we need this?}
+
 \subsection{Aperture Correction}
 \label{sec:apertureCorrection}
 AUTHOR: Jim
@@ -189,6 +201,10 @@ AUTHOR: Simon
 \label{sec:photometric}
 AUTHOR: Simon (and Merlin?)
 \subsubsection{Single CCD (for AP)}
+\begin{itemize}
+\item Match to photometric calibration reference catalog
+\item Calculate single zeropoint using available color terms
+\end{itemize}
 \subsubsection{Single Visit}
 \begin{itemize}
 \item Fit zeropoint (and some small spatial variation?) to all CCDs simultaneously after matching to reference catalog.
@@ -291,6 +307,9 @@ AUTHOR: John
 
 \subsection{Proper Motion and Parallax from DIASources}
 AUTHOR: Simon
+\begin{itemize}
+\item Fit proper motion and parallax models to all potisions of DIASources belonging to a DIAObject taking into account errors.
+\end{itemize}
 
 \subsection{Association and Matching}
 \label{sec:association}
@@ -366,6 +385,7 @@ AUTHOR: Simon
 
 \subsection{Orbit Fitting}
 AUTHOR: Simon
+        import pdb;pdb.set_trace()
 \begin{itemize}
 \item Merge unassociated tracklets into tracks.
 \item Fit orbits to all tracks.
