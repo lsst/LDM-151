@@ -1,22 +1,32 @@
-\section{Science Data Quality Analysis Pipeline}
+\section{Services for Data Quality Analysis (SDQA)}
 \label{sec:sdqa}
 
 \subsection{Key Requirements}
+
+SQDA is a set of loosely coupled services intended to service LSST's quality assessement needs through all phases of Construction, Commissioning and Operations. Consumers of these services may include developers, facility staff, DAC (eg. L3) users, and the general LSST science user community. Use of these services is intended for routine characterisation, fault detection and fault diagnosis. 
+
 \begin{itemize}
-\item SDQA Pipeline shall provide low-level data collection functionality for science
-data quality analysis of Level 1, 2, and Calibration Processing pipelines.
+\item SDQA shall provide sevices for science data quality analysis of Level 1, 2, and Calibration Processing pipelines.
 
-\item In addition, SDQA Pipeline shall provide low-level data collection functionality to support software development in Construction and Operations.
+\item SDQA shall provide services to support software development in Construction, Commissioning and Operations.
 
-\item SDQA Pipeline shall provide the visualization, analysis and monitoring capabilities for science quality data analysis. Its inputs will be provided by the SDQA Pipeline.
+\item SDQA shall provide for the visualization, analysis and monitoring capabilities needed for common science quality data analysis usecases. Its inputs may be gathered from SDQA itself, the production pipelines, engineering data sources and non-LSST data sources. 
 
-\item The toolkit capabilities shall be made flexible, to provide the analyst with the ability to easily construct custom tests and analyses, and ``drill down" into various aspects of the data being analyzed.
+\item SDQA shall have the flexibility to support execution of ad-hoc (user-driven) tests and analyses of ad-hoc data within a standard framework.  
 
-\item The toolkit will enable automation of tests and monitoring, and issuance of warnings when alerting thresholds are met.
+\item SDQA shall support usecases involving interactive ``drill-down'' of QA data exposed through its visualisation interfaces. 
 
-\item SDQA Pipeline implementation will monitor and harvest the outputs and logs of execution of other science pipelines, computing user-defined metrics.
+\item SDQA shall allow for notifications to be issued when monitoring quantities that exceed their permissible thresholds and/or have degraded over historical values. 
 
-\item The outputs of SDQA Pipeline runs will be stored into a SDQA repository (RDBMS or filesystem based).
+\item SDQA shall be able to collect and harvest the outputs and logs of execution of the production pipelines, and extract and expose metrics from these logs. 
+
+\item SQDA shall make provision to store outputs that are not stored through other LSST data access services. 
+
+\item SDQA should be deployable as high-reliability scalable services for production as well as allow for core data assessment functionality to be executed on a developer's local machine.
+
+\item SDQA shall be architected in a manner that would enable it to be deployable on standard cloud architectures outside of the LSST facilities. 
+
+
 \end{itemize}
 
 
