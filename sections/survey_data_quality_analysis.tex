@@ -32,20 +32,21 @@ SQDA is a set of loosely coupled services intended to service LSST's quality ass
 
 \subsection{Key Tasks for Each Level of QA}
 
-The SDQA system will be an integrated framework that is capable of providing useful information at four different levels of the data system.
+SDQA system will provide a framework that is capable of monitoring QA
+information at four different stages of capabiliti and maturity:
 
 \begin{itemize}
-\item QA Level 0 - Testing and Validation of DM sub-system in pre-commissioning
-\item QA Level 1 - Real-time data quality and system assesment during commissioning + operations
-\item QA Level 2 - Quality assessment of Data Releases
-\item QA Level 3 - Tools for the community to evaluate the data quality of their own analyses.
-  These will be made available as well-documented and packaged versions of QA Levels 0--2.
+\item QA Level 0 - Testing and Validation of the DM sub-system in pre-commissioning 
+\item QA Level 1 - Real-time data quality and system assesment during commissioning + operations (also, forensics)
+\item QA Level 2 - Quality assessment of Data Releases (also, forensics) 
+\item QA Level 3 - Ability for the community to evaluate the data quality of their own analyses. These should available as well-documented and reployable versions of core QA Level 0--2 services. 
 \end{itemize}
 
 \subsubsection{QA0}
 
-Test the DM software during pre-commissioning as well as test software improvements during commissioning and operations, quantifying the software performance against known expected outputs.
-Validating the software and its performance on (selected) data.
+Test the DM software during pre-commissioning as well as test software improvements during commissioning and operations, quantifying the software performance against known and/or expected outputs.
+
+Validating the software and its performance on stamdardized data.
 
 (“Make me a three-color diagram, compute the width of point sources in the blue part of the locus”)
 
@@ -54,19 +55,19 @@ Validating the software and its performance on (selected) data.
 The main components:
 \begin{enumerate}
 \item CI system that compiles code
-\item Test execution harness – that runs test up to “weekly” scale?
-\item Library of validation metrics codes – some has to come from Science Pipelines, but KPMs are delivered by SQuaRE
-\item Instrumentation capability for computational performance metrics
+\item Test execution harness – that runs test on a regular cadence eg nightly/weekly/monthly
+\item A suite of validation metrics codes – some has to come from Science Pipelines, but KPMs are delivered by SQuaRE
+\item Capability to instrument the production pipelines for computational performance metrics
 \item Library of “instrumentations”
 \item Interface to data products and QA metrics (including visualization)
     \begin{enumerate}
     \item Tabular query result interface
     \item Visualizer for images
-    \item Plotter
+    \item Visualiser for scalar data (eg. Plotter)
     \item SuperTask execution on selected data
     \end{enumerate}
 \item Curated datasets to use in tests
-\item Toolkit for analysis of QA outputs (drilldown into existing tests, ad hoc tests, ad hoc afterburners) – some has to come from Science Pipelines or SUIT but SQuaRE provides examples [move to Shared Software Components section]
+\item Capability for interactive analysis of QA outputs (drilldown into existing tests, ad hoc tests, ad hoc afterburners) – some has to come from Science Pipelines or SUIT but SQuaRE provides examples [move to Shared Software Components section]
     \begin{enumerate}
     \item Tools that perform computations
     \item Tools that perform visualization (using Butler if astronomical, maybe direct database if not)
@@ -81,23 +82,26 @@ Prototypes for all of these exist except ``Toolkit for analysis of QA outputs'' 
 ``Toolkit for analysis of QA outputs'' will take more resources than the others listed above, but some may be already scheduled in other teams
 
 \subsubsection{QA1}
-Data quality in real time during commissioning and operations. Analyzes the data stream in real time, information about observing conditions (sky brightness, transparency, seeing, magnitude limit) as well as characterize subtle deterioration in system performance.
+Data quality in real time during commissioning and operations. Analyzes the data stream in near-real time, information about observing conditions (sky brightness, transparency, seeing, magnitude limit) as well as characterize subtle deterioration in system performance.
 
 Validating the operational system.
 
-Main components from above:
+Main components reused from Level QA0:
 \begin{enumerate}
 \item Library of validation metrics codes
 \item Instrumentation capability for computational performance metrics
 \item Library of “instrumentations”
 \item Interface to results (including visualization)
 \item Curated datasets to use in tests
-\item Toolkit for analysis of failures (drilldown into existing tests, ad hoc tests, ad hoc afterburners) – some has to come from Science Pipelines or SUIT but SQuaRE provides examples
+\item Capability for interactive analysis of failures (drilldown into existing tests, ad hoc tests, ad hoc afterburners) – some has to come from Science Pipelines or SUIT but SQuaRE provides examples
 \item Connection from analysis toolkit to validation metrics
-\item QA database including ingestion
+\item QA data access service (including ingesting it as well as querying it)
 \end{enumerate}
 
-New main components:
+Main components reused from Level QA0: All.
+
+Additional components required for Level QA1 services:
+
 \begin{enumerate}
 \item Harness for analyzing alert contents (and perhaps format)
 \item Faster metrics codes to meet overall 60 second performance requirement for alert publication (but not necessarily for all QA processing, which must meet only throughput requirements)
@@ -114,6 +118,7 @@ New main components:
 Assess the quality of data releases (including the co-added image data products) performing quality assessment for astrometric and photometric calibration and derived products, looking for problems with the image processing pipelines and systematic problems with the instrument.
 Validating the Data Release products.
 All components from QA0
+
 New main components:
 \begin{enumerate}
 \item DRP-specific dataset
