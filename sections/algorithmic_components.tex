@@ -269,8 +269,105 @@ AUTHOR: Jim
 \item Best classification derived from multifit and possibly variability.
 \end{itemize}
 
-\subsection{Variability Classification}
-AUTHOR: John
+\subsection{Variability Characterization}
+
+Following the \DPDD{}, lightcurve variability is characterized by providing a series of numeric summary `features' derived from the lightcurve. The DPDD baselines an approach based on Richards et al. \cite{Richards11}, with the caveat that ongoing work in time domain astronomy may change the definition, but not the number or type, of features being provided.
+
+Richards et al. define two classes of features: those designed to characterize variability which is periodic, and those for which the period, if any, is not important. We address both below.
+
+All of these metrics are calculated for both Objects (\DPDD{} table 4, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}) and DIAObjects (\DPDD{} table 2, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}). They are calculated and recorded separately in each band. Calculations for Objects are performed based on forced point source model fits (\DPDD{} table 5, \texttt{psFlux}).  Calculations for DIAObjects are performed based on point source model fits to DIASources (\DPDD{} table 1, \texttt{psFlux}). In each case, calculation requires the fluxes and errors for all of the sources in the lightcurve to be available in memory simultaneously.
+
+\subsubsection{Characterization of periodic variability}
+
+\begin{itemize}
+
+\item{Characterize lightcurve as the sum of a linear term plus sinusoids at three fundamental frequencies plus four harmonics:
+\begin{align}
+y(t) &= ct + \sum_{i=1}^{3} \sum_{j=1}^{4} y_i(t|j f_i) \\
+y_i(t|j f_i) &= a_{i,j} \sin(2 \pi j f_i t) + b_{i, j} \cos(2 \pi j f_i t) + b_{i, j, 0}
+\end{align}
+where $i$ sums over fundamentals and $j$ over harmonics.
+}
+\item{Use iterative application of the generalized Lomb-Scargle periodogram, as described in \cite{Richards11}, to establish the fundamental frequencies, $f_1$, $f_2$, $f_3$:
+\begin{itemize}
+  \item{Search a configurable (minimum, maximum, step) linear frequency grid with the periodogram, applying a $\log f/f_N$ penalty for frequencies above $f_N = 0.5 \langle 1 / \Delta T \rangle$, identifying the frequency $f_1$ with highest power;}
+  \item{Fit and subtract that frequency and its harmonics from the lightcurve;}
+  \item{Repeat the periodogram search to identify $f_2$ and $f_3$.}
+\end{itemize}
+}
+\item{We report a total of 32 floats:
+  \begin{itemize}
+  \item{The linear coefficient, $c$ (1 float)}
+  \item{The values of $f_1$, $f_2$, $f_3$. (3 floats)}
+  \item{The amplitude, $\mathrm{A}_{i, j} = \sqrt{a_{i, j}^2 + b_{i, j}^2}$, for each $i, j$ pair. (12 floats)}
+  \item{The phase, $\mathrm{PH}_{i, j} = \arctan(b_{i, j}, a_{i, j}) - \frac{j f_i}{f_1} \arctan(b_{1,1}, a_{1,1})$, for each $i, j$ pair, setting $\mathrm{PH}_{1, 1} = 0$. (12 floats)}
+  \item{The significance of $f_1$ vs. the null hypothesis of white noise with no periodic signal. (1 float)}
+  \item{The ratio of the significance of each of $f_2$ and $f_3$ to the significance of $f_1$. (2 floats)}
+  \item{The ratio of the variance of the lightcurve before subtraction of the $f_1$ component to its variance after subtraction. (1 float)}
+  \end{itemize}
+NB the \DPDD{} baselines providing 32 floats, but, since $\mathrm{PH}_{1,1}$ is 0 by construction, in practice only 31 need to be stored.
+}
+\end{itemize}
+
+\subsubsection{Characterization of aperiodic variability}
+
+In addition to the periodic variability described above, we follow \cite{Richards11} in providing a series of statistics computed from the lightcurve which do not assume peridoicity. They define 20 floating point quantities in four groups which we describe here, again with the caveat that future revisions to the \DPDD{} may require changes to this list.
+
+Basic quantities:
+
+\begin{itemize}
+\item{The maximum value of delta-magnitude over delta-time between successive points in the lightcurve.}
+\item{The difference between the maximum and minimum magnitudes.}
+\item{The median absolute deviation.}
+\item{The fraction of measurements falling within $1/10$ amplitudes of the median.}
+\item{The ``slope trend'': the fraction of increasing minus the fraction of decreasing delta-magnitude values between successive pairs of the last 30 points in the lightcurve.}
+\end{itemize}
+
+Moment calculations:
+
+\begin{itemize}
+\item{Skewness.}
+\item{Small sample kurtosis, i.e.
+\begin{align}
+\mathrm{Kurtosis} &= \frac{n(n+1)}{(n-1)(n-2)(n-3)} \sum_{i=1}^{n} \left(\frac{x_i - \overline{x}}{s}\right)^4 -\frac{3(n-1)^2}{(n-2)(n-3)} \\
+s &= \sqrt{\frac{1}{n-1} \sum_{i=1}^{n}(x_i - \overline{x})^2}
+\end{align}
+}
+\item{Standard deviation.}
+\item{The fraction of magnitudes which lie more than one standard deviation from the weighted mean.}
+\item{Welch-Stetson variability index $J$ \cite{Stetson96}, defined as
+\[
+J = \frac{\sum_{k} \mathrm{sgn}(P_k) \sqrt{|P_k|}}{K},
+\]
+where the sum runs over all $K$ pairs of observations of the object, where $\mathrm{sgn}$ returns the sign of its argument, and where
+\begin{align}
+P_k &= \delta_i \delta_j \\
+\delta_i &= \sqrt{\frac{n}{n-1}}\frac{\nu_i - \overline{\nu}}{\sigma_{\nu}},
+\end{align}
+where $n$ is the number of observations of the object, and $\nu_i$ its flux in observation $i$. Following the procedure described in Stetson \cite{Stetson96}, the mean is not the simple weighted algebraic mean, but is rather reweighted to account for outliers.}
+\item{Welch-Stetson variability index $K$ \cite{Stetson96}, defined as
+\[
+K = \frac{1/n \sum_{i=1}{N}|\delta_i|}{\sqrt{1/n \sum_{i=1}{N}|\delta_i^2|}},
+\]
+where $N$ is the total number of observations of the object and $\delta_i$ is defined as above.}
+\end{itemize}
+
+Percentiles. Taking, for example, $F_{5,95}$ to be the difference between the $95\%$ and $5\%$ flux values, we report:
+
+\begin{itemize}
+\item{All of $F_{40,60} / F_{5,95}$, $F_{32.5,67.5} / F_{5,95}$, $F_{25,75} / F_{5,95}$, $F_{17.5,82.5} / F_{5,95}$, $F_{10,90} / F_{5,95}$}
+\item{The largest absolute departure from the median flux, divided by the
+median.}
+\item{The radio of $F_{5,95}$ to the median.}
+\end{itemize}
+
+QSO similarity metrics, as defined by Butler \& Bloom \cite{Butler11}:
+
+\begin{itemize}
+\item{$\chi_{\mathrm{QSO}}^2 / \nu$.}
+\item{$\chi_{\mathrm{False}}^2 / \nu$.}
+\end{itemize}
+
 \subsubsection{Using forced photometry}
 \subsubsection{Using DIASources}
 
