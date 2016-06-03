@@ -2,6 +2,7 @@
 \label{sec:algorithmic-components}
 
 \subsection{Instrument Signature Removal}
+\label{sec:acISR}
 AUTHOR: Merlin
 \begin{itemize}
 \item Mask defects and saturation
@@ -27,20 +28,24 @@ AUTHOR: Merlin
 \subsection{Artifact Detection}
 
 \subsubsection{Single-Exposure Morphology}
+\label{sec:acMorphologicalArtifactDetection}
 AUTHOR: Simon
 \begin{itemize}
 \item Find CRs via morphology.
 \item Find satellites via Hough transform.
 \item Find some optical ghosts (etc?) from bright star catalog and optics predictions.
+\item Needs to work without PSF (amybe using placeholder PSF), but also make use of PSF if available.
 \end{itemize}
 
 \subsubsection{Snap Subtraction}
+\label{sec:acSnapSubtraction}
 AUTHOR: Simon
 \begin{itemize}
 \item All of the above, but improve by looking at both snaps.
 \end{itemize}
 
 \subsubsection{Warped Image Comparison}
+\label{sec:acWarpdImageArtifactDetection}
 AUTHOR: Jim
 \begin{itemize}
 \item Find more optical artifacts by looking at differences between warped images (this is run during background matching).
@@ -48,6 +53,7 @@ AUTHOR: Jim
 \end{itemize}
 
 \subsection{Artifact Masking/Interpolation}
+\label{sec:acArtifactInterpolation}
 AUTHOR: Jim
 \begin{itemize}
 \item Set mask planes for all artifacts.
@@ -56,6 +62,7 @@ AUTHOR: Jim
 \end{itemize}
 
 \subsection{Source Detection}
+\label{sec:acSourceDetection}
 AUTHOR: Jim
 \begin{itemize}
 \item Detect above-threshold regions and peaks in direct or difference images.
@@ -64,6 +71,7 @@ AUTHOR: Jim
 \end{itemize}
 
 \subsection{Deblending}
+\label{sec:acDeblending}
 AUTHOR: Jim
 
 For templates, try:
@@ -74,16 +82,22 @@ For templates, try:
 \item (multi-coadd only) optimize color uniformity
 \end{itemize}
 
+Will be especially challenging in crowded fields, but it needs to work in that regime as well.
+
 \subsubsection{Single Visit Deblending}
+\label{sec:acSingleVisitDeblending}
 \begin{itemize}
 \item Generate HeavyFootprint deblends using only a single image.
 \end{itemize}
+
 \subsubsection{Multi-Coadd Deblending}
+\label{sec:acMultiCoaddDeblending}
 \begin{itemize}
 \item Generate consistent HeavyFootprint deblends from coadds over multiple bands and possibly epoch ranges.
 \end{itemize}
 
 \subsection{Measurement}
+\label{sec:acMeasurement}
 AUTHOR: Jim
 
 \begin{figure}
@@ -96,21 +110,25 @@ AUTHOR: Jim
 \subsubsection{Variants}
 Measurement is run in several contexts, but always consists of running an ordered list of algorithm plugins on either individual objects or families thereof.  Each context corresponds to different variant of the measurement driver code, and has a different set of plugin algorithms and approaches to measuring blended objects.
 
-\paragraph{Single Visit Measurement:} Measure a direct single-visit CCD image, assuming deblend information already exists and can be used to replace neighbors with noise (see \ref{sec:blending-replace-neighbors}).
+\paragraph{Single Visit Measurement:} Measure a direct single-visit CCD image, assuming deblend information already exists and can be used to replace neighbors with noise (see \ref{sec:acReplaceNeighborsWithNoise}).
+\label{sec:acSingleVisitMeasurement}
 
 Single Visit Measurement is run in both \hyperref[sec:apSingleFrameProcessing]{AP's Single Frame Processing pipeline}) and DRP's \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}, \hyperref[sec:drpRefineImChar]{RefineImChar}, and \hyperref[sec:drpFinalImChar]{FinalImChar}.
 
 The driver for Single Visit Measurement is passed an input/output \hyperref[sec:spTablesSource]{SourceCatalog} and an \hyperref[sec:spImagesExposure]{Exposure} to measure.  Plugins take an input/output \hyperref[sec:spTablesSource]{SourceRecord} and an \hyperref[sec:spImagesExposure]{Exposure} containing only the object to be measured.
 
 \paragraph{Multi-Coadd Measurement:} Simultaneously measure a suite of coadds representing different bandpasses, epoch ranges, and flavors.  This is run only in DRP's \hyperref[sec:drpMeasureCoadds]{MeasureCoadds} pipeline.
+\label{sec:acMultiCoaddMeasurement}
 
 The driver for Multi-Coadd Measurement is passed an input/output \hyperref[sec:spTablesObject]{ObjectCatalog} and a dict of \hyperref[sec:spImagesExposure]{Exposures} to be measured.  Plugins take an input/output \hyperref[sec:spTablesObject]{ObjectRecord} and a dict of \hyperref[sec:spImagesExposure]{Exposures}, each containing only the object to be measured.  Some plugins will also support simultanous measurement of multiple objects, which requires they be provided the subset of the \hyperref[sec:spTablesObject]{ObjectCatalog} to be measured and a dict of \hyperref[sec:spImagesExposure]{Exposures} containing just those objects.
 
 \paragraph{Difference Image Measurement:} Measure a difference image, potentially using the associated direct image as well.  Difference image measurement is run in AP's \hyperref[sec:apAlertDetection]{Alert Detection} pipeline and DRP's \hyperref[sec:drpDiffIm]{DiffIm} pipeline.
+\label{sec:acDiffImMeasurement}
 
 The signatures of difference image measurement's drivers and algorithms are at least somewhat TBD; they will take at least a difference image \hyperref[sec:spImagesExposure]{Exposures} and a \hyperref[sec:spTablesSource]{SourceCatalog/SourceRecord}, but some plugins such as dipole measurement may require access to a direct image as well.  Because difference imaging dramatically reduces blending, difference image measurement may require any approach to blended measurement (though any use of the associated direct image would require deblending).
 
-\paragraph{Multi-Epoch Measurement:} Measure multiple direct images simultaneously by fitting the same \hyperref[sec:apWCS]{WCS}-transformed, \hyperref[sec:apPSF]{PSF}-convolved model to them.  Blended objects in Multi-Epoch Measurement will be handled by \emph{at least} fitting them simutaneously (\ref{sec:blending-simultaneous-fitting}), which may in turn require hybrid galaxy/star models (\ref{sec:blending-hybrid-models}).  These models may then be used as templates for deblending and replace-with-noise (\ref{sec:blending-replace-neighbors}) measurement if this improves the results.
+\paragraph{Multi-Epoch Measurement:} Measure multiple direct images simultaneously by fitting the same \hyperref[sec:apWCS]{WCS}-transformed, \hyperref[sec:apPSF]{PSF}-convolved model to them.  Blended objects in Multi-Epoch Measurement will be handled by \emph{at least} fitting them simutaneously (\ref{sec:acSimultaneousFitting}), which may in turn require hybrid galaxy/star models (\ref{sec:acHybridModels}).  These models may then be used as templates for deblending and replace-with-noise (\ref{sec:acReplaceNeighborsWithNoise}) measurement if this improves the results.
+\label{sec:acMultiEpochMeasurement}
 
 Because the memory and I/O requirements for multi-epoch measurement of a single object or blend family are substantial, we will not provide a driver that accepts an \hyperref[sec:spTablesObject]{ObjectCatalog} and measures all objects within it; instead, the \hyperref{sec:drpMultiFit} pipeline will submit individual family-level jobs directly to the orchestration layer.  The multi-epoch measurement driver will thus just operate on one blend family at a time, and manage blending while executing its plugin algorithms.
 
@@ -119,6 +137,7 @@ Multi-epoch measurement for DRP only includes two plugin algorithms, so it is te
 Multi-epoch measurement will also be responsible for actually performing forced photometry on direct images, which it can do by holding non-amplitude parameters for moving point-source models fixed and adding a new amplitude parameter for each observation.
 
 \paragraph{Forced Measurement:} Measure photometry on an image using positions and shapes from an existing catalog.
+\label{sec:acForcedMeasurement}
 
 In the baseline plan, we assume that forced measurement will only be run on difference images; while forced photometry on direct images will also be performed in DRP, this will be done by multi-epoch measurement.
 
@@ -135,18 +154,21 @@ Add references to specific AP pipelines that will use forced measurement.
 \subsubsection{Algorithms}
 
 \paragraph{Centroids}
+\label{sec:acCentroidAlgorithms}
 \begin{itemize}
 \item should be equivalent to PSF model fit for stars
 \item use larger weight function (TBD) for extended objects
 \end{itemize}
 
 \paragraph{Second-Moment Shapes}
+\label{sec:acShapeAlgorithms}
 \begin{itemize}
 \item probably adaptive elliptical Gaussian weights, with fall back to unweightd, PSF-weighted, or some fixed Gaussian
 \item add regularization for unresolved objects - avoid crazy ellipticities for objects much smaller than PSF
 \end{itemize}
 
 \paragraph{Aperture Photometry}
+\label{sec:acAperturePhotometry}
 \begin{itemize}
 \item Sequence of fixed apertures
 \item Use sinc algorithm for small apertures, naive for large.
@@ -154,24 +176,28 @@ Add references to specific AP pipelines that will use forced measurement.
 \end{itemize}
 
 \paragraph{Static Point Source Models}
+\label{sec:acStaticPointSourceModels}
 \begin{itemize}
 \item Fit PSF model for flux only (hold center fixed at centroid or reference value)
 \item Doesn't use per-pixel variances for flux measurement, but might also provide measurement with per-pixel variances (for diagnostics?)
 \end{itemize}
 
-\paragraph{Kron Apertures}
+\paragraph{Kron Photometry}
+\label{sec:acKronPhotometry}
 \begin{itemize}
 \item Compute Kron radius (hard to make this robust)
 \item Compute flux in elliptical aperture at Kron radius.
 \end{itemize}
 
-\paragraph{Petrosian Apertures}
+\paragraph{Petrosian Photometry}
+\label{sec:acPetrosianPhotometry}
 \begin{itemize}
 \item Compute Petrosian radius.  Harder than it seems due to need for improvements to splines? (ask RHL)
 \item Compute flux in elliptical aperture at Petrosian radius.
 \end{itemize}
 
 \paragraph{Galaxy Models}
+\label{sec:acGalaxyModels}
 \begin{itemize}
 \item Some sort of bulge+disk model.  Lots of need for experimentation.
 \item Will Monte Carlo sample in MultiFit (and maybe on coadds, too, if that helps).
@@ -181,6 +207,7 @@ Add references to specific AP pipelines that will use forced measurement.
 \end{itemize}
 
 \paragraph{Moving Point Source Models}
+\label{sec:acMovingPointSourceModels}
 \begin{itemize}
 \item Fit point source with flux, centroid, parallax, and proper motion parameters.
 \item May need to support simultaneous fitting.
@@ -189,17 +216,20 @@ Add references to specific AP pipelines that will use forced measurement.
 \end{itemize}
 
 \paragraph{Trailed Point Source Models}
+\label{sec:acTrailedPointSourceModels}
 \begin{itemize}
 \item Fit PSF convolved with line segment to individual images
 \end{itemize}
 
 \paragraph{Dipole Models}
+\label{sec:acDipoleModels}
 \begin{itemize}
 \item Fit PSF dipole for separation and flux to a combination of difference image and direct image.
 \item Deblending on direct image very problematic.
 \end{itemize}
 
 \paragraph{Spuriousness}
+\label{sec:acSpuriousnessAlgorithms}
 \begin{itemize}
 \item Some per-source measure of likelhood the detection is junk (in a difference image).
 \item May use machine learning on other measurements or pixels.
@@ -207,19 +237,22 @@ Add references to specific AP pipelines that will use forced measurement.
 \end{itemize}
 
 \subsubsection{Blended Measurement}
+\label{sec:acBlendedMeasurement}
 \begin{itemize}
 \item Integrate text from blended-measurement doc here.
 \end{itemize}
 
 \paragraph{Deblend Template Projection}
+\label{sec:acDeblendTemplateProjection}
 \paragraph{Neighbor Noise Replacement}
-\label{sec:blending-replace-neighbors}
+\label{sec:acReplaceNeighborsWithNoise}
 \paragraph{Simultaneous Fitting}
-\label{sec:blending-simultaneous-fitting}
+\label{sec:acSimultaneousFitting}
 \paragraph{Hybrid Models}
-\label{sec:blending-hybrid-models}
+\label{sec:acHybridModels}
 
 \subsection{Background Estimation}
+\label{sec:acBackgroundEstimation}
 AUTHOR: Simon
 \begin{itemize}
 \item Fit or interpolate large-scale variations while masking out detections.
@@ -230,14 +263,17 @@ AUTHOR: Simon
 \end{itemize}
 
 \subsection{Build Background Reference}
+\label{sec:acBuildBackgroundReference}
 AUTHOR: Simon
 \begin{itemize}
 \item Given multiple overlapping visit images (already warped to a common coordinate system), synthesize a continuous single-epoch image that can be used as a reference for background matching.
 \end{itemize}
 
 \subsection{PSF Estimation}
+\label{sec:acPSFEstimation}
 
 \subsubsection{Single CCD PSF Estimation}
+\label{sec:acSingleCCDPSF}
 AUTHOR: Simon
 \begin{itemize}
 \item Fit simple empirical PSF model to stars from a single exposure.
@@ -247,6 +283,7 @@ AUTHOR: Simon
 \end{itemize}
 
 \subsubsection{Full Visit PSF Estimation}
+\label{sec:acFullFoVPSF}
 AUTHOR: Jim
 \begin{itemize}
 \item Decompose PSF into optical + atmosphere.
@@ -257,6 +294,7 @@ AUTHOR: Jim
 \end{itemize}
 
 \subsection{Aperture Correction}
+\label{sec:acApCorr}
 AUTHOR: Jim
 \begin{itemize}
 \item Measure curves of growth from bright stars.
@@ -264,37 +302,47 @@ AUTHOR: Jim
 \item Propagate uncertainty in aperture correction to corrected fluxes; covariance is tricky.
 \end{itemize}
 
-\subsection{Astrometric Solutions}
+\subsection{Astrometric Fitting}
+\label{sec:acAstrometricFitting}
 AUTHOR: Simon
-\subsubsection{Single CCD (for AP)}
+\subsubsection{Single CCD}
+\label{sec:acSingleCCDAstrometricFit}
+Used by AP, probably (RHL worries we might need full-visit)
 \begin{itemize}
 \item If this uses DRP's internal reference catalog, this does all we need. THIS IS A NEW DEPENDENCY BETWEEN DRP AND AP.
 \end{itemize}
 \subsubsection{Single Visit}
+\label{sec:acSingleVisitAstrometricFit}
 \begin{itemize}
 \item Fit multi-component WCS to all CCDs in a single visit simultaneously after matching to reference catalog.
 \end{itemize}
 \subsubsection{Joint Multi-Visit}
+\label{sec:acJointAstrometicFit}
 \begin{itemize}
 \item Fit multi-component WCS to all CCDs from multiple visits simultaneously after matching to reference catalog.
 \end{itemize}
 
-\subsection{Photometric Solutions}
+\subsection{Photometric Fitting}
+\label{sec:acPhotometricFitting}
 AUTHOR: Simon (and Merlin?)
 \subsubsection{Single CCD (for AP)}
+\label{sec:acSingleCCDPhotometricFit}
 \subsubsection{Single Visit}
+\label{sec:acSingleVisitPhotometricFit}
 \begin{itemize}
 \item Fit zeropoint (and some small spatial variation?) to all CCDs simultaneously after matching to reference catalog.
 \item Need for chromatic dependence unclear; probably driven by AP.
 \end{itemize}
 \subsubsection{Joint Multi-Visit}
+\label{sec:acJointPhotometricFit}
 \begin{itemize}
 \item Derive SEDs for calibration stars from colors and reference catalog classifications.
 \item Utilize additional information from wavelenth dependent photometric calibration built by calibration products production.
 \item Fit zeropoint and possibly perturbations to all CCDs on multiple visits simultaneously after matching to reference catalog.
 \end{itemize}
 
-\subsection{Generate Diffim Template for a Visit}
+\subsection{Retrieve Diffim Template for a Visit}
+\label{sec:acRetrieveTemplate}
 AUTHOR: Simon
 \begin{itemize}
 \item Determine appropriate template to use
@@ -302,24 +350,30 @@ AUTHOR: Simon
 \end{itemize}
 
 \subsection{PSF Matching}
+\label{sec:acPSFMatching}
 AUTHOR: Simon
 \subsubsection{Image Subtraction}
+\label{sec:acImageSubtraction}
 \begin{itemize}
 \item Match template image to science image, as in Alert Production and DRP Difference Image processing.
 \item Includes identifying sources to use to determine matching kernel, fitting the kernel, and convolving by it.
 \end{itemize}
 \subsubsection{PSF Homogenization for Coaddition}
+\label{sec:acPSFHomogenization}
 \begin{itemize}
 \item Match science image to predetermined analytic PSF, as in PSF-matched coaddition.
 \end{itemize}
 
 \subsection{Image Warping}
+\label{sec:acWarping}
 AUTHOR: Jim
 \subsubsection{Oversampled Images}
+\label{sec:acOversampledWarping}
 \begin{itemize}
 \item Just use Lanczos.
 \end{itemize}
 \subsubsection{Undersampled Images}
+\label{sec:acUndersampledWarping}
 \begin{itemize}
 \item Can use PSF model as interpolant if we also want to convolve with PSF (as in likelihood coadds).  Otherwise impossible?
 \end{itemize}
@@ -329,22 +383,27 @@ AUTHOR: Jim
 \end{itemize}
 
 \subsection{Image Coaddition}
+\label{sec:acCoaddition}
 AUTHOR: Jim
 \begin{itemize}
 \item Can do outlier rejection (but usually doesn't).
 \item Needs to propagate full uncertainty somehow.
 \item May need to propagate larger-scale per-exposure masks to get right PSF model or other coadded quantities.
 \item Should be capable of combining coadds from different bands and/or epoch ranges ranges as well as combining individual exposures.
+\item Also needs to support combining snaps
 \end{itemize}
 
 \subsection{DCR-Corrected Template Generation}
+\label{sec:acDCRTemplates}
 AUTHOR: Simon
 \begin{itemize}
 \item Somwewhat like coaddition, but may need to add dimensions for wavelength or airmass, and may involve solving an inverse problem instead of just compute means.
 \end{itemize}
 
 \subsection{Image Decorrelation}
+\label{sec:acImageDecorrelation}
 \subsubsection{Difference Image Decorrelation}
+\label{sec:acDiffImDecorrelation}
 AUTHOR: Simon
 \begin{itemize}
 \item Fourier-space (?) deconvolution of preconvolved difference images before measurement - ZOGY as reinterpreted by Lupton (could apply correction in real space, too)
@@ -352,6 +411,7 @@ AUTHOR: Simon
 \end{itemize}
 
 \subsubsection{Coadd Decorrelation}
+\label{sec:acCoaddDecorrelation}
 AUTHOR: Jim
 \begin{itemize}
 \item Fourier-space/iterative deconvolution of likelihood coadds, as in DMTN-15.
@@ -359,34 +419,43 @@ AUTHOR: Jim
 \end{itemize}
 
 \subsection{Star/Galaxy Classification}
+\label{sec:acClassification}
 AUTHOR: Jim
 \subsubsection{Single Visit S/G, Pre-PSF}
+\label{sec:acPSFStarSelection}
 \begin{itemize}
 \item Select stars to be used in PSF estimation (mostly from moments).
 \end{itemize}
 \subsubsection{Single Visit S/G, Post-PSF}
+\label{sec:acSingleVisitClassification}
 \begin{itemize}
 \item Extendedness or trace radius difference that classifies sources based on single frame measurements that can utilize the PSF model.  Used to select single-frame calibration stars, and probably aperture correction stars.
 \end{itemize}
 \subsubsection{Multi-Source S/G}
+\label{sec:acJointCalClassification}
 \begin{itemize}
 \item Aggregate of single-visit S/G post-PSF numbers in jointcal.
 \end{itemize}
 \subsubsection{Object Classification}
+\label{sec:acObjectClassification}
 \begin{itemize}
 \item Best classification derived from multifit and possibly variability.
 \end{itemize}
 
 \subsection{Variability Classification}
+\label{sec:acVariabilityClassification}
 AUTHOR: John
 \subsubsection{Using forced photometry}
 \subsubsection{Using DIASources}
 
 \subsection{Proper Motion and Parallax from DIASources}
+\label{sec:acStellarMotionFitting}
 AUTHOR: Simon
 
 \subsection{Association and Matching}
+\label{sec:acMatching}
 \subsubsection{Single CCD to Reference Catalog, Semi-Blind}
+\label{sec:acSingleCCDReferenceMatching}
 AUTHOR: Simon
 \begin{itemize}
 \item Want to match in image coordinates, so also needs to transform reference catalog.
@@ -395,6 +464,7 @@ AUTHOR: Simon
 \end{itemize}
 
 \subsubsection{Single Visit to Reference Catalog, Semi-Blind}
+\label{sec:acSingleVisitReferenceMatching}
 AUTHOR: Simon
 \begin{itemize}
 \item Want to match in focal plane coordinates, so also needs to transform reference catalog.
@@ -402,18 +472,21 @@ AUTHOR: Simon
 \end{itemize}
 
 \subsubsection{Multiple Visits to Reference Catalog}
+\label{sec:acJointCalMatching}
 AUTHOR: Jim
 \begin{itemize}
 \item Match sources from multiple visits to a single reference catalog, assuming good WCSs.
 \end{itemize}
 
 \subsubsection{DIAObject Generation}
+\label{sec:acDIAObjectGeneration}
 AUTHOR: Simon
 \begin{itemize}
 \item Match all DIASources to predicted Solar System object positions and existing DIAObjects and generate new DIAObjects.  Definitely run in AP, maybe run in DRP.
 \end{itemize}
 
 \subsubsection{Object Generation}
+\label{sec:acObjectGeneration}
 AUTHOR: Jim
 \begin{itemize}
 \item Match coadd detections from different bands/SEDs/epoch-ranges, merging Footprints and associating peaks.
@@ -421,24 +494,28 @@ AUTHOR: Jim
 \end{itemize}
 
 \subsubsection{Cross-Patch Merging}
+\label{sec:acCrossPatchMerging}
 AUTHOR: Jim
 \begin{itemize}
 \item Resolve duplicates in patch overlap regions by flagging ``primary'' objects.  Difficult due to blending.
 \end{itemize}
 
 \subsubsection{Cross-Tract Merging}
+\label{sec:acCrossTractMerging}
 AUTHOR: Jim
 \begin{itemize}
 \item Resolve duplicates in tract overlap regions by flagging ``primary'' objects.  Difficult due to blending.
 \end{itemize}
 
 \subsection{Ephemeris Calculation}
+\label{sec:acEphemerisCalculation}
 AUTHOR: Simon
 \begin{itemize}
 \item Calculate positions for all solar system objects in a region at a given time.
 \end{itemize}
 
 \subsection{Make Tracklets}
+\label{sec:acMakeTracklets}
 AUTHOR: Simon
 \begin{itemize}
 \item Make all tracklet pairs
@@ -447,6 +524,7 @@ AUTHOR: Simon
 \end{itemize}
 
 \subsection{Attribution and precovery}
+\label{sec:acAttributionAndPrecovery}
 AUTHOR: Simon
 \begin{itemize}
 \item Predict locations of known Solar System objects
@@ -456,6 +534,7 @@ AUTHOR: Simon
 \end{itemize}
 
 \subsection{Orbit Fitting}
+\label{sec:acOrbitFitting}
 AUTHOR: Simon
 \begin{itemize}
 \item Merge unassociated tracklets into tracks.
