@@ -78,8 +78,39 @@ Each pipeline in this the diagram represents a particular piece of code excuted 
 Extract ImChar/JointCal pipelines from ``DRP Top-Level Overview'' on confluence and expand detail to show data flow and ordering of ``Task/Process'' boxes.
 \end{note}
 
+\begin{itemize}
+\item Each tract is entirely independent.
+\item Iterate between processing on individual visits (ImChar) and fitting to catalogs derived from all visits in a tract (JointCal).
+\item Later ImChar stages improve PSF models and re-measure.
+\item Later JointCal stages improve WCS and photometric calibration, while generating star catalog to use in PSF model.
+\item Iteration is necessary to ensure PSF, WCS, and star catalog are consistent.
+\end{itemize}
+
 \subsubsection{BootstrapImChar}
 \label{sec:drpBootstrapImChar}
+
+\begin{itemize}
+\item \hyperref[sec:acISR]{ISR}
+  \begin{itemize}
+  \item On snaps
+  \item Includes all the B-F correction we need.
+  \item Flat field image to color of sky?
+  \end{itemize}
+\item \hyperref[sec:acSnapSubtraction]{Subtract} and \hyperref[sec:acCoaddition]{Combine} Snaps.
+  \begin{itemize}
+  \item If we don't take two snaps, do \hyperref[sec:acMorphogicalArtifactDetection]{morphological artifact detection} instead.
+  \item If combining/diffing snaps requires warping, this is \emph{much} harder, to the point that we should only take one snap.
+  \end{itemize}
+\item (iterate?) \hyperref[sec:acBackgroundEstimation]{background estimation} nd \hyperref[sec:acSourceDetection]{source detection}.
+  \begin{itemize}
+  \item Only need to detect and measure bright stars, so aggresive background subtraction is okay and possibly desirable.
+  \item May need to also detect fainter sources just to deblend them from primary targets, especially in croweded fields.
+  \item Need to ensure flat-fielding and pixel area corrections are appropriate for background estimation at this point.
+  \end{itemize}
+\item \hyperref[sec:SingleVisitDeblending]{Deblend?}.  No measured PSF yet.  Need to do something in crowded fields, but maybe it's better to support PSF estimation from overlapping stars?
+\item \hyperref[sec:SingleVisitDeblending]{Deblend}.
+\end{itemize}
+
 \subsubsection{BootstrapJointCal}
 \label{sec:drpBootstrapJointCal}
 \subsubsection{RefineImChar}

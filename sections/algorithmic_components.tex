@@ -98,6 +98,7 @@ Will be especially challenging in crowded fields, but it needs to work in that r
 \label{sec:acSingleVisitDeblending}
 \begin{itemize}
 \item Generate HeavyFootprint deblends using only a single image.
+\item May need to be able to work with approximate/guess PSF, even in crowded fields, if we need to deblend before PSF estimation in DRP.
 \end{itemize}
 
 \subsubsection{Multi-Coadd Deblending}
@@ -168,6 +169,7 @@ Add references to specific AP pipelines that will use forced measurement.
 \begin{itemize}
 \item should be equivalent to PSF model fit for stars
 \item use larger weight function (TBD) for extended objects
+\item need variant that doesn't require a PSF model (or can work with a poor guess) to run before PSF estimation.
 \end{itemize}
 
 \paragraph{Second-Moment Shapes}
@@ -175,6 +177,7 @@ Add references to specific AP pipelines that will use forced measurement.
 \begin{itemize}
 \item probably adaptive elliptical Gaussian weights, with fall back to unweightd, PSF-weighted, or some fixed Gaussian
 \item add regularization for unresolved objects - avoid crazy ellipticities for objects much smaller than PSF
+\item need variant that doesn't require a PSF model (or can work with a poor guess) to run before PSF estimation.
 \end{itemize}
 
 \paragraph{Aperture Photometry}
