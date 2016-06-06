@@ -433,18 +433,122 @@ AUTHOR: Simon
 
 \subsection{PSF Matching}
 \label{sec:acPSFMatching}
-AUTHOR: Simon
+
+The essence of image subtraction is to astrometrically register the
+science image $S(x,y)$ and template image $T(x,y)$, and then match
+their point spread functions (PSFs) of so that they may be subtracted
+pixel by pixel. The PSFs are the time--averaged transfer functions of
+a point source through the Earth's atmosphere, telescope optics, and
+into the silicon of the detector before being read out. We assume that
+the science image can be modeled as a convolution of the template
+image by a PSF--matching kernel $\kappa(u,v;x,y)$, i.e., $S = \kappa \otimes
+T$. (Indices $u,v$ indicate that the kernel itself is a 2--dimensional
+function, which varies as a function of position $x,y$ in the image;
+during convolution and correlation there is an implicit summation over
+$u,v$.) Then the difference image, upon which new or variable sources
+are detected, is given by $D = S - (\kappa \otimes T)$.
+
 \subsubsection{Image Subtraction}
 \label{sec:acImageSubtraction}
 \begin{itemize}
 \item Match template image to science image, as in Alert Production and DRP Difference Image processing.
 \item Includes identifying sources to use to determine matching kernel, fitting the kernel, and convolving by it.
 \end{itemize}
+
+We model the PSF--matching kernel by decomposing it into a set of
+basis functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$
+\citep{Alard98}, where the coefficients are determined via
+ordinary least-squares estimation:
+%
+\begin{eqnarray}
+C_i & \equiv & (\kappa_i \otimes T); \\ \nonumber
+b_{i}  & = & \sum_{x,y} {{C_i(x,y) S(x,y)}\over{\sigma^2(x,y)}};   \nonumber \\ 
+M_{ij} & = & \sum_{x,y} {{C_i(x,y) C_j(x,y)}\over{\sigma^2(x,y)}};  \nonumber \\ 
+a_{i}  & = & M^{-1}_{ij} b_{j}. \nonumber 
+\label{eq-soln}
+\end{eqnarray}
+%
+\noindent
+$\sigma^2(x,y)$ is the per--pixel variance stored in the {\tt
+  variance} plane of each LSST {\tt exposure}. To generate a spatially
+varying model for the kernel, we further decompose the relative
+weights of the basis coefficients $a_i$ into spatially-varying
+low-order polynomials, i.e. $\kappa(u,v;x,y) = \sum_i a_i(x,y)
+\kappa_i(u,v)$. We also allow for a spatially-varying differential
+background between the two images $b(x,y)$ that may be fit for using a
+low--order polynomial \citep{Alard98,Alard00}. The image difference is
+then $D(x,y) = S(x,y) - T(x,y) \otimes \kappa(u,v;x,y) - b(x,y)$.
+
+The basis functions $\kappa_i(u,v)$ are a degree of freedom in this
+problem. Following \citep{Alard98}, we use a set of $\rm nGauss = 3$
+Gaussians, each with a different width $\sigma_i$, and each modified
+by a Laguerre polynomial to a given order (see below). Following more
+recent studies studies \citep[e.g.][]{Israel07}, we parameterize these
+different Gaussian widths via a single ratio $\beta$, such that
+$\sigma_{i+1} = \beta \times \sigma_{i}$ with $\beta = 2.0$. (We note
+that all constants are defined by {\tt Config} variables and may be
+adjusted on a per-use basis). We set the overall scale for the
+$\sigma$ by noting that, under the assumption that the PSFs of the
+images are Gaussian ($\sigma_S$ for the science image and $\sigma_T$
+for the template image), the $\sigma_{\kappa}$ of the matching kernel
+should be simply $\sigma_{\kappa}^2 = \sigma_S^2 - \sigma_T^2$. We use
+this canonical width for the central Gaussian in the basis sequences
+(i.e., $\sigma_{i=2} \equiv \sigma_{\kappa}$ when using three
+Gaussians bases). Each of the three default kernel basis functions are
+modified by Laguerre polynomials up to order $\rm degGauss = [4, 2,
+  2]$, respectively. This results in a total number of (non-spatially
+varying) bases of $\sum_i^{\rm nGauss} ({\rm degGauss}_i+1)\times({\rm
+  degGauss}_i+2)/2$, or 27 given the aforementioned defaults.
+
+A spatially-invariant matching kernel $\kappa(u,v)$ is determined
+separately for image substamps centered on multiple kernel candidates
+across the image. The kernel candidates are selected using the {\tt
+  DiaCatalogSourceSelector} to query the appropriate reference catalog
+for appropriate sources to use for PSF matching. This selector allows
+the user to specify the brightness and color range of the objects,
+toggle star or galaxy selection, and to include variable objects or
+not. Sources are vetted for signal-to-noise and masked pixels (in both
+the template and science image). The matching (spatially-invariant)
+kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as
+described above, are examined and filtered by various quality
+measures. The resulting ensemble of filtered kernel models is used to
+constrain the spatially-varying kernel model $\kappa(u,v;x,y)$ by fitting
+the spatially-varying basis kernel coefficients $a_i(x,y)$ with a
+$N^{th}$-order 2-dimensional Chebyshev polynomial. This results in the
+final full spatial solution $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$,
+which may be evaluated at each location $(x,y)$ in the image for
+convolution.
+
+Detection on the difference image occurs through correlation of
+$D(x,y)$ with the science image's PSF, yielding optimally filtered
+detection image $D'(x,y) = D(x,y) \circ PSF_S(u,v;x,y)$ where $\circ$
+denotes correlation (currently the DM stack uses convolution instead
+of correlation). The values of the pixels in $D'(x,y)$ provide a
+maximum likelihood estimate of there being a point source at that
+position. Detection occurs by simply finding pixels that are more than
+$N \times \sigma$ above the square root of the per--pixel
+variance. Alternatively, the science image may be {\em pre-convolved}
+with a kernel similar to its PSF, in which case the resulting
+difference image $D(x,y)$ is already filtered for detection. This
+latter option has the additional advantage that it help us avoid
+requiring {em deconvolution} of the template image, in cases when the
+template has a wider PSF than the science image.
+
 \subsubsection{PSF Homogenization for Coaddition}
 \label{sec:acPSFHomogenization}
 \begin{itemize}
 \item Match science image to predetermined analytic PSF, as in PSF-matched coaddition.
 \end{itemize}
+
+In PSF-matched coaddition, input images are convolved by a kernel that
+matches their PSF to a predefined constant PSF before they are
+combined. This so-called ``model PSF matching'' uses the PSF-matching
+algorithm described in the previous section to match the PSF {\em
+  model} from an exposure to a pre-determined template (e.g., a
+constant-across-the-sky double Gaussian) PSF model. For this task, we
+realize each PSF model into an exposure-sized grid, and then utilize
+those as kernel candidates as input for the PSF matching algorithm
+described above.
 
 \subsection{Image Warping}
 \label{sec:acWarping}
