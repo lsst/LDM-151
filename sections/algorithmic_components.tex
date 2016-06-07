@@ -67,6 +67,7 @@ So the final CR selection criteria are: $S^\prime > \sigma_{lim}$ and $L^+/F > F
 
 \begin{note}[Add to SFM section]
 We can use something like L.A.COSMIC (or CRBLASTER) but if it is too slow, we can fall back to the SDSS algorithm which does a similar thing, but does no convolutions.
+We should also consider why we do not use a Canny algorithm instead.
 \end{note}
 \paragraph{Optical ghosts}
 We will have a set of optical ghost models.  Some of these will be models of stationary ghosts (e.g. pupil ghost). Others will be a set of ghosts produced by point sources as a function of source position and brightness. The latter will likely be modeled using tools like ZEMAX or measured using projectors.
@@ -86,16 +87,33 @@ The CR rejection algorithm does not depend on the PSF of the image.  The single 
 
 \subsubsection{Single-Exposure Aggregation}
 AUTHOR: Simon
-\begin{itemize}
-\item Find satellites via Hough transform.
-\end{itemize}
+\paragraph{Linear feature detection and removal}
+Satellite trails, out of focus airplanes, and meteors all cause long linear features in astronomical images.  The Hough Transform \citep{citation_needed} is a common tool used in computer vison applications to detect linear features.  Linear features are parameterized by $r$, the perpendicular distance to the line from the origin and $\theta$, the the angle of $r$ with the x-axis.  The $(r, \theta)$ space is binned and each pixel in the image adds its flux to all the bins consistent with that pixel location.  For bright linear features, the bin at the true location of the feature will fill up because more than one bright pixel is contributing to that location in parameter space.  After all pixels have been polled, the highest bins correspond to the linear features in the image.
+
+This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.  
+
+An algorithm that takes care of both of these issues is presented in \cite{borncamp_lim16}.  We will use this as our baseline.  First the image is rescaled to bring out faint features.  Next an edge detectionalgorithm is run on the image.  The reference implementation uses a Canny algorithm \citep{canny86}.  This algorithm produces a set of edges that can then be mined for linear features.  They use a probababalistic Hough Transforms \citep{galambos99} to cut down on computational costs.  The probabalistic version limits the number of pixels that vote.  This results in a list of line segments.  The segments are binned in angle and any sement that is outside some tolorance of the mode is culled.  This cleaned set of segments is fed to the masking algorithm.
+
+The masking algorithm traverses each line segment found in the previous step by selecting a subregion around the segment and flattening the subregion.  A weighted mean of the subregion is computed and any pixels above some threshold are considered part of the trail and masked.  The subregion is moved along the segment until the end is reached.  This is repeated for every segment.
+
+One of the assumptions of the algorithm is that the trail crosses the whole image.  I don't think we want to make that assumption.  I also don't know why they run a Canny algorithm first and then do a Hough Transform.  I guess it does the same sort of regularization that Steve tried to do with his moments.
+
+\begin{note}[Bickerton writeup]
+Note that there is a writeup by Steve Bickerton on a different way to modify the Hough Transform to find satelite trails and it has been tried on HSC, but the paper is not complete.  Thus, I didn't use it as the baseline here.  The writeup is linked from DM-5872.
+\end{note}
 
 \subsubsection{Snap Subtraction}
 \label{sec:acSnapSubtraction}
 AUTHOR: Simon
-\begin{itemize}
-\item All of the above, but improve by looking at both snaps.
-\end{itemize}
+\paragraph{Improvements by using multiple snaps}
+{\bf Cosmic Rays}
+We will need to still run some sort of topological identifier like the one outlined above.  This is because there will be real transients and we still only want to pick out the sharp features as CRs.  It will help to have less crowding, so we should do CR rejection on the snap difference if we have it.
+
+{\bf Ghosts}
+Snap differences will not help with ghosting as the ghosts should difference almost perfectly.
+
+{\bf Linear features}
+Snap differences will provide significant leverage for masking linear features.  Since each segment will appear in at most one snap we can mask based on the pixels marked as detected in the difference images that are part of the trail.  This will help in crowded regions.  This technique will require running some sort of trail detection algorithm, but the requirements will be less stringent since the image will be so much less crowded.
 
 \subsubsection{Warped Image Comparison}
 \label{sec:acWarpedImageArtifactDetection}
