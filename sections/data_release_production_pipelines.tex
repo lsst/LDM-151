@@ -88,7 +88,7 @@ The ImChar and JointCal iteration is itself interleaved with background matching
 
 Each ImChar pipeline runs on a single visit, and each JointCal pipeline runs simultaneously on all visits within a single tract, allowing tracts to be run entirely independently.
 
-The final output data products of the ImChar/JointCal iteration are the Source table and CalExp (calibrated exposure) images.  The latter includes Image, Mask, Variance, Background, PSF, WCS, PhotoCal components that we will track separately.
+The final output data products of the ImChar/JointCal iteration are the Source table and CalExp (calibrated exposure) images.  The latter includes Image, Mask, Variance, Background, PSF, WCS, Calib components that we will track separately.
 
 There are also several intermediate versions of the Source and CalExp data products passed between the ImChar/JointCal pipelines, as well as...
 
@@ -123,47 +123,55 @@ def BootstrapImChar(%\hr{raw}%, %\hr{reference}%):
         snaps = [%\hr{RunISR}%(raw[ccd]) for snap in raw]
         calexp[ccd].mask = %\hr{FindArtifacts}%(snaps[ccd])
         calexp[ccd].{mi} = %\hr{CombineSnaps}%(calexp[ccd].mask, snaps)
-    calexp.psf = %\hr{FitWavefront}%(calexp[WAVEFRONT_SENSORS].{mi})
+    calexp.psf = %\hr{FitWavefront}%(calexp[WAVEFRONT_SENSORS].mi)
     calexp.{image,mask,variance,background}
-        = %\hr{SubtractBackground}%(calexp.{mi})
+        = %\hr{SubtractBackground}%(calexp.mi)
     parallel for ccd in SCIENCE_SENSORS:
         sources[ccd] = %\hr{DetectSources}%(calexp.{mi,psf})
     matches = %\hr{MatchSemiBlind}%(sources, reference)
     while not converged:
         %\hr{SelectStars}%(matches, exposures)
         calexp.wcs = %\hr{FitWCS}%(matches, sources, reference)
-        calexp.psf = %\hr{FitPSF}%(matches, calexp.{mi,wcs})
+        calexp.psf = %\hr{FitPSF}%(matches, sources, calexp.{mi,wcs})
         %\hr{WriteDiagnostics}%(calexp, sources)
         parallel for ccd in SCIENCE_SENSORS:
             calexp[ccd].mask = %\hr{FindArtifacts}%(calexp[ccd].{mi,psf})
             calexp[ccd].{mi} = %\hr{InterpolateArtifacts}%(calexp[ccd].{mi,psf})
             calexp[ccd].{mi} = %\hr{SubtractStars}%(calexp[ccd].{mi,psf}, sources[ccd])
-        calexp.{mi,background} = %\hr{SubtractBackground}%(calexp.{mi})
+        calexp.{mi,background} = %\hr{SubtractBackground}%(calexp.mi)
         parallel for ccd in SCIENCE_SENSORS:
             sources[ccd] = %\hr{DetectSources}%(calexp.{mi,psf})
-            sources[ccd] = %\hr{DeblendSources}%(calexp.{mi,psf}, sources[ccd])
-            sources[ccd] = %\hr{MeasureSources}%(calexp.{mi,psf}, sources[ccd])
+            sources[ccd] = %\hr{DeblendSources}%(sources[ccd], calexp.{mi,psf})
+            sources[ccd] = %\hr{MeasureSources}%(sources[ccd], calexp.{mi,psf})
         matches = %\hr{MatchNonBlind}%(sources, reference)
-    calexp.psf.apcorr = %\hr{FitApCorr}%(matches)
-    calexp.photocal = %\hr{FitPhotoCal}%(matches)
+    calexp.psf.apcorr = %\hr{FitApCorr}%(matches, sources)
+    parallel for ccd in SCIENCE_SENSORS:
+        sources[ccd] = %\hr{ApplyApCorr}%(sources[ccd], calexp.psf)
+    calexp.calib = %\hr{FitPhotoCalib}%(matches, sources)
     return calexp, sources
 \end{lstlisting}
 
-\paragraph{Input Data Product: raw}
+\paragraph{Input Data Product: Raw}
 \label{sec:drpBootstrapImChar_raw}
-Raw amplifier images from science and wavefront CCDs, spread across one or more snaps.
+Raw amplifier images from science and wavefront CCDs, spread across one or more snaps.  Needed telescope telemetry (seeing estimate, approximate pointing) is assumed to be included in the raw image metadata.
 
-\paragraph{Input Data Product: reference}:
+\paragraph{Input Data Product: Reference}:
 \label{sec:drpBootstrapImChar_reference}
- A catalog of reference stars derived from both external (e.g. Gaia) and LSST data.
+A full-sky catalog of reference stars derived from both external (e.g. Gaia) and LSST data.
 
-Later pipelines (\hyperref[sec:drpBootstrapJointCal]{BootstrapJointCal}, )
+Later pipelines (\hyperref[sec:drpBootstrapJointCal]{BootstrapJointCal}, \hyperref[sec:drpRefineJointCal]{RefineJointCal}) will define a deeper reference catalog derived from this one and the new data being processed, but the origin and depth of the initial reference catalog is largely TBD.  It will almost certainly include Gaia stars, but it may also include data from other telescopes, LSST special programs, LSST commissioning observations, and/or the last LSST data release.
 
-\paragraph{Output Data Product: Source}
+\paragraph{Output Data Product: Source.}
 \label{sec:drpBootstrapImChar_sources}
+
+A preliminary version of the Source table.  This could contain all of the columns in the DPDD Source schema if the \hr{MeasureSources} is appropriately configured, but some of these columns are likely unnecessary in its role as an intermediate data product that feeds \hyperref[sec:drpBootstrapJointCal]{BootstrapJointCal}, and it is likely that other non-DPDD columns will be present for that role.
+
+BootstrapImChar also has the capability to produce even earlier versions of the Source table for diagnostic purposes (see \hr{writeDiagnostics}).  These tables are not associated with any photometric calibration or aperture correction, and some may not have any measurements besides centroids, and hence are never substitutable for the final Source table.
 
 \paragraph{Output Data Product: CalExp}
 \label{sec:drpBootstrapImChar_calexp}
+
+A preliminary version of the CalExp (calibrated direct exposure).  CalExp is an \hyperref[sec:spImagesExposure]{Exposure} object, and hence it has several components.  BootstrapImChar is the only pipeline that actually updates all of them.  Some CalExp components are determined at the scale of a full FoV and hence should probably be persisted at the visit level (PSF, WCS, Calib, Background), while others are straightforward CCD-level data products (Image, Mask, Variance).
 
 \paragraph{RunISR}
 \label{sec:drpBootstrapImChar_RunISR}
@@ -213,8 +221,11 @@ Later pipelines (\hyperref[sec:drpBootstrapJointCal]{BootstrapJointCal}, )
 \paragraph{FitApCorr}
 \label{sec:drpBootstrapImChar_FitApCorr}
 
-\paragraph{FitPhotoCal}
-\label{sec:drpBootstrapImChar_FitPhotoCal}
+\paragraph{ApplyApCorr}
+\label{sec:drpBootstrapImChar_ApplyApCorr}
+
+\paragraph{FitPhotoCalib}
+\label{sec:drpBootstrapImChar_FitPhotoCalib}
 
 % Undeclare the local hyperref macro
 \let\hr\undefined
