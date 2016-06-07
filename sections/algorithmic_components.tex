@@ -617,6 +617,62 @@ AUTHOR: Simon
 \item Need to test with small-scale research before committing to this approach.
 \end{itemize}
 
+In situations where the signal-to-noise in the template image is not
+insignificant (e.g., when the template is constructed by co-addition
+of a small number of exposures), the resulting image difference will
+contain autocorrelated noise arising from the convolution of the template
+with the PSF matching kernel prior to subtraction. This will result in
+innaccurate estimates of thresholds for {\tt diaSource} detection if
+the (potentially spatially-varying) covariances in the image
+difference are not properly accounted for.
+
+A viable alternative in the case of noisy template images is to construct
+an uncorrelated image by whitening the signal in the image difference
+(i.e., flattening its power spectrum) \citep{Kaiser04,
+ Zackay16}. This simply involves multiplying the image difference
+by a term which removes its frequency dependence,
+
+\begin{equation}
+  D(k) = \left[S(k) - \kappa(k) T(k)\right]\sqrt{\frac{\sigma_S^2+\sigma_T^2}{\sigma_S^2 + \kappa^2(k)\sigma_T^2}},
+  \label{eqn:decorr}
+\end{equation}
+
+\noindent
+where $S$ is the science image, $T$ is the template, $\sigma_S^2$ and
+$\sigma_T^2$ are their respective variances, and $\kappa$ is the
+PSF-matching kernel which, when convolved with the template, matches
+the PSF of the template to that of the science image. $\kappa$ may be
+solved for (in real space) as described in
+Section~\ref{sec:acPSFMatching}. Then the multiplication by the
+square-root term in Equation~\ref{eqn:decorr} may be interpreted as
+applying a post-image-differencing convolution kernel which
+``removes'' the pixel-wise correlation which was added by convolution
+of the template by the PSF-matching kernel. The PSF of the
+resulting decorrelated difference image $\phi_D$ then equals the PSF
+of the science image $\phi_S$, convolved with the post-differencing
+kernel:
+
+\begin{equation}
+  \phi_D(k) = \phi_S(k) \sqrt{\frac{\sigma_S^2+\sigma_T^2}{\sigma_S^2 + \kappa^2(k)\sigma_T^2}}.
+\end{equation}
+
+We are investigating this approach and have shown that, for idealized
+situations, the resulting image differences are statistically
+indistinguishable from those generated using the ``Proper image
+subtraction'' technique proposed by \cite{Zackay16}. 
+
+Issues arising from complications often seen in real-world data 
+such as spatially-varying PSFs and/or poorly-evaluated matching
+kernels, spatially variable backgrounds and/or noise, and possibly
+non-Gaussian or heteroschedastic noise need to be further
+evaluated. Such tests are currently underway on simulated and real
+data. These tests could highlight the advantages of the method
+proposed here over the proposal of \cite{Zackay16}, including: no
+requirement for accurate measurement of the science or template
+images' PSFs, and thus the ability to redistribute flux in the PSF
+matching to accounts for errors in astrometric alignment; and the
+ability to directly account for spatially varying differential PSFs.
+
 \subsubsection{Coadd Decorrelation}
 \label{sec:acCoaddDecorrelation}
 AUTHOR: Jim
