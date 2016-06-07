@@ -35,11 +35,54 @@ AUTHOR: Merlin
 \subsubsection{Single-Exposure Morphology}
 \label{sec:acMorphologicalArtifactDetection}
 AUTHOR: Simon
-\begin{itemize}
-\item Find CRs via morphology.
-\item Find some optical ghosts (etc?) from bright star catalog and optics predictions.
-\item Needs to work without PSF (amybe using placeholder PSF), but also make use of PSF if available.
-\end{itemize}
+\paragraph{Cosmic Ray Identification}
+Cosmic rays will be identified using a Laplacian edge detection algorithm \citep{dokkum01}.  Laplacian edge detection involves convolving the image (I) with a smoothing function (f) tuned to the size of the expected edge width.
+\[
+L = \bigtriangledown^2f\ast I
+\]
+In the case of cosmic rays, this implies a very sharp edge.  A natural choice is a Gaussian with small $\sigma$.  The discrete kernel chosen in \citep{dokkum01} is
+\begin{align}
+\bigtriangledown^2 = \frac{1}{4}\left( \begin{array}{ccc}
+0 & -1 & 0 \\
+-1 & 4 & -1 \\
+0 & -1 & 0 \end{array} \right)
+\end{align}
+If just used on the native image, this filter would attenuate the signal from CRs that effect multiple adjacent pixels.  So, the image is subsampled by some factor $f_s$.  The before downsampling to the native resolution, the negative pixel values are clamped to zero.  The resultant image in native pixelization will be referred to as $L^+$.
+
+We construct a SNR image by dividing the Laplacian image by the noise in the image and adjusting by the subsampling factor.
+\[
+S = \frac{L^+}{f_s N}
+\]
+
+This CR detection image can be cleaned further by removing extended sources using a median filter. $M_n$ is the median over a $n \times n$ box.
+\[
+S^\prime = (S \ast M_5)
+\]
+If the PSF is well sampled, this SNR image can be used to detect the CRs by simply drawing a threshold in SNR.  If the PSF is undersampled, the author uses the assumption that undersampled point sources are more symmetric than CRs.  By constructing a "fine-structure" image, one can plase a minimum contrast between the Laplacian image and the fine structure image that further improves differentiation between CRs and point sources.
+\[
+F = (M_3 \ast I) - [(M_3 \ast I) \ast M_7]
+\]
+
+So the final CR selection criteria are: $S^\prime > \sigma_{lim}$ and $L^+/F > F_{lim}$.  The tuning parameters are: $f_s$ the subsampling rate, $\sigma_{lim}$ the SNR of the CRs in the detection image, $f_{lim}$ the minimum contrast relative to the "fine-structure" image.
+
+\begin{note}[Add to SFM section]
+We can use something like L.A.COSMIC (or CRBLASTER) but if it is too slow, we can fall back to the SDSS algorithm which does a similar thing, but does no convolutions.
+\end{note}
+\paragraph{Optical ghosts}
+We will have a set of optical ghost models.  Some of these will be models of stationary ghosts (e.g. pupil ghost). Others will be a set of ghosts produced by point sources as a function of source position and brightness. The latter will likely be modeled using tools like ZEMAX or measured using projectors.
+
+The stationary ghosts will need to be fit for since they will depend on the total light through the pupil rather than on the brightness of a given source and we do not expect to have the data necessary to compute the total flux over the focalplane in a single thread in the alert production processing.  Using the fit to stationary models $S$ and the predictions of the single source ghosts, $P$, we will constructy a ghost image
+\[
+I_g = \Sigma_i S_i + \sigma_j P_{j}
+\]
+where $i$ runs over the stationary ghost models and $j$ runs over the sources contributing to single source ghosts.  We can then correct the image by:
+\[
+I^\prime = I - I_g
+\]
+
+\begin{note}[dependence on PSF]
+The CR rejection algorithm does not depend on the PSF of the image.  The single source ghosts may be a function of the PSF, but not very strongly I don't think.
+\end{note}
 
 \subsubsection{Single-Exposure Aggregation}
 AUTHOR: Simon
