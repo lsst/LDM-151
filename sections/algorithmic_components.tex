@@ -441,12 +441,13 @@ pixel by pixel. The PSFs are the time--averaged transfer functions of
 a point source through the Earth's atmosphere, telescope optics, and
 into the silicon of the detector before being read out. We assume that
 the science image can be modeled as a convolution of the template
-image by a PSF--matching kernel $\kappa(u,v;x,y)$, i.e., $S = \kappa \otimes
-T$. (Indices $u,v$ indicate that the kernel itself is a 2--dimensional
-function, which varies as a function of position $x,y$ in the image;
-during convolution and correlation there is an implicit summation over
-$u,v$.) Then the difference image, upon which new or variable sources
-are detected, is given by $D = S - (\kappa \otimes T)$.
+image by a PSF--matching kernel $\kappa(u,v;x,y)$, i.e., $S = \kappa
+\otimes T$. (Indices $u,v$ indicate that the kernel itself is a
+2--dimensional function, which varies as a function of position $x,y$
+in the image; during convolution and correlation there is an implicit
+summation over $u,v$.) Then the difference image, upon which new or
+variable sources are detected, is given by $D = S - (\kappa \otimes
+T)$.
 
 \subsubsection{Image Subtraction}
 \label{sec:acImageSubtraction}
@@ -455,10 +456,12 @@ are detected, is given by $D = S - (\kappa \otimes T)$.
 \item Includes identifying sources to use to determine matching kernel, fitting the kernel, and convolving by it.
 \end{itemize}
 
-We model the PSF--matching kernel by decomposing it into a set of
-basis functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$
-\citep{Alard98}, where the coefficients are determined via
-ordinary least-squares estimation:
+The current implementation of the PSF matching algorithm is summarized
+in detail by Becker, et al. (2013) (\url{http://ls.st/x9f}).  We model
+the PSF--matching kernel by decomposing it into a set of basis
+functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$ \citep{Alard98},
+where the coefficients are determined via ordinary least-squares
+estimation:
 %
 \begin{eqnarray}
 C_i & \equiv & (\kappa_i \otimes T); \\ \nonumber
