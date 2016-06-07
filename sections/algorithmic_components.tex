@@ -672,11 +672,11 @@ innaccurate estimates of thresholds for {\tt diaSource} detection if
 the (potentially spatially-varying) covariances in the image
 difference are not properly accounted for.
 
-A viable alternative in the case of noisy template images is to construct
-an uncorrelated image by whitening the signal in the image difference
-(i.e., flattening its power spectrum) \citep{Kaiser04,
- Zackay16}. This simply involves multiplying the image difference
-by a term which removes its frequency dependence,
+A viable alternative in the case of noisy template images is to
+construct a difference image with a flat noise spectrum, like the
+original input images \citep{Kaiser04, Zackay16}. This simply involves
+multiplying the image difference by a term which removes its frequency
+dependence,
 
 \begin{equation}
   D(k) = \left[S(k) - \kappa(k) T(k)\right]\sqrt{\frac{\sigma_S^2+\sigma_T^2}{\sigma_S^2 + \kappa^2(k)\sigma_T^2}},
@@ -707,17 +707,16 @@ situations, the resulting image differences are statistically
 indistinguishable from those generated using the ``Proper image
 subtraction'' technique proposed by \cite{Zackay16}. 
 
-Issues arising from complications often seen in real-world data 
-such as spatially-varying PSFs and/or poorly-evaluated matching
-kernels, spatially variable backgrounds and/or noise, and possibly
-non-Gaussian or heteroschedastic noise need to be further
-evaluated. Such tests are currently underway on simulated and real
-data. These tests could highlight the advantages of the method
-proposed here over the proposal of \cite{Zackay16}, including: no
-requirement for accurate measurement of the science or template
-images' PSFs, and thus the ability to redistribute flux in the PSF
-matching to accounts for errors in astrometric alignment; and the
-ability to directly account for spatially varying differential PSFs.
+Issues arising from complications often seen in real-world data such
+as spatially-varying PSFs and/or poorly-evaluated matching kernels,
+spatially variable backgrounds and/or noise, and possibly non-Gaussian
+or heteroschedastic noise need to be further evaluated. Such tests are
+currently underway on simulated and real data. These tests could
+highlight the advantages of the method proposed here over the proposal
+of \cite{Zackay16}, including: no requirement for accurate measurement
+of the PSFs of the science or template images, and thus the ability to
+to account for errors in astrometric alignment and to directly model
+spatially varying differential PSFs.
 
 \subsubsection{Coadd Decorrelation}
 \label{sec:acCoaddDecorrelation}
