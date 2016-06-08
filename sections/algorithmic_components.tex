@@ -391,9 +391,27 @@ AUTHOR: Simon
 AUTHOR: Jim
 \subsubsection{Oversampled Images}
 \label{sec:acOversampledWarping}
-\begin{itemize}
-\item Just use Lanczos.
-\end{itemize}
+
+Oversampled images are warped to a new \hyperref[sec:spWCS]{WCS} and resampled using a two dimensional Lancsoz kernel of configurable order. The baselined default order is 3.
+
+The one dimensional Lancsoz kernel of order $a$ is defined as
+\[
+L(x) = \begin{cases}
+       \operatorname{sinc}(x)\, \operatorname{sinc}(x/a) & \text{if}\;\; -a < x < a\\ 0 & \text{otherwise.}
+       \end{cases}
+\]
+The two dimensional Lancsoz kernel is $L(x, y) = L(x) \cdot L(y)$.
+
+For each integer pixel position in the remapped image, the associated pixel position in the source image is determined using the source and destination WCS. The warping kernel is then applied to the source image to compute the remapped pixel value. A flux conservation factor is applied based on the relative sizes of the pixel in the source and destination WCS.
+
+For performance reasons, it is desirable to reduce the total number of WCS calculations. It is therefore acceptable to perform the mapping between source and destination images over a regular grid and linearly interpolate between grid points, rather than mapping every pixel independently.
+
+Since chromaticity is accounted for in the \hyperref[sec:spPSF]{PSF} rather than the WCS, no special account is taken of color when warping.
+
+\begin{note}
+The above describes the current warping implementation in afw. We should identify deficiencies with the current implementation to establish resource requirements.
+\end{note}
+
 \subsubsection{Undersampled Images}
 \label{sec:acUndersampledWarping}
 \begin{itemize}
