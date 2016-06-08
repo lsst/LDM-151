@@ -317,56 +317,13 @@ Add references to specific AP pipelines that will use forced measurement.
 \item Deblending on direct image very problematic.
 \end{itemize}
 
-Arising primarily due to slight astrometric alignment or PSF matching
-errors between the two images, or effects such as differential
-chromatic aberration, flux “dipoles” are a common artifact often
-observed in image differences. These dipoles will lead to false
-detections of transients unless correctly identified and
-eliminated. Importantly, dipoles will also be observed in image
-differences in which a source as moved less than the width of
-the PSF. Such objects must be correctly identified and measured as
-dipoles in order to obtain accurate fluxes and positions of
-theseobjects.
+Arising primarily due to slight astrometric alignment or PSF matching errors between the two images, or effects such as differential chromatic aberration, flux “dipoles” are a common artifact often observed in image differences. These dipoles will lead to false detections of transients unless correctly identified and eliminated. Importantly, dipoles will also be observed in image differences in which a source as moved less than the width of the PSF. Such objects must be correctly identified and measured as dipoles in order to obtain accurate fluxes and positions of these objects. 
 
-Putative dipoles in image differences are identified as a positive and
-negative source whose footprints overlap by at least one pixel. These
-overlapping footprints are merged, and only the sources containing one
-and only one positive and negative merged footprint are passed to the
-dipole modeling task. There is a documented degeneracy
-(\url{http://dmtn-007.lsst.io}) between dipole separation and flux,
-such that dipoles with closely-separated lobes of high flux are
-statistically indistinguishable from ones with low flux and wider
-separations. We remove this degeneracy by using the {\em
-pre-subtracted images} (i.e., the warped, PSF-matched template image
-and the pre-convolved science image) to constrain the lobe positions
-(specifically, to constrain the centroid of the positive lobe in the
-science image and of the negative lobe in the template image). This is
-done by first fitting and subtracting a second-order 2-D polynomial to
-the background within a subimage surrounding each lobe footprint in
-the pre-subtracted images to remove any flux from background galaxies
-(we assume that this gradient, if it exists, is identical in both
-pre-subtracted images). Then, a dipole model is fit simultaneously to
-the background-subtracted pre-subtracted images and the image
-difference.
+Putative dipoles in image differences are identified as a positive and negative source whose footprints overlap by at least one pixel. These overlapping footprints are merged, and only the sources containing one and only one positive and negative merged footprint are passed to the dipole modeling task. There is a documented degeneracy (\url{http://dmtn-007.lsst.io}) between dipole separation and flux, such that dipoles with closely-separated lobes of high flux are statistically indistinguishable from ones with low flux and wider separations. We remove this degeneracy by using the {\em pre-subtracted images} (i.e., the warped, PSF-matched template image and the pre-convolved science image) to constrain the lobe positions (specifically, to constrain the centroid of the positive lobe in the science image and of the negative lobe in the template image). This is done by first fitting and subtracting a second-order 2-D polynomial to the background within a subimage surrounding each lobe footprint in the pre-subtracted images to remove any flux from background galaxies (we assume that this gradient, if it exists, is identical in both pre-subtracted images). Then, a dipole model is fit simultaneously to the background-subtracted pre-subtracted images and the image difference. 
 
-The dipole model consists of positive and negative instances of the
-PSF in the difference image at the dipole's location. The six dipole
-model parameters (positive and negative lobe centroids and fluxes) are
-estimated using non-linear weighted least-squares minimization (we
-currently use the Levenberg-Marquardt minimization algorithm). The
-resulting reduced $\chi^2$ and signal-to-noise estimates provide a
-measure by which the source(s) may be classified as a dipole.
+The dipole model consists of positive and negative instances of the PSF in the difference image at the dipole's location. The six dipole model parameters (positive and negative lobe centroids and fluxes) are estimated using non-linear weighted least-squares minimization (we currently use the Levenberg-Marquardt minimization algorithm). The resulting reduced $\chi^2$ and signal-to-noise estimates provide a measure by which the source(s) may be classified as a dipole. 
 
-We have tested the described dipole measurement algorithm on simulated
-dipoles with a variety of fluxes, separations, background gradients,
-and signal-to-noise. Including the pre-subtracted image data clearly
-improves the accuracy of the measured fluxes and centroids. We have
-yet to thoroughly assess the dipole measurement algorithm performance
-on crowded stellar fields. Such crowded fields may confuse the
-parameter estimates (both centroids and/or fluxes) when using the
-pre-subtracted images to constrain the fitting procedure, and in such
-situations, we may have to adjust the prior constraint which they
-impose.
+We have tested the described dipole measurement algorithm on simulated dipoles with a variety of fluxes, separations, background gradients, and signal-to-noise. Including the pre-subtracted image data clearly improves the accuracy of the measured fluxes and centroids. We have yet to thoroughly assess the dipole measurement algorithm performance on crowded stellar fields. Such crowded fields may confuse the parameter estimates (both centroids and/or fluxes) when using the pre-subtracted images to constrain the fitting procedure, and in such situations, we may have to adjust the prior constraint which they impose. 
 
 \paragraph{Spuriousness}
 \label{sec:acSpuriousnessAlgorithms}
@@ -550,20 +507,7 @@ The baseline assumption for generating template images for ...
 \subsection{PSF Matching}
 \label{sec:acPSFMatching}
 
-The essence of image subtraction is to astrometrically register the
-science image $S(x,y)$ and template image $T(x,y)$, and then match
-their point spread functions (PSFs) of so that they may be subtracted
-pixel by pixel. The PSFs are the time--averaged transfer functions of
-a point source through the Earth's atmosphere, telescope optics, and
-into the silicon of the detector before being read out. We assume that
-the science image can be modeled as a convolution of the template
-image by a PSF--matching kernel $\kappa(u,v;x,y)$, i.e., $S = \kappa
-\otimes T$. (Indices $u,v$ indicate that the kernel itself is a
-2--dimensional function, which varies as a function of position $x,y$
-in the image; during convolution and correlation there is an implicit
-summation over $u,v$.) Then the difference image, upon which new or
-variable sources are detected, is given by $D = S - (\kappa \otimes
-T)$.
+The essence of image subtraction is to astrometrically register the science image $S(x,y)$ and template image $T(x,y)$, and then match their point spread functions (PSFs) of so that they may be subtracted pixel by pixel. The PSFs are the time--averaged transfer functions of a point source through the Earth's atmosphere, telescope optics, and into the silicon of the detector before being read out. We assume that the science image can be modeled as a convolution of the template image by a PSF--matching kernel $\kappa(u,v;x,y)$, i.e., $S = \kappa \otimes T$. (Indices $u,v$ indicate that the kernel itself is a 2--dimensional function, which varies as a function of position $x,y$ in the image; during convolution and correlation there is an implicit summation over $u,v$.) Then the difference image, upon which new or variable sources are detected, is given by $D = S - (\kappa \otimes T)$. 
 
 \subsubsection{Image Subtraction}
 \label{sec:acImageSubtraction}
@@ -572,12 +516,7 @@ T)$.
 \item Includes identifying sources to use to determine matching kernel, fitting the kernel, and convolving by it.
 \end{itemize}
 
-The current implementation of the PSF matching algorithm is summarized
-in detail by Becker, et al. (2013) (\url{http://ls.st/x9f}).  We model
-the PSF--matching kernel by decomposing it into a set of basis
-functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$ \citep{Alard98},
-where the coefficients are determined via ordinary least-squares
-estimation:
+The current implementation of the PSF matching algorithm is summarized in detail by Becker, et al. (2013) (\url{http://ls.st/x9f}).  We model the PSF--matching kernel by decomposing it into a set of basis functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$ \citep{Alard98}, where the coefficients are determined via ordinary least-squares estimation:
 %
 \begin{eqnarray}
 C_i & \equiv & (\kappa_i \otimes T); \\ \nonumber
@@ -588,70 +527,13 @@ a_{i}  & = & M^{-1}_{ij} b_{j}. \nonumber
 \end{eqnarray}
 %
 \noindent
-$\sigma^2(x,y)$ is the per--pixel variance stored in the {\tt
-  variance} plane of each LSST {\tt exposure}. To generate a spatially
-varying model for the kernel, we further decompose the relative
-weights of the basis coefficients $a_i$ into spatially-varying
-low-order polynomials, i.e. $\kappa(u,v;x,y) = \sum_i a_i(x,y)
-\kappa_i(u,v)$. We also allow for a spatially-varying differential
-background between the two images $b(x,y)$ that may be fit for using a
-low--order polynomial \citep{Alard98,Alard00}. The image difference is
-then $D(x,y) = S(x,y) - T(x,y) \otimes \kappa(u,v;x,y) - b(x,y)$.
+$\sigma^2(x,y)$ is the per--pixel variance stored in the {\tt   variance} plane of each LSST {\tt exposure}. To generate a spatially varying model for the kernel, we further decompose the relative weights of the basis coefficients $a_i$ into spatially-varying low-order polynomials, i.e. $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$. We also allow for a spatially-varying differential background between the two images $b(x,y)$ that may be fit for using a low--order polynomial \citep{Alard98,Alard00}. The image difference is then $D(x,y) = S(x,y) - T(x,y) \otimes \kappa(u,v;x,y) - b(x,y)$. 
 
-The basis functions $\kappa_i(u,v)$ are a degree of freedom in this
-problem. Following \citep{Alard98}, we use a set of $\rm nGauss = 3$
-Gaussians, each with a different width $\sigma_i$, and each modified
-by a Laguerre polynomial to a given order (see below). Following more
-recent studies studies \citep[e.g.][]{Israel07}, we parameterize these
-different Gaussian widths via a single ratio $\beta$, such that
-$\sigma_{i+1} = \beta \times \sigma_{i}$ with $\beta = 2.0$. (We note
-that all constants are defined by {\tt Config} variables and may be
-adjusted on a per-use basis). We set the overall scale for the
-$\sigma$ by noting that, under the assumption that the PSFs of the
-images are Gaussian ($\sigma_S$ for the science image and $\sigma_T$
-for the template image), the $\sigma_{\kappa}$ of the matching kernel
-should be simply $\sigma_{\kappa}^2 = \sigma_S^2 - \sigma_T^2$. We use
-this canonical width for the central Gaussian in the basis sequences
-(i.e., $\sigma_{i=2} \equiv \sigma_{\kappa}$ when using three
-Gaussians bases). Each of the three default kernel basis functions are
-modified by Laguerre polynomials up to order $\rm degGauss = [4, 2,
-  2]$, respectively. This results in a total number of (non-spatially
-varying) bases of $\sum_i^{\rm nGauss} ({\rm degGauss}_i+1)\times({\rm
-  degGauss}_i+2)/2$, or 27 given the aforementioned defaults.
+The basis functions $\kappa_i(u,v)$ are a degree of freedom in this problem. Following \citep{Alard98}, we use a set of $\rm nGauss = 3$ Gaussians, each with a different width $\sigma_i$, and each modified by a Laguerre polynomial to a given order (see below). Following more recent studies studies \citep[e.g.][]{Israel07}, we parameterize these different Gaussian widths via a single ratio $\beta$, such that $\sigma_{i+1} = \beta \times \sigma_{i}$ with $\beta = 2.0$. (We note that all constants are defined by {\tt Config} variables and may be adjusted on a per-use basis). We set the overall scale for the $\sigma$ by noting that, under the assumption that the PSFs of the images are Gaussian ($\sigma_S$ for the science image and $\sigma_T$ for the template image), the $\sigma_{\kappa}$ of the matching kernel should be simply $\sigma_{\kappa}^2 = \sigma_S^2 - \sigma_T^2$. We use this canonical width for the central Gaussian in the basis sequences (i.e., $\sigma_{i=2} \equiv \sigma_{\kappa}$ when using three Gaussians bases). Each of the three default kernel basis functions are modified by Laguerre polynomials up to order $\rm degGauss = [4, 2,   2]$, respectively. This results in a total number of (non-spatially varying) bases of $\sum_i^{\rm nGauss} ({\rm degGauss}_i+1)\times({\rm   degGauss}_i+2)/2$, or 27 given the aforementioned defaults. 
 
-A spatially-invariant matching kernel $\kappa(u,v)$ is determined
-separately for image substamps centered on multiple kernel candidates
-across the image. The kernel candidates are selected using the {\tt
-  DiaCatalogSourceSelector} to query the appropriate reference catalog
-for appropriate sources to use for PSF matching. This selector allows
-the user to specify the brightness and color range of the objects,
-toggle star or galaxy selection, and to include variable objects or
-not. Sources are vetted for signal-to-noise and masked pixels (in both
-the template and science image). The matching (spatially-invariant)
-kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as
-described above, are examined and filtered by various quality
-measures. The resulting ensemble of filtered kernel models is used to
-constrain the spatially-varying kernel model $\kappa(u,v;x,y)$ by fitting
-the spatially-varying basis kernel coefficients $a_i(x,y)$ with a
-$N^{th}$-order 2-dimensional Chebyshev polynomial. This results in the
-final full spatial solution $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$,
-which may be evaluated at each location $(x,y)$ in the image for
-convolution.
+A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image. The kernel candidates are selected using the {\tt   DiaCatalogSourceSelector} to query the appropriate reference catalog for appropriate sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures. The resulting ensemble of filtered kernel models is used to constrain the spatially-varying kernel model $\kappa(u,v;x,y)$ by fitting the spatially-varying basis kernel coefficients $a_i(x,y)$ with a $N^{th}$-order 2-dimensional Chebyshev polynomial. This results in the final full spatial solution $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$, which may be evaluated at each location $(x,y)$ in the image for convolution. 
 
-Detection on the difference image occurs through correlation of
-$D(x,y)$ with the science image's PSF, yielding optimally filtered
-detection image $D'(x,y) = D(x,y) \circ PSF_S(u,v;x,y)$ where $\circ$
-denotes correlation (currently the DM stack uses convolution instead
-of correlation). The values of the pixels in $D'(x,y)$ provide a
-maximum likelihood estimate of there being a point source at that
-position. Detection occurs by simply finding pixels that are more than
-$N \times \sigma$ above the square root of the per--pixel
-variance. Alternatively, the science image may be {\em pre-convolved}
-with a kernel similar to its PSF, in which case the resulting
-difference image $D(x,y)$ is already filtered for detection. This
-latter option has the additional advantage that it help us avoid
-requiring {em deconvolution} of the template image, in cases when the
-template has a wider PSF than the science image.
+Detection on the difference image occurs through correlation of $D(x,y)$ with the science image's PSF, yielding optimally filtered detection image $D'(x,y) = D(x,y) \circ PSF_S(u,v;x,y)$ where $\circ$ denotes correlation (currently the DM stack uses convolution instead of correlation). The values of the pixels in $D'(x,y)$ provide a maximum likelihood estimate of there being a point source at that position. Detection occurs by simply finding pixels that are more than $N \times \sigma$ above the square root of the per--pixel variance. Alternatively, the science image may be {\em pre-convolved} with a kernel similar to its PSF, in which case the resulting difference image $D(x,y)$ is already filtered for detection. This latter option has the additional advantage that it help us avoid requiring {em deconvolution} of the template image, in cases when the template has a wider PSF than the science image. 
 
 \subsubsection{PSF Homogenization for Coaddition}
 \label{sec:acPSFHomogenization}
@@ -659,15 +541,7 @@ template has a wider PSF than the science image.
 \item Match science image to predetermined analytic PSF, as in PSF-matched coaddition.
 \end{itemize}
 
-In PSF-matched coaddition, input images are convolved by a kernel that
-matches their PSF to a predefined constant PSF before they are
-combined. This so-called ``model PSF matching'' uses the PSF-matching
-algorithm described in the previous section to match the PSF {\em
-  model} from an exposure to a pre-determined template (e.g., a
-constant-across-the-sky double Gaussian) PSF model. For this task, we
-realize each PSF model into an exposure-sized grid, and then utilize
-those as kernel candidates as input for the PSF matching algorithm
-described above.
+In PSF-matched coaddition, input images are convolved by a kernel that matches their PSF to a predefined constant PSF before they are combined. This so-called ``model PSF matching'' uses the PSF-matching algorithm described in the previous section to match the PSF {\em   model} from an exposure to a pre-determined template (e.g., a constant-across-the-sky double Gaussian) PSF model. For this task, we realize each PSF model into an exposure-sized grid, and then utilize those as kernel candidates as input for the PSF matching algorithm described above. 
 
 \subsection{Image Warping}
 \label{sec:acWarping}
@@ -869,20 +743,9 @@ AUTHOR: Simon
 \item Need to test with small-scale research before committing to this approach.
 \end{itemize}
 
-In situations where the signal-to-noise in the template image is not
-insignificant (e.g., when the template is constructed by co-addition
-of a small number of exposures), the resulting image difference will
-contain autocorrelated noise arising from the convolution of the template
-with the PSF matching kernel prior to subtraction. This will result in
-innaccurate estimates of thresholds for {\tt diaSource} detection if
-the (potentially spatially-varying) covariances in the image
-difference are not properly accounted for.
+In situations where the signal-to-noise in the template image is not insignificant (e.g., when the template is constructed by co-addition of a small number of exposures), the resulting image difference will contain autocorrelated noise arising from the convolution of the template with the PSF matching kernel prior to subtraction. This will result in innaccurate estimates of thresholds for {\tt diaSource} detection if the (potentially spatially-varying) covariances in the image difference are not properly accounted for.
 
-A viable alternative in the case of noisy template images is to
-construct a difference image with a flat noise spectrum, like the
-original input images \citep{Kaiser04, Zackay16}. This simply involves
-multiplying the image difference by a term which removes its frequency
-dependence,
+A viable alternative in the case of noisy template images is to construct a difference image with a flat noise spectrum, like the original input images \citep{Kaiser04, Zackay16}. This simply involves multiplying the image difference by a term which removes its frequency dependence,
 
 \begin{equation}
   D(k) = \left[S(k) - \kappa(k) T(k)\right]\sqrt{\frac{\sigma_S^2+\sigma_T^2}{\sigma_S^2 + \kappa^2(k)\sigma_T^2}},
@@ -890,39 +753,15 @@ dependence,
 \end{equation}
 
 \noindent
-where $S$ is the science image, $T$ is the template, $\sigma_S^2$ and
-$\sigma_T^2$ are their respective variances, and $\kappa$ is the
-PSF-matching kernel which, when convolved with the template, matches
-the PSF of the template to that of the science image. $\kappa$ may be
-solved for (in real space) as described in
-Section~\ref{sec:acPSFMatching}. Then the multiplication by the
-square-root term in Equation~\ref{eqn:decorr} may be interpreted as
-applying a post-image-differencing convolution kernel which
-``removes'' the pixel-wise correlation which was added by convolution
-of the template by the PSF-matching kernel. The PSF of the
-resulting decorrelated difference image $\phi_D$ then equals the PSF
-of the science image $\phi_S$, convolved with the post-differencing
-kernel:
+where $S$ is the science image, $T$ is the template, $\sigma_S^2$ and $\sigma_T^2$ are their respective variances, and $\kappa$ is the PSF-matching kernel which, when convolved with the template, matches the PSF of the template to that of the science image. $\kappa$ may be solved for (in real space) as described in Section~\ref{sec:acPSFMatching}. Then the multiplication by the square-root term in Equation~\ref{eqn:decorr} may be interpreted as applying a post-image-differencing convolution kernel which ``removes'' the pixel-wise correlation which was added by convolution of the template by the PSF-matching kernel. The PSF of the resulting decorrelated difference image $\phi_D$ then equals the PSF of the science image $\phi_S$, convolved with the post-differencing kernel:
 
 \begin{equation}
   \phi_D(k) = \phi_S(k) \sqrt{\frac{\sigma_S^2+\sigma_T^2}{\sigma_S^2 + \kappa^2(k)\sigma_T^2}}.
 \end{equation}
 
-We are investigating this approach and have shown that, for idealized
-situations, the resulting image differences are statistically
-indistinguishable from those generated using the ``Proper image
-subtraction'' technique proposed by \cite{Zackay16}. 
+We are investigating this approach and have shown that, for idealized situations, the resulting image differences are statistically indistinguishable from those generated using the ``Proper image subtraction'' technique proposed by \cite{Zackay16}.
 
-Issues arising from complications often seen in real-world data such
-as spatially-varying PSFs and/or poorly-evaluated matching kernels,
-spatially variable backgrounds and/or noise, and possibly non-Gaussian
-or heteroschedastic noise need to be further evaluated. Such tests are
-currently underway on simulated and real data. These tests could
-highlight the advantages of the method proposed here over the proposal
-of \cite{Zackay16}, including: no requirement for accurate measurement
-of the PSFs of the science or template images, and thus the ability to
-to account for errors in astrometric alignment and to directly model
-spatially varying differential PSFs.
+Issues arising from complications often seen in real-world data such as spatially-varying PSFs and/or poorly-evaluated matching kernels, spatially variable backgrounds and/or noise, and possibly non-Gaussian or heteroschedastic noise need to be further evaluated. Such tests are currently underway on simulated and real data. These tests could highlight the advantages of the method proposed here over the proposal of \cite{Zackay16}, including: no requirement for accurate measurement of the PSFs of the science or template images, and thus the ability to to account for errors in astrometric alignment and to directly model spatially varying differential PSFs.
 
 \subsubsection{Coadd Decorrelation}
 \label{sec:acCoaddDecorrelation}
