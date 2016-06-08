@@ -538,6 +538,10 @@ It occurs to me that the ubercal problem can be pretty well described with a lat
 \subsection{Retrieve Diffim Template for a Visit}
 \label{sec:acRetrieveTemplate}
 AUTHOR: Simon
+
+The baseline assumption for generating template images for ...
+
+
 \begin{itemize}
 \item Determine appropriate template to use
 \item Generate template for observation (may include DCR correction)
@@ -717,10 +721,143 @@ AUTHOR: Jim
 
 \subsection{DCR-Corrected Template Generation}
 \label{sec:acDCRTemplates}
-AUTHOR: Simon
-\begin{itemize}
-\item Somwewhat like coaddition, but may need to add dimensions for wavelength or airmass, and may involve solving an inverse problem instead of just compute means.
-\end{itemize}
+%AUTHOR: Simon
+
+Refraction by the Earth's atmosphere results in a dispersion of an
+astronomical image along the ``parallactic angle''. This amplitude of
+this dispersion depends on the spectral energy distribution (SED) of
+the source and the refractive index of the atmosphere. Differential
+chromatic refraction (DCR) refers to the SED dependent refraction
+within a given photometric passband. For the airmass range of the LSST
+and its filter complement the amplitude of the DCR could be up to 1.1
+arcsec in the u band and 0.8 arcsec in the g band. Image subtraction
+templates that do not account for DCR will result in dipoles in the
+subtracted images.
+
+The baseline approach for minimizing DCR induced dipoles in image
+differences is to selected coadded templates that are close in airmass
+\autoref[sec:templateSelect]. This will identify three airmass bins (XXX
+where is this defined) from which PSF matched coadds will be generated
+(ref).
+
+Given the sensitivity of the number of false positives to the
+astrometric accuracy of the registration of images and the dependence
+of this astrometric accuracy on DCR we plan to define an interpolation
+scheme for generating DCR corrected templates.
+
+\subsubsection{Refraction from the atmosphere }
+%reference stone and community posting on DCR
+
+Refraction is dependent on the local index of refraction of air $n_0(\lambda)$ at the observatory:
+\begin{align}
+	n_0(\lambda) =&1 + \left(\left[2371.34 +\frac{683939.7}{130 - \sigma(\lambda)} +\frac{4547.3}{38.9 - \sigma(\lambda)^2}\right] D_s 
+		+ \left(6487.31 + 58.058 \sigma(\lambda)^2 - 0.71150 \sigma(\lambda)^4 +0.08851 \sigma(\lambda)^6\right) D_w \right)\times 10^{-8} \label{eqn:index_refraction}\\*
+	& where \nonumber\\*
+	\sigma(\lambda) &= 10^4 /\lambda \;\;\;\;\left(\mu m^{-1}\right)\nonumber \\*
+	D_s =& \left[1 + (P_s-P_w) \left(57.90\times10^{-8} - \frac{9.3250\times10^{-4}}{T}+\frac{0.25844}{T^2}\right)\right] \frac{(P_s-P_w)}{T} \nonumber \\*
+	D_w =& \left[1 + P_w \left(1 + 3.7\times10^{-4} P_w\right)\left(-2.37321\times10^{-3} + \frac{2.23366}{T} - \frac{710.792}{T^2} + \frac{7.75141\times10^4}{T^3}\right)\right] \frac{P_w}{T} \nonumber \\
+	P_w =& RH\times 10^{-4} \times e^{(77.3450 + 0.0057 T - 7235.0/T)}/T^{8.2} \nonumber
+\end{align}
+where the parameters $D_s$ and $D_w$ are the density factors for dry air and water vapor, respectively, taken from \cite{Owens:67}.
+
+
+The ratio of local gravity at the observing site to $g = 9.81 m/s^2$ is given by
+\begin{equation}
+\kappa = g_0/g = 1 + 5.302\times 10^{-3} \sin^2\phi - 5.83\times 10^{-6} \sin^2(2\phi) - 3.15\times 10^{-7} h \label{eqn:kappa}
+\end{equation}
+
+and, assuming an exponential density profile for the atmosphere, then
+the ratio $\beta$ of the scale height of the atmosphere to radius of
+the observing site from the Earth's core can be approximated by
+\begin{equation}
+	\beta =  4.5908\times 10^{-6} T \label{eqn:beta}
+\end{equation}
+where $m$ is the average mass of molecules in the atmosphere, $R_\oplus$ is the radius of the Earth, $k_B$ is the Boltzmann constant, and $g_0$ is the acceleration due to gravity at the Earth's surface.
+
+
+Refraction, as a function of wavelength is then given by, 
+\begin{align}
+R(\lambda) &= r_0 n_0(\lambda) \sin z_0 \int_1^{n_0(\lambda)} \frac{dn}{n \left(r^2n^2 -r_0^2n_0(\lambda)^2\sin^2z_0\right)^{1/2}} \nonumber\\
+&\simeq \kappa (n_0(\lambda) - 1) (1 - \beta) \tan z_0 - \kappa (1 - n_0(\lambda)) \left(\beta - \frac{n_0(\lambda) - 1}{2}\right) \tan^3z_0
+\end{align}
+
+\begin{table}[h!]
+	\begin{center}
+	\begin{tabular}{c | c | c | c}
+		Parameter & valid range & description & units \\
+		\hline
+		$P_s$& $0$ mbar$ < P_s < 4000$ mbar & Atmospheric pressure & millibar  \\
+		$RH$ & $0\% < RH < 100\%$ & Relative humidity & Percent \\
+		$\lambda$& $2302$\AA{}$ < \lambda < 20,586 $\AA{} & Wavelength  & Angstroms \\
+		$T$& $250K < T < 320K$ & Temperature & Kelvin \\
+		$\phi$ & $0^\circ \leq \phi < 360^\circ$ & Latitude of the observing site & Degrees \\
+		$h$ & $0\,m\leq h$ & Elevation of the observing site & meters \\
+		$z_0$ & $0^\circ\leq z_0 < 75^\circ$ & Zenith angle & Degrees
+		
+	\end{tabular}
+	\end{center}
+	\caption{Definition of parameters and their units}
+	\label{table:parameters}
+\end{table}
+%\vspace{-0.7cm}
+
+\subsubsection{Generating a DCR corrected template}
+
+Given a set of observed images, $O(x, z)$, at an airmass of $z$, and
+assuming that we know the wavelength dependence of the refraction, we
+can model the corresponding image at the zenith (or any other
+airmass), $I(x, 0)$. For simplicity, we will consider only a single
+row of a sensor as comprising an image, that the direction of the DCR
+is aligned along, and we will assume the PSF is constant between
+images. 
+
+The impact of DCR is to move flux between pixels as a function of
+airmass and wavelength. This shift, $R(\lambda, z)$ can be treated as
+a a shift operator or a convolution, $D(\lambda, z)$ and is known
+given the refractive index of the atmosphere.  If we consider that the
+zenith image can be decomposed into a linear sum over wavelength, i.e.,
+\begin{equation}
+I(x', 0) = \sum_\lambda I(x', 0, \lambda) 
+\end{equation}
+then the observed set of images are given by,
+\begin{equation}
+O(x, z) = \sum_\lambda I(x',\lambda) \otimes D(\lambda, z) 
+\label{eq:convDCR}
+\end{equation}
+
+Solving for $I(x,\lambda)$ is then a regression problem that can be 
+solve for by minimizing
+\begin{equation}
+\chi^2 = \sum_x O(x) - \sum_\lambda I(x',\lambda) \otimes D(\lambda) 
+\end{equation}
+
+There are a number of possible approaches for finding the ``zenith''
+image.  The convolution can be written as a transfer matrix, $T$,
+where the elements of the matrix correspond to the pixel values of
+$ I(x',\lambda)$ that map to the pixel values of $O(x, z)$ given the
+refraction. Under this mapping, we can write the linear equations as
+$TI=O$ and by inverting the matrix solve for $I$. While,  $T$, is
+clearly sparse the number of terms that must be solved for given the
+number of wavelengths $\lambda$ that $I$ is decomposed into means that
+we require a heavily regularized regression.
+
+The initial implementation for the DCR corrected template will invert
+the linear equations assuming smoothness in the between adjacent
+pixels and as a function of wavelength by adopting first and second
+order finite difference matrices (ref nate).  An prototype
+implementation has been demonstrated for the 1D case.  A second
+approach will be to forward model the problem by iteratively updating
+$I$ based on the set of observations (ref, budavari). 
+
+For each approach the number of wavelength bins that $I(x)$ can be
+decomposed into will depend on the number of observations at different
+airmass. The assumption of a constant PSF will clearly not hold for
+the LSST observations but can be incorporated within the convolution
+\autoref{eq:convDCR} or addressed through a separable, wavelength
+dependent, PSF convolution. The robustness of these techniques will
+need to be evaluated for low signal-to-noise sources and in the
+presence of scattered light and artifacts. 
+
 
 \subsection{Image Decorrelation}
 \label{sec:acImageDecorrelation}
@@ -923,22 +1060,122 @@ AUTHOR: Simon
 
 \subsection{Association and Matching}
 \label{sec:acMatching}
+
+Association between an external catalog of sources with objects
+detected from an LSST visit is critical to many aspects of the nightly
+and data release processing. External catalogs may come from
+photometric or astrometric standards (e.g.\ catalogs from GAIA), from
+previous LSST observations (e.g. Objects), or from catalogs derived
+from previous observations (e.g.\ the ephemerides of moving
+sources). 
+
+For cross-matching to reference catalogs the algorithm must be able to
+account for variation in scale and rotation of the field, and for
+optical distortions within the system. It must be fast and robust to
+errors and capable of matching across different photometric passbands.
+
+For association with previous LSST observations the algorithms will
+need to be probabilistic in nature, must account for cases where the
+image quality results in the blending of sources, must work at high
+and low Galactic latitude, and must allow for sources with varying and
+variable SEDs.
+
 \subsubsection{Single CCD to Reference Catalog, Semi-Blind}
 \label{sec:acSingleCCDReferenceMatching}
 AUTHOR: Simon
+
+Given a set of sources detected on a single sensor, and a
+corresponding reference catalog we adopt a simple pattern matching
+algorithm to cross-match between the catalogs.  We assume that the
+sources detected on the sensor have approximate positions given by the
+telescope's initial estimate of a WCS, that we know the plate scale of
+the system, and that positional errors are available for both the
+sensor and reference catalog.  
+
+Cross-matching is undertaken using the Optimistic Pattern Matching (B)
+algorithm of Tabur \cite{tabur2007}. The algorithm defines an order
+$m$ (default 6) size $m-1$ acyclic connected tree (XXX check this
+definition) as the pattern to match between catalogs. The details of
+the LSST implementation of the Optimistic Pattern Matching (B)
+algorithm are as follows:
+
 \begin{itemize}
-\item Want to match in image coordinates, so also needs to transform reference catalog.
-\item Run prior to single-visit WCS fitting, with only telescope's best guess as a starting WCS.
-\item Single CCD form needed by AP.
-\end{itemize}
+\item An optical distortion model is subtracted from the positions of
+  the detected sources on the sensor to define a gnomonic plane projection.
+\item Detected sources are ordered in descending brightness and the
+  brightest $n$ stars (default = 50) are selected, $I$
+\item Given the extent of the sensor (defined from the initial WCS)
+  the brightest $n$ sources are extracted from the reference catalog, $R$
+\item The pairwise distances and position angles between the reference
+  catalog sources, $R$, are measured (generating $n(n-1)/2$ pairs)
+\item For the $m$ brightest sources in $I$ the length of the edges and
+  the position angles of the edges of the graph are calculated (with
+  the brightest source the center of the graph). Angles are relative
+  to the sensor orientation and distances are in angular coordinates.
+\item A binary search identifies all pairs in $R$ with a length
+  matching the length of the edge containing the brightest two sources
+  (within a tolerance that has a default pf 3 arcsec).  The difference
+  in position angle between the reference and source edges is assumed
+  to be due to the rotation of the sensor relative to the reference
+  catalog and this position angle difference is accounted for in all
+  remaining matches
+\item The remaining $m-2$ edges are compared to the pairs in $R$ and a
+  match is assumed if the edge length and postion angles are within
+  the tolerances (defaults 3 arcsec and 1 degree respectively)
+\item If $m-1$ matches are not found the search repeats; initially for
+  the remaining matches to the length of the edge corresponding to the
+  brightest two sources and then for a new graph that excludes the
+  brightest object from$I$ and finds the next brightest $m$ sources
+\end{itemize} 
+
+Once $m-1$ edges match an initial verification step is performed where
+a gnomonic projection of the reference catalog is fit to the matched
+stars. Given a consistent fit to the gnomonic projection all sources,
+$I$, and reference objects, $R$ are then matched in sensor coordinates
+(sorted by brightness) with the brightest source in $I$ selected when
+two sources are within the match tolerance (default 3 arcsec XXX
+check). 
+
+For the case of no WCS for the sensor or a significant error in the
+WCS ($> 3$ arcsec) a blind matching will be undertaken using the
+algorithms in astrometry.net (ref)
 
 \subsubsection{Single Visit to Reference Catalog, Semi-Blind}
 \label{sec:acSingleVisitReferenceMatching}
 AUTHOR: Simon
+
+For single visit cross-matching matches all sources within a focal
+plane will be matched to the reference catalog, $R$. This case is a
+perturbation on the original Tabur algorithm. It must account for 
+significant distortions, and deviations from a Euclidean space when
+calculating a gnomonic projection across the LSST field-of-view.
+
+Modifications from the single sensor cross matching are:
 \begin{itemize}
-\item Want to match in focal plane coordinates, so also needs to transform reference catalog.
+\item Given a model for the postions and orientations of the sensors
+  on the focal plane sensor coordinates are transformed to focal plane
+  coordinates (XXX what algorithm)
+\item the focal plane coordinates are corrected for the optical
+  distortion model to provide a Euclidean space
+\item 
+
+
+Work in 3D space?
+
+Use budavari algorithm?
+
+
+
+Want to match in focal plane coordinates, so also needs to transform reference catalog.
 \item Run prior to single-visit WCS fitting, with only telescope's best guess as a starting WCS.
 \end{itemize}
+
+
+focal plane coordinates - from sensor to focal plane and apply optical
+distortion model
+
+run match in 3D distance space (using the budavari approach?)
+
 
 \subsubsection{Multiple Visits to Reference Catalog}
 \label{sec:acJointCalMatching}
@@ -957,9 +1194,52 @@ AUTHOR: MWV
 \subsubsection{DIAObject Generation}
 \label{sec:acDIAObjectGeneration}
 AUTHOR: Simon
-\begin{itemize}
-\item Match all DIASources to predicted Solar System object positions and existing DIAObjects and generate new DIAObjects.  Definitely run in AP, maybe run in DRP.
-\end{itemize}
+
+Assuming that all DIAObject positions been propagated to the MJD of
+the visit (including proper motion and the generation of ephemerides
+for SSObjects) association of a DIASource with a DIAObject simplifies
+to the probabilistic assignment of a DIASource to a DIAObject.
+
+We define this assignment in terms of the Bayes Factor, $B$, that defines
+the ratio of the probability that the observed data, $D$, is more
+likely given a model, $H$, that the DIASource and DIAObject are
+matched, than for a model $K$, where the sources do not match, $K$. 
+\begin{equation}
+B(H,K|D) = \frac{p(D|H)}{p(D|K)}
+\end{equation}
+see Budavari and Szalay \cite{budavariSzalay2009}.
+
+Assuming a normal distribution for positional uncertainties the Bayes
+Factor is given by, 
+\begin{equation} 
+B(H,K|D) = \frac{sinh w}{w} \prod_{i=1}^n \frac{w_i}{sinh w_i}
+\end{equation} 
+with 
+\begin{equation}
+w = |\sum_{i=1}^n w_i \bar{x_i} |
+\end{equation}
+and $x_i$ the 3D unit vector for a position on a sphere, and
+$w=1/\sigma^2$ with $\sigma$ the uncertainty on the position.
+
+For the case of two sources and small uncertainties on the positions this simplifies to 
+\begin{equation}
+w = \sqrt(w_1^2 + w_2^2 +2 w_1 w_2 \cos(\phi)
+\end{equation}
+and
+\begin{equation}
+B=\frac{2}{\sigma_1^2 + sigma_2^2} exp(-\frac{\phi^2}{2(\sigma_1^2 + sigma_2^2)}
+\end{equation}
+with $\phi$ the angle between the positions.
+
+For all pairs of sources within a given tolerance the Bayes Factor
+will be calculated and the source with the largest Bayes Factor
+assigned to the DIAObject. For sources above the Bayes Factor
+threshold that were not assigned the Bayes Factor and DIAObject ID
+will be persisted in the DIASource. Thresholds for the Bayes Factor
+will be derived from simulations
+
+An extension to the Bayes Factor association to account for unknown
+proper motions is possible \citep{???}
 
 \subsubsection{Object Generation}
 \label{sec:acObjectGeneration}
