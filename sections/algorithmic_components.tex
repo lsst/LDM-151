@@ -179,10 +179,15 @@ Add references to specific AP pipelines that will use forced measurement.
 
 \paragraph{Aperture Photometry}
 \label{sec:acAperturePhotometry}
+
 \begin{itemize}
-\item Sequence of fixed apertures
-\item Use sinc algorithm for small apertures, naive for large.
-\item May use elliptical apertures instead of circular, maybe even if changing ellipticities as a function of radius.  TBD.
+\item Aperture fluxes are computed by summing the total flux within an elliptical region defined on the image.
+
+\item Aperture fluxes are computed at a series of logarithmically spaced aperture sizes. Per the \DPDD{}, the total number of apertures will vary depending on the size of the source.
+
+\item When computing fluxes for small apertures---for configurable values of ``small''--we use $\mathrm{sinc}$ interpolation \cite{Bickerton13}. For large apertures, we use a naive summation of pixel values.
+
+\item Do we need to change ellipticies as a function of radius?
 \end{itemize}
 
 \paragraph{Static Point Source Models}
