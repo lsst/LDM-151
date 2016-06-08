@@ -84,7 +84,7 @@ The first steps in a Data Release Production characterize the properties of indi
 \item The later stages of photometric calibration and PSF modeling require secure star selection and colors to infer their SEDs.  Magnitude and morphological measurements from ImChar stages are aggregated the reference catalog in the subsequent JointCal stage, allowing these colors and classifications to be used for PSF modeling in the following ImChar stage.
 \end{itemize}
 
-The ImChar and JointCal iteration is itself interleaved with background matching, described in section~\ref{sec:drp_coaddition_and_diffim}.  This allows the best backgrounds and masks to be defined in the \hyperref[drpBackgroundMatchAndReject]{BackgroundMatchAndReject} before the final Source measurements, image characterizations, and calibrations.
+The ImChar and JointCal iteration is itself interleaved with background matching, described in section~\ref{sec:drp_coaddition_and_diffim}.  This allows the best backgrounds and masks to be defined in the \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} before the final Source measurements, image characterizations, and calibrations.
 
 Each ImChar pipeline runs on a single visit, and each JointCal pipeline runs simultaneously on all visits within a single tract, allowing tracts to be run entirely independently.
 
@@ -119,28 +119,33 @@ def BootstrapImChar(%\hr{raw}%, %\hr{reference}%):
     # {mi} == {image,mask,variance} (for "MaskedImage").
     calexp = VisitExposure()
     sources = VisitCatalog()
+    snaps = VisitMaskedImageList()  # holds both snaps, but only {image,mask,variance}
     parallel for ccd in ALL_SENSORS:
-        snaps = [%\hr{RunISR}%(raw[ccd]) for snap in raw]
-        calexp[ccd].mask = %\hr{FindArtifacts}%(snaps[ccd])
-        calexp[ccd].{mi} = %\hr{CombineSnaps}%(calexp[ccd].mask, snaps)
+        snaps[ccd] = [%\hr{RunISR}%(raw[ccd]) for snap in SNAP_NUMBERS]
+        snaps[ccd].mask = %\hr{SubtractSnaps}%(snaps[ccd])
+        calexp[ccd].mi = %\hr{CombineSnaps}%(snaps[ccd])
     calexp.psf = %\hr{FitWavefront}%(calexp[WAVEFRONT_SENSORS].mi)
     calexp.{image,mask,variance,background}
         = %\hr{SubtractBackground}%(calexp.mi)
     parallel for ccd in SCIENCE_SENSORS:
         sources[ccd] = %\hr{DetectSources}%(calexp.{mi,psf})
+    sources[ccd] = %\hr{DeblendSources}%(sources[ccd], calexp.{mi,psf})
+    sources[ccd] = %\hr{MeasureSources}%(sources[ccd], calexp.{mi,psf})
     matches = %\hr{MatchSemiBlind}%(sources, reference)
     while not converged:
         %\hr{SelectStars}%(matches, exposures)
         calexp.wcs = %\hr{FitWCS}%(matches, sources, reference)
         calexp.psf = %\hr{FitPSF}%(matches, sources, calexp.{mi,wcs})
-        %\hr{WriteDiagnostics}%(calexp, sources)
+        %\hr{WriteDiagnostics}%(snaps, calexp, sources)
         parallel for ccd in SCIENCE_SENSORS:
-            calexp[ccd].mask = %\hr{FindArtifacts}%(calexp[ccd].{mi,psf})
-            calexp[ccd].{mi} = %\hr{InterpolateArtifacts}%(calexp[ccd].{mi,psf})
-            calexp[ccd].{mi} = %\hr{SubtractStars}%(calexp[ccd].{mi,psf}, sources[ccd])
+            snaps[ccd] = %\hr{SubtractSnaps}%(snaps[ccd], calexp[ccd].psf)
+            calexp[ccd].mi = %\hr{CombineSnaps}%(snaps[ccd])
+            calexp[ccd].mi = %\hr{SubtractStars}%(calexp[ccd].{mi,psf}, sources[ccd])
         calexp.{mi,background} = %\hr{SubtractBackground}%(calexp.mi)
         parallel for ccd in SCIENCE_SENSORS:
             sources[ccd] = %\hr{DetectSources}%(calexp.{mi,psf})
+            calexp[ccd].mi, sources[ccd] =
+                %\hr{ReinsertStars}%(calexp[ccd].{mi,psf}, sources[ccd])
             sources[ccd] = %\hr{DeblendSources}%(sources[ccd], calexp.{mi,psf})
             sources[ccd] = %\hr{MeasureSources}%(sources[ccd], calexp.{mi,psf})
         matches = %\hr{MatchNonBlind}%(sources, reference)
@@ -153,20 +158,22 @@ def BootstrapImChar(%\hr{raw}%, %\hr{reference}%):
 
 \paragraph{Input Data Product: Raw}
 \label{sec:drpBootstrapImChar_raw}
+
 Raw amplifier images from science and wavefront CCDs, spread across one or more snaps.  Needed telescope telemetry (seeing estimate, approximate pointing) is assumed to be included in the raw image metadata.
 
-\paragraph{Input Data Product: Reference}:
+\paragraph{Input Data Product: Reference}
 \label{sec:drpBootstrapImChar_reference}
+
 A full-sky catalog of reference stars derived from both external (e.g. Gaia) and LSST data.
 
 Later pipelines (\hyperref[sec:drpBootstrapJointCal]{BootstrapJointCal}, \hyperref[sec:drpRefineJointCal]{RefineJointCal}) will define a deeper reference catalog derived from this one and the new data being processed, but the origin and depth of the initial reference catalog is largely TBD.  It will almost certainly include Gaia stars, but it may also include data from other telescopes, LSST special programs, LSST commissioning observations, and/or the last LSST data release.
 
-\paragraph{Output Data Product: Source.}
+\paragraph{Output Data Product: Source}
 \label{sec:drpBootstrapImChar_sources}
 
 A preliminary version of the Source table.  This could contain all of the columns in the DPDD Source schema if the \hr{MeasureSources} is appropriately configured, but some of these columns are likely unnecessary in its role as an intermediate data product that feeds \hyperref[sec:drpBootstrapJointCal]{BootstrapJointCal}, and it is likely that other non-DPDD columns will be present for that role.
 
-BootstrapImChar also has the capability to produce even earlier versions of the Source table for diagnostic purposes (see \hr{writeDiagnostics}).  These tables are not associated with any photometric calibration or aperture correction, and some may not have any measurements besides centroids, and hence are never substitutable for the final Source table.
+BootstrapImChar also has the capability to produce even earlier versions of the Source table for diagnostic purposes (see \hr{WriteDiagnostics}).  These tables are not associated with any photometric calibration or aperture correction, and some may not have any measurements besides centroids, and hence are never substitutable for the final Source table.
 
 \paragraph{Output Data Product: CalExp}
 \label{sec:drpBootstrapImChar_calexp}
@@ -176,94 +183,137 @@ A preliminary version of the CalExp (calibrated direct exposure).  CalExp is an 
 \paragraph{RunISR}
 \label{sec:drpBootstrapImChar_RunISR}
 
-\paragraph{FindArtifacts}
-\label{sec:drpBootstrapImChar_FindArtifacts}
+Delegate to the \hyperref[sec:acISR]{ISR algorithmic component} to perform standard detrending as well as brighter-fatter correction and interpolation for pixel-area variations (\hyperref[sec:acFixPixelAreaVariations]{Warping Irregularly-Sampled Images}).  It is possible that these corrections will require a PSF model, and hence must be backed-out and recorrected at a later stage when an improved PSF model is available.
+
+We assume that the applied flat field is appropriate for background estimation.
+
+\paragraph{SubtractSnaps}
+\label{sec:drpBootstrapImChar_SubtractSnaps}
+
+Delegate to the \hyperref[sec:acSnapSubtraction]{Snap Subtraction algorithmic component} to mask artifacts in the difference between snaps.  If passed a PSF (as in the second call), also interpolate them by delegating to the \hyperref[sec:acArtifactInterpolation]{Artifact Interpolation} algorithmic component.
+
+We assume here that the PSF modeled on the combination of the two Snaps is sufficient for interpolation on the Snaps individually; if this is not true, we can just mask and interpolate both Snaps when an artifact appears on either of them (or we could do per-Snap PSF estimation, but that's a lot more work for very little gain).
 
 \paragraph{CombineSnaps}
 \label{sec:drpBootstrapImChar_CombineSnaps}
 
-\paragraph{InterpolateArtifacts}
-\label{sec:drpBootstrapImChar_InterpolateArtifacts}
+Delegate to the \hyperref[sec:acCoaddition]{Image Coaddition algorithmic component} to combine the two Snaps while handling masks appropriately.
+
+We assume there is no warping involved in combining snaps.  If this is needed, we should instead advocate for dropping snaps in favor of a a single longer exposure.
 
 \paragraph{FitWavefront}
 \label{sec:drpBootstrapImChar_FitWavefront}
 
+Delegate to the \hyperref[sec:acWavefrontSensorPSF]{Wavefront Sensor PSF algorithmic component} to generate an approximate PSF using only data from the wavefront sensors and observational metadata (e.g. reported seeing).
+
+The required quality of this PSF estimate is TBD (requirements are likely to come from crowded fields), and it is possible that a simple circular profile with the appropriate seeing may suffice.  Robustness to poor data quality and crowding is much more important than accuracy.
+
 \paragraph{SubtractBackground}
 \label{sec:drpBootstrapImChar_SubtractBackground}
+
+Delegate to the \hyperref[sec:acBackgroundEstimation]{Background Estimation} algorithmic component to model and subtract the background consistently over the full field of view.
+
+The multiple backgrounds subtracted in BootstrapImChar may or may not be cumulative (i.e. we may or may not add the previous background back in before estimating the latest one).
 
 \paragraph{DetectSources}
 \label{sec:drpBootstrapImChar_DetectSources}
 
-\paragraph{MatchSemiBlind}
-\label{sec:drpBootstrapImChar_MatchSemiBlind}
+Delegate to the \hyperref[sec:acSourceDetection]{Source Detection algorithmic component} to find above-threshold regions (\hyperref[sec:spFootprints]{Footprints}) and peaks within them in a PSF-correlated version of the image.
 
-\paragraph{FitWCS}
-\label{sec:drpBootstrapImChar_FitWCS}
-
-\paragraph{FitPSF}
-\label{sec:drpBootstrapImChar_FitPSF}
-
-\paragraph{WriteDiagnostics}
-\label{sec:drpBootstrapImChar_WriteDiagnostics}
-
-\paragraph{SubtractStars}
-\label{sec:drpBootstrapImChar_SubtractStars}
+In crowded fields, each iteration of detection will decrease the threshold, increasing the number of objects detection.  Because this will treat fluctuations in the background due to undetected objects as noise, we may need to extend PSF-correlation to the appropriate filter for an image with correlated noise and characterize the noise field from the image itself.
 
 \paragraph{DeblendSources}
 \label{sec:drpBootstrapImChar_DeblendSources}
 
+Delegate to the \hyperref[sec:acSingleVisitDeblending]{Single Visit Deblending algorithmic component} to split \hyperref[sec:spFootprints]{Footprints} with multiple peaks into deblend families.
+
 \paragraph{MeasureSources}
 \label{sec:drpBootstrapImChar_MeasureSources}
+
+Delegate to the \hyperref[sec:acSingleVisitMeasurement]{Single Visit Measurement algorithmic component} to measure source properties.
+
+In BootstrapImChar, we anticipate using the \hyperref[sec:acReplaceNeighborsWithNoise]{Neighbor Noise Replacement} approach to deblending, with the following plugin algorithms:
+\begin{itemize}
+\item \hyperref[sec:acCentroidAlgorithms]{Centroids}
+\item \hyperref[sec:acShapeAlgorithms]{Second-Moment Shapes}
+\item \hyperref[sec:acPixelFlags]{Pixel Flag Aggregation}
+\item \hyperref[sec:acAperturePhotometry]{Aperture Photometry} (but only for one or two radii)
+\item \hyperref[sec:acStaticPointSourceModels]{Static Point Source Models}
+\end{itemize}
+
+\paragraph{MatchSemiBlind}
+\label{sec:drpBootstrapImChar_MatchSemiBlind}
+
+Delegate to the \hyperref[sec:acSingleVisitReferenceMatching]{Single Visit Reference Matching algorithmic component} to match source catalogs to a global reference catalog.  This occurs over the full field of view, ensuring robust matching even when some CCDs have no matchable stars due to crowding, flux limits, or artifacts.
+
+``Semi-Blind'' refers to the fact that the WCS is not yet well known (all we have is what is provided by the observatory), so the matching algorithm must account for an unknown (but small) offset between the WCS-predicted sources positions and the reference catalog positions.
+
+\paragraph{SelectStars}
+\label{sec:drpBootstrapImChar_SelectStars}
+
+Use reference catalog classifications and source flags to select a clean sample stars to use for later stages.
+
+If we decide not to rely on a pre-existing reference catalog to separate stars from galaxies and other objects, we will need a new algorithmic component to select stars based on source measurements.
+
+\paragraph{FitWCS}
+\label{sec:drpBootstrapImChar_FitWCS}
+
+Delegate to the \hyperref[sec:acSingleVisitAstrometricFit]{Single Visit Astrometric Fit algorithmic component} to determine the WCS of the image.
+
+We assume this works by fitting a simple mapping from the visit's focal plane coordinate system to the sky and composing it with the (presumed fixed) mapping between CCD coordinates and focal plane coordinates.  This fit will be improved in later pipelines, so it does not need to be exact; $<$0.05 arcsecond accuracy should be sufficient.
+
+As we iterate in crowded fields, the number of degrees of freedom in the WCS should be allowed to slowly increase.
+
+\paragraph{FitPSF}
+\label{sec:drpBootstrapImChar_FitPSF}
+
+Delegate to the \hyperref[sec:acFullVisitPSF]{Full Visit PSF Modeling algorithmic component} to construct an improved PSF model for the image.
+
+Because we are relying on a reference catalog to select stars, we should be able to use colors from the reference catalog to estimate SEDs an include wavelength dependence in the fit.  If we do not use a the reference catalog early in BootstrapImChar, PSF estimation here will not be wavelength-dependent.  In either case the PSF model will be further improved in later pipelines.
+
+PSF estimation at this stage must include some effort to model the wings of bright stars, even if this is tracked and constrained separately from the model for the core of the PSF.
+
+As we iterate in crowded fields, the number of degrees of freedom in the PSF model should be allowed to slowly increase.
+
+\paragraph{WriteDiagnostics}
+\label{sec:drpBootstrapImChar_WriteDiagnostics}
+
+If desired, the current state of the \texttt{source}, \texttt{calexp}, and \texttt{snaps} variables may be persisted here for diagnostic purposes.
+
+\paragraph{SubtractStars}
+\label{sec:drpBootstrapImChar_SubtractStars}
+
+Subtract all detected stars above a flux limit from the image, using the PSF model.  In crowded fields, this should allow subsequent \hr{SubtractBackground} and \hr{DetectSources} steps to push fainter by removing the brightest stars in the image.
+
+\paragraph{ReinsertStars}
+\label{sec:drpBootstrapImChar_ReinsertStars}
+
+Add stars removed in \hr{SubtractStars} back into the image, and merge corresponding \hyperref[sec:spFootprints]{Footprints} and peaks into the source catalog.
 
 \paragraph{MatchNonBlind}
 \label{sec:drpBootstrapImChar_MatchNonBlind}
 
+Match a single-CCD source catalog to a global reference frame, probably by delegating to \hyperref[sec:acJointCalMatching]{the same matching algorithm used in JointCal pipelines}.  A separate algorithm component may be needed for efficiency or code maintenance reasons; this is a simple limiting case of the multi-way JointCal matching problem that may or may not merit a separate simpler implementation.
+
+``Non-Blind'' refers to the fact that the WCS is now known well enough that there is no significant offset between WCS-projected source positions and reference catalog positions.
+
 \paragraph{FitApCorr}
 \label{sec:drpBootstrapImChar_FitApCorr}
+
+Delegate to the \hyperref[sec:acApCorr]{Aperture Correction algorithmic component} to construct a curve of growth from aperture photometry measurements and build an interpolated mapping from other fluxes to the predicted integrated flux at infinity.
 
 \paragraph{ApplyApCorr}
 \label{sec:drpBootstrapImChar_ApplyApCorr}
 
+Delegate to the \hyperref[sec:acApCorr]{Aperture Correction algorithmic component} to apply aperture corrections to flux measurements.
+
 \paragraph{FitPhotoCalib}
 \label{sec:drpBootstrapImChar_FitPhotoCalib}
 
+Delegate to the \hyperref[sec:acSingleVisitPhotometricFit]{Single Visit Photometric Fit algorithmic component} to fit the zeropoint of the exposure (possibly including some spatial variation to account for grey clouds).
+
 % Undeclare the local hyperref macro
 \let\hr\undefined
-
-\begin{itemize}
-\item \hyperref[sec:acISR]{ISR}
-  \begin{itemize}
-  \item On snaps
-  \item Includes all the B-F correction we need.
-  \item Flat field image to color of sky?
-  \end{itemize}
-\item \hyperref[sec:acSnapSubtraction]{Subtract} and \hyperref[sec:acCoaddition]{Combine} Snaps.
-  \begin{itemize}
-  \item If we don't take two snaps, do \hyperref[sec:acMorphogicalArtifactDetection]{morphological artifact detection} instead.
-  \item If combining/diffing snaps requires warping, this is \emph{much} harder, to the point that we should only take one snap.
-  \end{itemize}
-\item \hyperref[sec:acBackgroundEstimation]{background estimation}
-  \begin{itemize}
-  \item Only need to detect and measure bright stars, so aggresive background subtraction is okay and possibly desirable.
-  \item Need to ensure flat-fielding and pixel area corrections are appropriate for background estimation at this point.
-  \item In crowded fields, we want to initially subtract most faint stars, leaving only bright ones.
-  \end{itemize}
-\item \hyperref[sec:acSourceDetection]{source detection}.
-  \begin{itemize}
-  \item In crowded fields detect brightest stars
-  \end{itemize}
-\item \hyperref[sec:SingleVisitMeasurement]{Measurement}.
-  \begin{itemize}
-  \item Only need centroiders, shapes, aperture fluxes
-  \item Needs to run w/o PSF model, or PSF guess.
-  \end{itemize}
-\item \hyperref[sec:acPSFStarSelection]{Select stars for PSF modeling}
-  \begin{itemize}
-  \item Only need centroiders, shapes, aperture fluxes
-  \item Needs to run w/o PSF model, or PSF guess.
-  \end{itemize}
-\item \hyperref[sec:acSingleCCDPSF]{Initial PSF Modeling}
-\end{itemize}
 
 \subsubsection{BootstrapJointCal}
 \label{sec:drpBootstrapJointCal}
@@ -343,3 +393,9 @@ Extract Afterburner pipelines from ``DRP Top-Level Overview'' on confluence and 
 \label{sec:drpClassification}
 \subsubsection{GatherContributed}
 \label{sec:drpGatherContributed}
+
+\subsection{UNCAPTURED DEPENDENCIES}
+
+\begin{itemize}
+\item Where does the initial reference catalog at the start of the DRP come from?  This could require special observations in commissioning or before the start of the survey, as well as addition algorithms and software.  If DRP always uses a reference catalog for star selection in ImChar, we need to actually do the classification for that at some point.
+\end{itemize}

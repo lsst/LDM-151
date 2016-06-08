@@ -55,14 +55,14 @@ AUTHOR: Simon
 \end{itemize}
 
 \subsubsection{Warped Image Comparison}
-\label{sec:acWarpdImageArtifactDetection}
+\label{sec:acWarpedImageArtifactDetection}
 AUTHOR: Jim
 \begin{itemize}
 \item Find more optical artifacts by looking at differences between warped images (this is run during background matching).
 \item Find transient astronomical sources we don't want to include in coadds.
 \end{itemize}
 
-\subsection{Artifact Masking/Interpolation}
+\subsection{Artifact Interpolation}
 \label{sec:acArtifactInterpolation}
 AUTHOR: Jim
 \begin{itemize}
@@ -172,12 +172,18 @@ Add references to specific AP pipelines that will use forced measurement.
 \item need variant that doesn't require a PSF model (or can work with a poor guess) to run before PSF estimation.
 \end{itemize}
 
+\paragraph{Pixel Flag Aggregation}
+\label{sec:acPixelFlags}
+\begin{itemize}
+\item Compute summary statistics of masked pixels in the neighborhood of the source/object.
+\end{itemize}
+
 \paragraph{Second-Moment Shapes}
 \label{sec:acShapeAlgorithms}
 \begin{itemize}
 \item probably adaptive elliptical Gaussian weights, with fall back to unweightd, PSF-weighted, or some fixed Gaussian
 \item add regularization for unresolved objects - avoid crazy ellipticities for objects much smaller than PSF
-\item need variant that doesn't require a PSF model (or can work with a poor guess) to run before PSF estimation.
+\item Should also compute moments of PSF model.
 \end{itemize}
 
 \paragraph{Aperture Photometry}
@@ -295,14 +301,25 @@ AUTHOR: Simon
 \item Fit simple empirical PSF model to stars from a single exposure.
 \item No chromaticity.
 \item May use external star catalog, but doesn't rely on one.
-\item Used in Alert Production and BootstrapImChar in DRP.
+\item Used only in Alert Production.
+\end{itemize}
+
+\subsection{Wavefront Sensor PSF Estimation}
+\label{sec:acWavefrontSensorPSF}
+AUTHOR: Jim
+\begin{itemize}
+\item Build an approximate PSF model using only the very brightest stars in the wavefront sensors.  Because WF sensors are out-of-focus, these stars may be saturated on science CCDs.
+\item Model can have very few degrees of freedom (very simple optical model + elliptical Moffat/Double-Gaussian?)
+\item Only needs to be good enough to bootstrap PSF model well enough to bootstrap processing of science images (but it needs to work in crowded fields, too).
+\item Being able to go to brighter magnitudes may be important in crowded fields because the shape of the luminosity function may make it easier to find stars with (relatively) significant neighbors.
 \end{itemize}
 
 \subsubsection{Full Visit PSF Estimation}
-\label{sec:acFullFoVPSF}
+\label{sec:acFullVisitPSF}
 AUTHOR: Jim
 \begin{itemize}
 \item Decompose PSF into optical + atmosphere.
+\item May also use wavefront sensors.
 \item Constrain model with stars, telemetry, and wavefront data.
 \item Wavelength-dependent.
 \item Used in RefineImChar in DRP.
@@ -321,8 +338,8 @@ AUTHOR: Jim
 \label{sec:acApCorr}
 AUTHOR: Jim
 \begin{itemize}
-\item Measure curves of growth from bright stars.
-\item Correct various flux measurements to infinite.
+\item Measure curves of growth from bright stars (visit-level, at least in DRP)
+\item Correct various flux measurements to infinite (CCD-level)
 \item Propagate uncertainty in aperture correction to corrected fluxes; covariance is tricky.
 \end{itemize}
 
@@ -424,6 +441,7 @@ The above describes the current warping implementation in afw. We should identif
 \item Can use PSF model as interpolant if we also want to convolve with PSF (as in likelihood coadds).  Otherwise impossible?
 \end{itemize}
 \subsubsection{Irregularly-Sampled Images}
+\label{sec:acFixPixelAreaVariations}
 \begin{itemize}
 \item Approximate procedure for fixing small-scale distortions in pixel grid.
 \end{itemize}
@@ -467,12 +485,7 @@ AUTHOR: Jim
 \subsection{Star/Galaxy Classification}
 \label{sec:acClassification}
 AUTHOR: Jim
-\subsubsection{Single Visit S/G, Pre-PSF}
-\label{sec:acPSFStarSelection}
-\begin{itemize}
-\item Select stars to be used in PSF estimation (mostly from moments).
-\end{itemize}
-\subsubsection{Single Visit S/G, Post-PSF}
+\subsubsection{Single Visit S/G}
 \label{sec:acSingleVisitClassification}
 \begin{itemize}
 \item Extendedness or trace radius difference that classifies sources based on single frame measurements that can utilize the PSF model.  Used to select single-frame calibration stars, and probably aperture correction stars.
