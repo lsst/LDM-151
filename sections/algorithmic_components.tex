@@ -317,6 +317,57 @@ Add references to specific AP pipelines that will use forced measurement.
 \item Deblending on direct image very problematic.
 \end{itemize}
 
+Arising primarily due to slight astrometric alignment or PSF matching
+errors between the two images, or effects such as differential
+chromatic aberration, flux “dipoles” are a common artifact often
+observed in image differences. These dipoles will lead to false
+detections of transients unless correctly identified and
+eliminated. Importantly, dipoles will also be observed in image
+differences in which a source as moved less than the width of
+the PSF. Such objects must be correctly identified and measured as
+dipoles in order to obtain accurate fluxes and positions of
+theseobjects.
+
+Putative dipoles in image differences are identified as a positive and
+negative source whose footprints overlap by at least one pixel. These
+overlapping footprints are merged, and only the sources containing one
+and only one positive and negative merged footprint are passed to the
+dipole modeling task. There is a documented degeneracy
+(\url{http://dmtn-007.lsst.io}) between dipole separation and flux,
+such that dipoles with closely-separated lobes of high flux are
+statistically indistinguishable from ones with low flux and wider
+separations. We remove this degeneracy by using the {\em
+pre-subtracted images} (i.e., the warped, PSF-matched template image
+and the pre-convolved science image) to constrain the lobe positions
+(specifically, to constrain the centroid of the positive lobe in the
+science image and of the negative lobe in the template image). This is
+done by first fitting and subtracting a second-order 2-D polynomial to
+the background within a subimage surrounding each lobe footprint in
+the pre-subtracted images to remove any flux from background galaxies
+(we assume that this gradient, if it exists, is identical in both
+pre-subtracted images). Then, a dipole model is fit simultaneously to
+the background-subtracted pre-subtracted images and the image
+difference.
+
+The dipole model consists of positive and negative instances of the
+PSF in the difference image at the dipole's location. The six dipole
+model parameters (positive and negative lobe centroids and fluxes) are
+estimated using non-linear weighted least-squares minimization (we
+currently use the Levenberg-Marquardt minimization algorithm). The
+resulting reduced $\chi^2$ and signal-to-noise estimates provide a
+measure by which the source(s) may be classified as a dipole.
+
+We have tested the described dipole measurement algorithm on simulated
+dipoles with a variety of fluxes, separations, background gradients,
+and signal-to-noise. Including the pre-subtracted image data clearly
+improves the accuracy of the measured fluxes and centroids. We have
+yet to thoroughly assess the dipole measurement algorithm performance
+on crowded stellar fields. Such crowded fields may confuse the
+parameter estimates (both centroids and/or fluxes) when using the
+pre-subtracted images to constrain the fitting procedure, and in such
+situations, we may have to adjust the prior constraint which they
+impose.
+
 \paragraph{Spuriousness}
 \label{sec:acSpuriousnessAlgorithms}
 \begin{itemize}
