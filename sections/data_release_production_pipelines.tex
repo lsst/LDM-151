@@ -131,7 +131,7 @@ def BootstrapImChar(%\hr{raw}%, %\hr{reference}%):
     calexp.psf = %\hr{FitWavefront}%(calexp[WAVEFRONT_SENSORS].mi)
     calexp.{image,mask,variance,background}
         = %\hr{SubtractBackground}%(calexp.mi)
-    parallel for ccd in SCIENCE_SENSORS:
+    parallel for ccd in ALL_SENSORS:
         sources[ccd] = %\hr{DetectSources}%(calexp.{mi,psf})
     sources[ccd] = %\hr{DeblendSources}%(sources[ccd], calexp.{mi,psf})
     sources[ccd] = %\hr{MeasureSources}%(sources[ccd], calexp.{mi,psf})
@@ -141,12 +141,12 @@ def BootstrapImChar(%\hr{raw}%, %\hr{reference}%):
         calexp.wcs = %\hr{FitWCS}%(matches, sources, reference)
         calexp.psf = %\hr{FitPSF}%(matches, sources, calexp.{mi,wcs})
         %\hr{WriteDiagnostics}%(snaps, calexp, sources)
-        parallel for ccd in SCIENCE_SENSORS:
+        parallel for ccd in ALL_SENSORS:
             snaps[ccd] = %\hr{SubtractSnaps}%(snaps[ccd], calexp[ccd].psf)
             calexp[ccd].mi = %\hr{CombineSnaps}%(snaps[ccd])
             calexp[ccd].mi = %\hr{SubtractStars}%(calexp[ccd].{mi,psf}, sources[ccd])
         calexp.{mi,background} = %\hr{SubtractBackground}%(calexp.mi)
-        parallel for ccd in SCIENCE_SENSORS:
+        parallel for ccd in ALL_SENSORS:
             sources[ccd] = %\hr{DetectSources}%(calexp.{mi,psf})
             calexp[ccd].mi, sources[ccd] =
                 %\hr{ReinsertStars}%(calexp[ccd].{mi,psf}, sources[ccd])
@@ -209,6 +209,8 @@ We assume there is no warping involved in combining snaps.  If this is needed, w
 
 Delegate to the \hyperref[sec:acWavefrontSensorPSF]{Wavefront Sensor PSF algorithmic component} to generate an approximate PSF using only data from the wavefront sensors and observational metadata (e.g. reported seeing).
 
+Processing the wavefront sensors will likely require some form of detection and measurement; we currently consider this to be part of the \hyperref[sec:acWavefrontSensorPSF]{Wavefront Sensor PSF} code, though it may delegate to e.g. \hyperref[sec:acSourceDetection]{Source Detection} and/or \hyperref[sec:acSingleVisitMeasurement]{Single Visit Measurement}.
+
 The required quality of this PSF estimate is TBD (requirements are likely to come from crowded fields), and it is possible that a simple circular profile with the appropriate seeing may suffice.  Robustness to poor data quality and crowding is much more important than accuracy.
 
 \paragraph{SubtractBackground}
@@ -225,10 +227,14 @@ Delegate to the \hyperref[sec:acSourceDetection]{Source Detection algorithmic co
 
 In crowded fields, each iteration of detection will decrease the threshold, increasing the number of objects detection.  Because this will treat fluctuations in the background due to undetected objects as noise, we may need to extend PSF-correlation to the appropriate filter for an image with correlated noise and characterize the noise field from the image itself.
 
+Because we will use wavefront data to constrain the PSF, we also run detection on the wavefront sensors.  It is possible that this will require a different algorithmic component if we cannot just treat the wavefront sensors as science sensors with an out-of-focus PSF.
+
 \paragraph{DeblendSources}
 \label{sec:drpBootstrapImChar_DeblendSources}
 
 Delegate to the \hyperref[sec:acSingleVisitDeblending]{Single Visit Deblending algorithmic component} to split \hyperref[sec:spFootprints]{Footprints} with multiple peaks into deblend families.
+
+Because we will use wavefront data to constrain the PSF, we also run deblending on the wavefront sensors.  It is possible that this will require a different algorithmic component if we cannot just treat the wavefront sensors as science sensors with an out-of-focus PSF, and we need deblending to extract wavefront information.
 
 \paragraph{MeasureSources}
 \label{sec:drpBootstrapImChar_MeasureSources}
@@ -243,6 +249,8 @@ In BootstrapImChar, we anticipate using the \hyperref[sec:acReplaceNeighborsWith
 \item \hyperref[sec:acAperturePhotometry]{Aperture Photometry} (but only for one or two radii)
 \item \hyperref[sec:acStaticPointSourceModels]{Static Point Source Models}
 \end{itemize}
+
+Because we will use wavefront data to constrain the PSF, we also run measurement on the wavefront sensors (but probably without any flux measurement algorithms, and perhaps with modified versions of other algorithms).  It is possible that this will require a different algorithmic component if we cannot just treat the wavefront sensors as science sensors with an out-of-focus PSF.
 
 \paragraph{MatchSemiBlind}
 \label{sec:drpBootstrapImChar_MatchSemiBlind}
@@ -340,17 +348,17 @@ def RefineImChar(%\hr{calexp}%, %\hr{sources}%, %\hr{reference}%):
     matches = %\hr{MatchNonBlind}%(sources, reference)
     %\hr{SelectStars}%(matches, exposures)
     calexp.psf = %\hr{FitPSF}%(matches, sources, calexp.{mi,wcs})
-    parallel for ccd in SCIENCE_SENSORS:
+    parallel for ccd in ALL_SENSORS:
         calexp[ccd].mi = %\hr{SubtractStars}%(calexp[ccd].{mi,psf}, sources[ccd])
     calexp.{mi,background} = %\hr{SubtractBackground}%(calexp.mi)
-    parallel for ccd in SCIENCE_SENSORS:
+    parallel for ccd in ALL_SENSORS:
         sources[ccd] = %\hr{DetectSources}%(calexp.{mi,psf})
         calexp[ccd].mi, sources[ccd] =
             %\hr{ReinsertStars}%(calexp[ccd].{mi,psf}, sources[ccd])
         sources[ccd] = %\hr{DeblendSources}%(sources[ccd], calexp.{mi,psf})
         sources[ccd] = %\hr{MeasureSources}%(sources[ccd], calexp.{mi,psf})
     calexp.psf.apcorr = %\hr{FitApCorr}%(matches, sources)
-    parallel for ccd in SCIENCE_SENSORS:
+    parallel for ccd in ALL_SENSORS:
         sources[ccd] = %\hr{ApplyApCorr}%(sources[ccd], calexp.psf)
     return calexp, sources
 \end{lstlisting}
