@@ -10,9 +10,9 @@ SQDA is a set of loosely coupled services intended to service LSST's quality ass
 
 \item SDQA shall provide services to support software development in Construction, Commissioning and Operations.
 
-\item SDQA shall provide for the visualization, analysis and monitoring capabilities needed for common science quality data analysis usecases. Its inputs may be gathered from SDQA itself, the production pipelines, engineering data sources and non-LSST data sources. 
+\item SDQA shall provide for the visualization, analysis and monitoring capabilities needed for common science quality data analysis usecases. Its inputs may be gathered from SDQA services, the production pipelines, engineering data sources and non-LSST data sources. 
 
-\item SDQA shall have the flexibility to support execution of ad-hoc (user-driven) tests and analyses of ad-hoc data within a standard framework.  
+\item SDQA shall have the flexibility to support execution of ad-hoc (user-driven) tests and analyses of ad-hoc datasets (provided they are supported by the LSST stack) within a standard framework.  
 
 \item SDQA shall support usecases involving interactive ``drill-down'' of QA data exposed through its visualisation interfaces. 
 
@@ -33,53 +33,155 @@ SQDA is a set of loosely coupled services intended to service LSST's quality ass
 \subsection{Key Tasks for Each Level of QA}
 
 SDQA system will provide a framework that is capable of monitoring QA
-information at four different stages of capabiliti and maturity:
+information at four different stages of capability and maturity:
 
 \begin{itemize}
 \item QA Level 0 - Testing and Validation of the DM sub-system in pre-commissioning 
 \item QA Level 1 - Real-time data quality and system assesment during commissioning + operations (also, forensics)
 \item QA Level 2 - Quality assessment of Data Releases (also, forensics) 
-\item QA Level 3 - Ability for the community to evaluate the data quality of their own analyses. These should available as well-documented and reployable versions of core QA Level 0--2 services. 
+\item QA Level 3 - Ability for the community to evaluate the data quality of their own analyses. These should made available as well-documented and deployable versions of core QA Level 0--2 services. 
 \end{itemize}
 
-\subsubsection{QA0}
+\begin{note}[Figure summarising QA key tasks]
+Summary figure under construction
+\end{note}
 
-Test the DM software during pre-commissioning as well as test software improvements during commissioning and operations, quantifying the software performance against known and/or expected outputs.
+\subsubsection{Phase? 0 QA - QA-0}
 
-Validating the software and its performance on stamdardized data.
+The first step to good quality data is good quality software. The
+purpose of QA0 services is to enable testing of the DM software during
+pre-commissioning as well as validate software improvements during
+commissioning and operations, quantifying the software performance
+against known and/or expected outputs.
 
-(“Make me a three-color diagram, compute the width of point sources in the blue part of the locus”)
+The core capabilities of QA 0 services are:
 
-(“I have 20 visits all over the sky, I want to match up the results”)
+\paragraph{Continuous Integration Services}
+\label{sec:qaCI}
+\begin{itemize}
 
-The main components:
+\item Continuous integration services compile code to uncover syntax errors
+
+\item Builds of references (tags, branches) can happen on a schedule, on developer request or on development events (eg merge to master)
+
+\item SDQA provides CI services on multiple reference platforms and uses OS portability testing as a way to ensure the codebase is well engineered for future use. 
+
+\end{itemize}
+
+\paragraph{Test execution harness}
+\label{sec:qaTestharness}
+\begin{itemize}
+
+\item A test execution harness runs tests (such as functional unit
+  tests) on a regular cadence (eg nightly/weekly/monthly) to allow
+  basic functional checkout of the code
+
+\item Results from such tests are exposed in such a way to allow
+  summary reports and meaningful failure notifications
+
+\end{itemize}
+
+\paragraph{Validation Metrics Code}
+\label{sec:qaValidate}
+\begin{itemize}
+
+\item During Construction, progress towards meeting DM subsystem requirements revolve around the Key Performance Metrics (KPMs) outlined in LDM-240. SDQA implements code to calculate these KPMs. Consult \emph{ reference to KPM Verification document} for a list of those metrics and how (and by whom and on what) they will be calculated. 
+
+\item Additional metrics must be calculated to be met in order for the DM subsystem to demonstrate its operational readiness. The list of those metrics and how (and by whom) they will be calculated will be in \emph{reference to DM Verification Plan CoDR document}. In terms of QA infrastructure, these are not going to be different than 
+
+\item Validation code will be implemented in such a way that it can run inline with normal pipeline processing on developer's laptops. 
+
+\item Additional metrics may be devised during construction that are helpful to development or algorithm characterisation. SDQA will provide ways of executing that code in a similar way to KPMs, but apps developers may need to contribute the code (or at least document the algorithmic approach) to calculate those metrics.
+
+\end{itemize}
+
+\paragraph{Computational Metrics}
+\label{sec:qaComputational}
+\begin{itemize}
+
+\item While the scope of this document is the scientific aspects of the pipelines, SDQA must also service non-scientific KPMs such as computational performance characterisation. 
+
+\item SDQA will provide a capability to instrument the production  pipelines to calculate computational performance metrics
+
+\item The computational performance metrics that SQDA calculates will be in practice surrogates for the actual computational performance in production since those will depend on the DAC architecture. The purpose of calculating those as part of SDQA is to continuously monitor relative performance to alert the developers that a regression has occured. 
+
+\item SDQA can calculate modeled system performance from the surrogate computational metrics if a model is provided to it (eg from Architecture). 
+
+\item A library of those instrumentations will be provided so that they can be mixed and matched to pipelines depending on the performance metric of interest. 
+
+\end{itemize}
+
+
+\paragraph{Curated Datasets}
+\label{sec:qaCurateddata}
+\begin{itemize}
+
+\item Part of the process for validating the software and its performance is selecting rich but targeted standardized data sets to generate directly comparable metrics between different versions of the software. 
+
+\item SDQA will select and curate a combination of simulated and precursor datasets that are modest enough for ``canary'' test runs but rich enough to characterise the envelope of algorithmic performance. 
+
+\item SDQA will ``publish'' (make available) these datasets so developers can run the validation tests directly against them in their own environments. 
+
+\end{itemize}
+
+
+\paragraph{SQUASH - Science Quality Analysis Harness}
+\label{sec:qaSquash}
+
+SQUASH is a QA-as-a-service architecture that comprises of the
+following elements:
+
 \begin{enumerate}
-\item CI system that compiles code
-\item Test execution harness – that runs test on a regular cadence eg nightly/weekly/monthly
-\item A suite of validation metrics codes – some has to come from Science Pipelines, but KPMs are delivered by SQuaRE
-\item Capability to instrument the production pipelines for computational performance metrics
-\item Library of “instrumentations”
-\item Interface to data products and QA metrics (including visualization)
-    \begin{enumerate}
-    \item Tabular query result interface
-    \item Visualizer for images
-    \item Visualiser for scalar data (eg. Plotter)
-    \item SuperTask execution on selected data
-    \end{enumerate}
-\item Curated datasets to use in tests
-\item Capability for interactive analysis of QA outputs (drilldown into existing tests, ad hoc tests, ad hoc afterburners) – some has to come from Science Pipelines or SUIT but SQuaRE provides examples [move to Shared Software Components section]
-    \begin{enumerate}
-    \item Tools that perform computations
-    \item Tools that perform visualization (using Butler if astronomical, maybe direct database if not)
-    \end{enumerate}
-\item Connection from analysis toolkit to validation metrics (attach common interactive plots to validation metrics)
-\item QA database including ingestion
-\item Notification system for threshold crossings
+\item The execution of simple pipeline workflows for the purposes of QA
+
+\item The construction of those QA workflows with an emphasis on usability (as opposed to performance)
+
+\item The collection and exposure of the results of those runs for further retrieval and analysis
+
+\item A monitoring system to detect threshold trespass and excursions from past trends
+
+\item Exposure of the data for retrieval and to interactive analysis tooling
+
 \end{enumerate}
 
-Prototypes for all of these exist except ``Toolkit for analysis of QA outputs'' and ``Connection from analysis toolkit to validation metrics''
+\begin{itemize}
 
-``Toolkit for analysis of QA outputs'' will take more resources than the others listed above, but some may be already scheduled in other teams
+\item As construction progresses, first-party DM systems to underwrite the functions of SQUASH will become production ready. In the meantime, basic implementations of minimum viable functionality may be done with boostrap or off-the-shelf solutions either as an interim measure or, in some cases, a more lightweight solution. 
+
+\item A simple example of a ``factory'' analysis based on SQUASH is ``Calculate the astrometric repeatability on this dataset; display the trend; drill down to to show the historgram of the points that went into calculating this trend''. 
+
+\item An advanced example of a bespoke analysis based on SQUASH is “Display a three-color diagram of the sources in this run; compute the width of point sources in the selected - eg. blue - part of the locus''
+
+\item SQUASH will likely expose results to the LSST Science User Interface for advanced interaction scenarios (both because of the SUI team's front-end expertise but also because they are likely to be similar to science-driven interactions in intent and in execution)
+
+\end{itemize}
+
+
+
+\begin{note}[QA-0 ends here]]
+Rest of QA-0 are notes, questions and bits that still need tidying
+\end{note}
+
+\paragraph{Do these belong in this document? - FE}
+
+Note that the scope of the document according to the abstract is (emphasis FE):
+
+\begin{quote}
+
+  The LSST Data Management subsystem’s responsibilities include the
+  design, implemen- tation, deployment and execution of software
+  pipelines\textbf{ necessary to generate these data products}. This
+  document, in conjunction with the UML Use Case model (LDM-134),
+  describes the design of the\textbf{scientific} aspects of those
+  pipelines.
+  
+\end{quote}
+
+A lot of the QA section seems to verge to me very much on not discussing scientific aspects of of the pipelines necessary to generate DPDD products. I worry this is the origin of my confusion on the scope and right level of detail for this document, and the potentially inconsistent tone of the QA section compared to the pipelines one. 
+
+\begin{itemize}
+\item Repository mgt? Dev com services? These don't seem to be apps specific?
+\end{itemize}
 
 \subsubsection{QA1}
 Data quality in real time during commissioning and operations. Analyzes the data stream in near-real time, information about observing conditions (sky brightness, transparency, seeing, magnitude limit) as well as characterize subtle deterioration in system performance.
