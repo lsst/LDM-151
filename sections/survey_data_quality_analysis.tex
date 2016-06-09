@@ -87,7 +87,7 @@ The core capabilities of QA 0 services are:
 
 \item During Construction, progress towards meeting DM subsystem requirements revolve around the Key Performance Metrics (KPMs) outlined in LDM-240. SDQA implements code to calculate these KPMs. Consult \emph{ reference to KPM Verification document} for a list of those metrics and how (and by whom and on what) they will be calculated. 
 
-\item Additional metrics must be calculated to be met in order for the DM subsystem to demonstrate its operational readiness. The list of those metrics and how (and by whom) they will be calculated will be in \emph{reference to DM Verification Plan CoDR document}. In terms of QA infrastructure, these are not going to be different than 
+\item Additional metrics must be calculated to be met in order for the DM subsystem to demonstrate its operational readiness. The list of those metrics and how (and by whom) they will be calculated will be in \emph{reference to DM Verification Plan CoDR document}. In terms of QA infrastructure, these metrics will not require different capabilities than the KPMs.
 
 \item Validation code will be implemented in such a way that it can run inline with normal pipeline processing on developer's laptops. 
 
@@ -170,17 +170,18 @@ Note that the scope of the document according to the abstract is (emphasis FE):
 
   The LSST Data Management subsystem’s responsibilities include the
   design, implemen- tation, deployment and execution of software
-  pipelines\textbf{ necessary to generate these data products}. This
+  pipelines \textbf{necessary to generate these data products}. This
   document, in conjunction with the UML Use Case model (LDM-134),
-  describes the design of the\textbf{scientific} aspects of those
+  describes the design of the \textbf{scientific} aspects of those
   pipelines.
   
 \end{quote}
 
-A lot of the QA section seems to verge to me very much on not discussing scientific aspects of of the pipelines necessary to generate DPDD products. I worry this is the origin of my confusion on the scope and right level of detail for this document, and the potentially inconsistent tone of the QA section compared to the pipelines one. 
+\textbf{FE:}
+A lot of the QA section seems to verge on being beyond a discussion of the scientific aspects of of the pipelines necessary to generate DPDD products. I worry this is the origin of my confusion on the scope and right level of detail for this document, and the potentially inconsistent tone of the QA section compared to the pipelines one. 
 
 \begin{itemize}
-\item Repository mgt? Dev com services? These don't seem to be apps specific?
+\item Repository management? Developer communication services? These don't seem to be apps specific?
 \end{itemize}
 
 \subsubsection{QA1}
