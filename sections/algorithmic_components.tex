@@ -348,16 +348,26 @@ We have tested the described dipole measurement algorithm on simulated dipoles w
 \paragraph{Hybrid Models}
 \label{sec:acHybridModels}
 
+\label{Spatial Models}
+\label{sec:acSpatialModels}
+In many areas we will need to represent spatial models.  This will include models fit to sparse and non-uniformly sampled data.  We will support fitting Chebyshev polynomials and splines.  We will also support regression techniques like Gaussian Processes.
+
 \subsection{Background Estimation}
 \label{sec:acBackgroundEstimation}
 AUTHOR: Simon
-\begin{itemize}
-\item Fit or interpolate large-scale variations while masking out detections.
-\item Needs to work in crowded fields.
-\item Needs to work on both difference images and direct images.
-\item Need to be able to compose backgrounds measured in different coordinate systems on different scales.
-\item Needs to work on single CCDs for AP even if we use full FoV in DRP.
-\end{itemize}
+
+Background estimation will be done on the largest scale feasible first.  In the case of Alert Production, this may be on the size of a chip.  In DRP, we expect this to be on a full focalplane.  An initial low order estimate will be made on a large scale.  Each chip will be divided into subregions.  For each subregion, the median of the non-masked pixels will be computed.  All values for all chips will be fit by an appropriate function (see \S \ref{sec:acSpatialModels}).  This will provide a low order background estimation in focal plance coordinates.  Note that this can only be done if the instrument signature removal is very high fidelity.  Any sharp discontinuity could cause problems with fitting a smooth function.
+
+A higher order background model can be computed per chip.  First, the low order background is subtracted from the image.  The non-masked pixels will again be binned on a finer grid avoiding bright objects.  The median in each bin is fit by an appropriate function.  In practice, this process will likely be iterative.
+
+In the case of Alert Production, there will be no full focalplane model since we expect to process only a single chip in each thread.  In this case, we constrain the background with the available un-masked pixels without removing a global background first.  Note that image differencing is still possible even in the scenario where there are no unmasked pixels in the science image.  The background can be modeled as a part of the PSF matching process.  We will want to do background modeling and subtraction in Alert Production when possible because we will want to do calibrated photometry.  Even though these measurements are not persisted for science us, they will be very useful for debugging and QA.
+
+If there are so few un-masked pixels in the entire focalplane that even a low order global background is impossible to model, we will not compute a background model.  Instead, we will do crowded field photometry only \ref{????}
+
+\begin{note}[Crowded fields and composition]
+Requirements included working in crowded fields.  I think estimating a full focalplane model is the best we can do.  If there are no unmasked pixels in the entire FoV, I don't think there is much we can do.
+I didn't explicitly talk about composition of background models, but this takes that into account by allowing a global model to be subtracted from the single chip image before a higher order model is fit.
+\end{note}
 
 \subsection{Build Background Reference}
 \label{sec:acBuildBackgroundReference}
@@ -372,12 +382,22 @@ AUTHOR: Simon
 \subsubsection{Single CCD PSF Estimation}
 \label{sec:acSingleCCDPSF}
 AUTHOR: Simon
-\begin{itemize}
-\item Fit simple empirical PSF model to stars from a single exposure.
-\item No chromaticity.
-\item May use external star catalog, but doesn't rely on one.
-\item Used only in Alert Production.
-\end{itemize}
+
+Single CCD PSF estimation needs to be run in both Alert Production and in in Data Release Processing.  In Alert Production it will be the final PSF model for both direct and difference image measurement.  In Data Release Processing, it will be used as an initial bootstrapping step to start off image characterization.  We do not intend to include chromatic effects in the PSF at the single CCD estimation phase.
+
+The first step is to select a set of suitable stars to use as PSF exemplars.  This can be done by finding clusters in second moment space.  In production, we expect that an external catalog with PSF candidates that have been show to be non-varying and isolated will produce better results.
+
+Once a set of candidate stars is selected each star is fit by a set of appropriate basis functions: e.g. shapelets.  The PSF is approximated by
+\[
+P = \Sigma_n c_n\Psi_n
+\]
+where $\Psi_n$ is the $n^{th}$ basis function, and $c_n$ is the coefficient for that basis function.  We can solve for the coefficients in the least squares sense using a QR decomposition or similar technique.  We then have an estimate of the PSF at several locations on the chip.  For each of the coefficients we can fit 2D Chebyshev polynomials to each coefficient to model the spatial variation in each component (see \ref{sec:acSpatialModels}).  By interpolating the fit coefficients, we can derive an estimate of the PSF at any point in the chip.
+
+The order of the spatial model cannot excede number of PSF exemplars in the frame.  If there is only a single PSF candidate star, we will assume the PSF is constant across the CCD.  In the case of no PSF candidate stars, we will assume a double Gaussian PSF with width set by observation metadata: e.g. FWHM from the guiding system.
+
+\begin{note}[Do we need something more complex?]
+We can get arbitrarily complex, but I don't thinkn we need a more complex system in the baseline until we show this won't work.
+\end{note}
 
 \subsection{Wavefront Sensor PSF Estimation}
 \label{sec:acWavefrontSensorPSF}
@@ -494,15 +514,9 @@ It occurs to me that the ubercal problem can be pretty well described with a lat
 
 \subsection{Retrieve Diffim Template for a Visit}
 \label{sec:acRetrieveTemplate}
-AUTHOR: Simon
+In difference imaging a major contributor to the quality of the difference image is the choice of template.  We expect that the DRP template generation algorithm will be quite complex.  It will potentially involve synthesizing multiple monochromatic templates that will be used to model the effects of DCR.
 
-The baseline assumption for generating template images for ...
-
-
-\begin{itemize}
-\item Determine appropriate template to use
-\item Generate template for observation (may include DCR correction)
-\end{itemize}
+Ideally, the retrieval will be to select the correct bounding box from the correct master template for the current observation.  If not, we expect the template generation algorithm will provide an algorithm to interpret the templates.
 
 \subsection{PSF Matching}
 \label{sec:acPSFMatching}
