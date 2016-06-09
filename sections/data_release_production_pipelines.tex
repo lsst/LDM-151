@@ -92,6 +92,10 @@ The final output data products of the ImChar/JointCal iteration are the Source t
 
 There are also several intermediate versions of the Source and CalExp data products passed between the ImChar/JointCal pipelines, as well as...
 
+\begin{note}[TODO]
+  finish discussing data products.
+\end{note}
+
 \subsubsection{BootstrapImChar}
 \label{sec:drpBootstrapImChar}
 
@@ -152,7 +156,6 @@ def BootstrapImChar(%\hr{raw}%, %\hr{reference}%):
     calexp.psf.apcorr = %\hr{FitApCorr}%(matches, sources)
     parallel for ccd in SCIENCE_SENSORS:
         sources[ccd] = %\hr{ApplyApCorr}%(sources[ccd], calexp.psf)
-    calexp.calib = %\hr{FitPhotoCalib}%(matches, sources)
     return calexp, sources
 \end{lstlisting}
 
@@ -166,12 +169,12 @@ Raw amplifier images from science and wavefront CCDs, spread across one or more 
 
 A full-sky catalog of reference stars derived from both external (e.g. Gaia) and LSST data.
 
-Later pipelines (\hyperref[sec:drpBootstrapJointCal]{BootstrapJointCal}, \hyperref[sec:drpRefineJointCal]{RefineJointCal}) will define a deeper reference catalog derived from this one and the new data being processed, but the origin and depth of the initial reference catalog is largely TBD.  It will almost certainly include Gaia stars, but it may also include data from other telescopes, LSST special programs, LSST commissioning observations, and/or the last LSST data release.
+The \hyperref[sec:drpInitialJointCal]{InitialJointCal} pipeline will later define a deeper reference catalog derived from this one and the new data being processed, but the origin and depth of the initial reference catalog is largely TBD.  It will almost certainly include Gaia stars, but it may also include data from other telescopes, LSST special programs, LSST commissioning observations, and/or the last LSST data release.
 
 \paragraph{Output Data Product: Source}
 \label{sec:drpBootstrapImChar_sources}
 
-A preliminary version of the Source table.  This could contain all of the columns in the DPDD Source schema if the \hr{MeasureSources} is appropriately configured, but some of these columns are likely unnecessary in its role as an intermediate data product that feeds \hyperref[sec:drpBootstrapJointCal]{BootstrapJointCal}, and it is likely that other non-DPDD columns will be present for that role.
+A preliminary version of the Source table.  This could contain all of the columns in the DPDD Source schema if the \hr{MeasureSources} is appropriately configured, but some of these columns are likely unnecessary in its role as an intermediate data product that feeds \hyperref[sec:drpInitialJointCal]{InitialJointCal}, and it is likely that other non-DPDD columns will be present for that role.
 
 BootstrapImChar also has the capability to produce even earlier versions of the Source table for diagnostic purposes (see \hr{WriteDiagnostics}).  These tables are not associated with any photometric calibration or aperture correction, and some may not have any measurements besides centroids, and hence are never substitutable for the final Source table.
 
@@ -285,6 +288,8 @@ If desired, the current state of the \texttt{source}, \texttt{calexp}, and \text
 
 Subtract all detected stars above a flux limit from the image, using the PSF model.  In crowded fields, this should allow subsequent \hr{SubtractBackground} and \hr{DetectSources} steps to push fainter by removing the brightest stars in the image.
 
+Sources classified as extended are never subtracted.
+
 \paragraph{ReinsertStars}
 \label{sec:drpBootstrapImChar_ReinsertStars}
 
@@ -307,22 +312,61 @@ Delegate to the \hyperref[sec:acApCorr]{Aperture Correction algorithmic componen
 
 Delegate to the \hyperref[sec:acApCorr]{Aperture Correction algorithmic component} to apply aperture corrections to flux measurements.
 
-\paragraph{FitPhotoCalib}
-\label{sec:drpBootstrapImChar_FitPhotoCalib}
+% Undeclare the local hyperref macro
+\let\hr\undefined
 
-Delegate to the \hyperref[sec:acSingleVisitPhotometricFit]{Single Visit Photometric Fit algorithmic component} to fit the zeropoint of the exposure (possibly including some spatial variation to account for grey clouds).
+\subsubsection{InitialJointCal}
+\label{sec:drpInitialJointCal}
+
+In InitialJointCal, we jointly process all of the Source tables produced by running \hyperref[sec:drpBootstrapImChar]{BootstrapImChar} on each visit in a tract.  There are four steps:
+\begin{enumerate}
+\item We match all sources and the reference catalog by delegating to \hyperref[sec:acJointCalMatching]{JointCalMatching}.  This is a non-blind search; we assume the WCSs output by BootstrapImChar are good enough that we don't need to fit for any additional offsets between images at this stage.  Some matches will not include a reference object, as the sources will almost certainly extend deeper than the reference catalog.
+\item We classify matches to select a clean sample of low-variability stars for later steps, delegating to \hyperref[sec:acJointCalClassification]{JointCalClassification}.  This uses morphological and possibly color information from source measurements as well as reference catalog information (where available).  This step also assigns an inferred SED to each match from its colors; for matches associated with a reference object, whether this supersedes SEDs or colors in the reference catalog is TBD.
+\item We fit simultaneously for improved astrometric solution by requiring each star in a match to have the same position.  This may need to correct (perhaps approximately) for centroid shifts due to DCR and/or proper motion; if it does not, it must be robust against these shifts (perhaps via outlier rejection).  The models and parameters to fit are TBD in detail, but they will represent further perturbation of the WCS fit in BootstrapImChar.  This fit generates a new WCS component for each CalExp.
+\item We fit simultaneously for photometric zeropoints by requiring each star in a match to have the same flux after applying smoothed monochromatic flat fields produced by the calibration products pipeline.  There is a small chance this fit will also be used to further constrain those monochromatic flat fields.  This fit generates a new PhotoCalib component for each CalExp.
+\end{enumerate}
+
+In addition to updating the CalExp WCS and PhotoCalib, InitialJointCal generates a new Reference dataset containing the joint-fit centroids and fluxes for each of its match groups as well as their classifications and inferred SEDs.
+
+\subsubsection{RefineImChar}
+\label{sec:drpRefineImChar}
+
+RefineImChar performs an incremental improvement on the measurements and PSF model produced by \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}, using the improved reference catalog, WCS, and PhotoCalib produced by \hyperref[sec:drpInitialJointCal]{InitialJointCal}.  Its steps are thus a strict subset of those in \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}.  A pseudocode description of RefineImChar is given below, but all steps refer to back to the descriptions in \ref{sec:drpBootstrapImChar}:
+
+\newcommand{\hr}[1]{\hyperref[sec:drpBootstrapImChar_#1]{#1}}
+
+\begin{lstlisting}
+def RefineImChar(%\hr{calexp}%, %\hr{sources}%, %\hr{reference}%):
+    matches = %\hr{MatchNonBlind}%(sources, reference)
+    %\hr{SelectStars}%(matches, exposures)
+    calexp.psf = %\hr{FitPSF}%(matches, sources, calexp.{mi,wcs})
+    parallel for ccd in SCIENCE_SENSORS:
+        calexp[ccd].mi = %\hr{SubtractStars}%(calexp[ccd].{mi,psf}, sources[ccd])
+    calexp.{mi,background} = %\hr{SubtractBackground}%(calexp.mi)
+    parallel for ccd in SCIENCE_SENSORS:
+        sources[ccd] = %\hr{DetectSources}%(calexp.{mi,psf})
+        calexp[ccd].mi, sources[ccd] =
+            %\hr{ReinsertStars}%(calexp[ccd].{mi,psf}, sources[ccd])
+        sources[ccd] = %\hr{DeblendSources}%(sources[ccd], calexp.{mi,psf})
+        sources[ccd] = %\hr{MeasureSources}%(sources[ccd], calexp.{mi,psf})
+    calexp.psf.apcorr = %\hr{FitApCorr}%(matches, sources)
+    parallel for ccd in SCIENCE_SENSORS:
+        sources[ccd] = %\hr{ApplyApCorr}%(sources[ccd], calexp.psf)
+    return calexp, sources
+\end{lstlisting}
+
+This is essentially just another iteration of the loop in in \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}, without the WCS-fitting or artifact-handling stages.
+
+Note that RefineImChar does not update the CalExp's WCS, PhotoCalib, Image, or Variance (and its Mask is only updated to indicate new detections).
 
 % Undeclare the local hyperref macro
 \let\hr\undefined
 
-\subsubsection{BootstrapJointCal}
-\label{sec:drpBootstrapJointCal}
-\subsubsection{RefineImChar}
-\label{sec:drpRefineImChar}
-\subsubsection{RefineJointCal}
-\label{sec:drpRefineJointCal}
 \subsubsection{FinalImChar}
 \label{sec:drpFinalImChar}
+
+
+
 \subsubsection{FinalJointCal}
 \label{sec:drpFinalJointCal}
 
@@ -398,4 +442,6 @@ Extract Afterburner pipelines from ``DRP Top-Level Overview'' on confluence and 
 
 \begin{itemize}
 \item Where does the initial reference catalog at the start of the DRP come from?  This could require special observations in commissioning or before the start of the survey, as well as addition algorithms and software.  If DRP always uses a reference catalog for star selection in ImChar, we need to actually do the classification for that at some point.
+\item How do we test all of the wavelength-dependent photometric calibration and PSF stuff on precursor data?  Are we going to characterize DECam well enough to just use it directly, or do we need to mock things up or rely more on JointCal?
 \end{itemize}
+
