@@ -92,7 +92,7 @@ The ImChar and JointCal iteration is itself interleaved with background matching
 
 Each ImChar pipeline runs on a single visit, and each JointCal pipeline runs simultaneously on all visits within a single tract, allowing tracts to be run entirely independently.
 
-The final output data products of the ImChar/JointCal iteration are the Source table and CalExp (calibrated exposure) images.  The latter includes Image, Mask, Variance, Background, PSF, WCS, Calib components that we will track separately.
+The final output data products of the ImChar/JointCal iteration are the Source table and CalExp (calibrated exposure) images.  The latter includes Image, Mask, Variance, Background, PSF, WCS, and PhotoCalib components that we will track separately.
 
 There are also several intermediate versions of the Source and CalExp data products passed between the ImChar/JointCal pipelines, as well as...
 
@@ -185,7 +185,7 @@ BootstrapImChar also has the capability to produce even earlier versions of the 
 \paragraph{Output Data Product: CalExp}
 \label{sec:drpBootstrapImChar_calexp}
 
-A preliminary version of the CalExp (calibrated direct exposure).  CalExp is an \hyperref[sec:spImagesExposure]{Exposure} object, and hence it has several components.  BootstrapImChar is the only pipeline that actually updates all of them.  Some CalExp components are determined at the scale of a full FoV and hence should probably be persisted at the visit level (PSF, WCS, Calib, Background), while others are straightforward CCD-level data products (Image, Mask, Variance).
+A preliminary version of the CalExp (calibrated direct exposure).  CalExp is an \hyperref[sec:spImagesExposure]{Exposure} object, and hence it has several components.  BootstrapImChar is the only pipeline that actually updates all of them.  Some CalExp components are determined at the scale of a full FoV and hence should probably be persisted at the visit level (PSF, WCS, PhotoCalib, Background), while others are straightforward CCD-level data products (Image, Mask, Variance).
 
 \paragraph{RunISR}
 \label{sec:drpBootstrapImChar_RunISR}

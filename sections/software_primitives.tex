@@ -14,7 +14,7 @@
 \item[Background] An object describing the background model that was subtracted from the image; the original unsubtracted image can be obtained by adding an image of this model to the Exposure's image plane.  Backgrounds are more complex than merely an image or even an interpolated binned image; background estimation will proceed in several stages, and these stages (which may happen in different coordinate systems) must be combined to form the full background model.
 \item[PSF] A model of the PSF; see \hyperref[sec:spPSF]{PSF}.  This includes a model for aperture corrections.
 \item[WCS] The astrometric solution that related the image's pixel coordinate system to coordinates on the sky; see \hyperref[sec:spWCS]{WCS}.
-\item[Calib] The photometric solution that relates the image's pixel values to magnitudes as a function of source wavelength or SED.  Some Calibs may represent global calibration and some may represent relative calibration.
+\item[PhotoCalib] The photometric solution that relates the image's pixel values to magnitudes as a function of source wavelength or SED.  Some PhotoCalibs may represent global calibration and some may represent relative calibration.
 \end{description}
 
 \subsection{Tables}
