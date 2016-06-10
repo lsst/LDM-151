@@ -408,6 +408,22 @@ Unlike \hyperref[sec:drpStandardJointCal]{StandardJointCal}, FinalJointCal is al
 Extract Coaddition and DiffIm pipelines from ``DRP Top-Level Overview'' on confluence and expand detail to show data flow and ordering of ``Task/Process'' boxes.
 \end{note}
 
+The next group of pipelines in a Data Release Production consist of image coaddition and image differencing, which we use to separate the static sky from the dynamic sky in terms of both astrophysical quantities and observational quantities.  This group also includes an iteration between pipelines that combine images and pipelines that subtract the combined images from each exposure.  At each differencing step, we better characterize the features that are unique to a single epoch (whether artifacts, background features, or astrophysical sources); we use these characterizations to ensure the next round of coadds include only features that are common to all epochs.
+
+The first two pipelines in this group, \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} and \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, are run before the last two pipelines in the previous group, \hyperref[sec:drpFinalImChar]{FinalImChar} and \hyperref[sec:drpFinalJointCal]{FinalJointCal}.  The rest are run after \hyperref[sec:drpFinalJointCal]{FinalJointCal}.  However, it is possible that the \hyperref[sec:drpDiffIm]{DiffIm} pipeline is significantly better than \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} at artifact detection, which would necessitate moving \hyperref[sec:drpFinalImChar]{FinalImChar} and \hyperref[sec:drpFinalJointCal]{FinalJointCal} after at least one iteration of \hyperref[sec:drpDiffIm]{DiffIm}.
+
+This pipeline group is responsible for producing the following data products:
+\begin{description}
+\item[CalExp.\{Background,Mask\}]  The final background is estimated by \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, which is also responsible for finding artifacts by differencing warped images and building an outlier-rejected coadd.  The mask will be further updated by \hyperref[sec:drpFinalImChar]{FinalImChar}.
+\item[DIAExp] A CCD-level \hyperref[sec:spImagesExposure]{Exposure} that is the difference between the CalExp and a template coadd, in the coordinate system and with the PSF of the CalExp.
+\item[DIASource] A \hyperref[sec:spTablesSource]{SourceCatalog} containing sources detected and measured on the DIAExp images.
+\item[PSFMatchedCoadd] A coadd data product (\hyperref[sec:spImagesExposure]{Exposure} or subclass thereof) with a constant, predefined PSF.
+\item[DeepCoadd] A coadd data product built to optimize depth at the possible expense of seeing.
+\item[BestSeeingCoadd] A coadd data product built to optimize image quality at the possible expense of depth.  Depending on the algorithm used, this may be the same as DeepCoadd.
+\item[ShortPeriodCoadd] A coadd data product built from exposures in a short range of epochs, such as a year, rather than the full survey.
+\item[TemplateCoadd] A coadd data product used for difference imaging in both DRP and AP, or a suite of coadd data products from which the template for a given airmass can be derived.
+\end{description}
+
 \subsubsection{WarpAndPsfMatch}
 \label{sec:drpWarpAndPsfMatch}
 \subsubsection{BackgroundMatchAndReject}
