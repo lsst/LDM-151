@@ -137,7 +137,7 @@ The driver for Multi-Coadd Measurement is passed an input/output \hyperref[sec:s
 
 The signatures of difference image measurement's drivers and algorithms are at least somewhat TBD; they will take at least a difference image \hyperref[sec:spImagesExposure]{Exposures} and a \hyperref[sec:spTablesSource]{SourceCatalog/SourceRecord}, but some plugins such as dipole measurement may require access to a direct image as well.  Because difference imaging dramatically reduces blending, difference image measurement may require any approach to blended measurement (though any use of the associated direct image would require deblending).
 
-\paragraph{Multi-Epoch Measurement:} Measure multiple direct images simultaneously by fitting the same \hyperref[sec:apWCS]{WCS}-transformed, \hyperref[sec:apPSF]{PSF}-convolved model to them.  Blended objects in Multi-Epoch Measurement will be handled by \emph{at least} fitting them simutaneously (\ref{sec:acSimultaneousFitting}), which may in turn require hybrid galaxy/star models (\ref{sec:acHybridModels}).  These models may then be used as templates for deblending and replace-with-noise (\ref{sec:acReplaceNeighborsWithNoise}) measurement if this improves the results.
+\paragraph{Multi-Epoch Measurement:} Measure multiple direct images simultaneously by fitting the same \hyperref[sec:spWCS]{WCS}-transformed, \hyperref[sec:spPSF]{PSF}-convolved model to them.  Blended objects in Multi-Epoch Measurement will be handled by \emph{at least} fitting them simutaneously (\ref{sec:acSimultaneousFitting}), which may in turn require hybrid galaxy/star models (\ref{sec:acHybridModels}).  These models may then be used as templates for deblending and replace-with-noise (\ref{sec:acReplaceNeighborsWithNoise}) measurement if this improves the results.
 \label{sec:acMultiEpochMeasurement}
 
 Because the memory and I/O requirements for multi-epoch measurement of a single object or blend family are substantial, we will not provide a driver that accepts an \hyperref[sec:spTablesObject]{ObjectCatalog} and measures all objects within it; instead, the \hyperref{sec:drpMultiFit} pipeline will submit individual family-level jobs directly to the orchestration layer.  The multi-epoch measurement driver will thus just operate on one blend family at a time, and manage blending while executing its plugin algorithms.
@@ -179,10 +179,13 @@ Add references to specific AP pipelines that will use forced measurement.
 
 \paragraph{Aperture Photometry}
 \label{sec:acAperturePhotometry}
+
 \begin{itemize}
-\item Sequence of fixed apertures
-\item Use sinc algorithm for small apertures, naive for large.
-\item May use elliptical apertures instead of circular, maybe even if changing ellipticities as a function of radius.  TBD.
+\item Aperture fluxes are computed by summing the total flux within an elliptical region defined on the image.
+\item Aperture fluxes are computed at a series of logarithmically spaced aperture sizes. Per the \DPDD{}, the total number of apertures will vary depending on the size of the source.
+\item When computing fluxes for small apertures---for configurable values of ``small''--we use $\mathrm{sinc}$ interpolation \cite{Bickerton13}. For large apertures, we use a naive summation of pixel values.
+\item May need to change ellipticity as a function of aperture radius.
+\item If run before PSF estimation, will need a variant that does not rely on the PSF model to choose aperture size/ellipticity.
 \end{itemize}
 
 \paragraph{Static Point Source Models}
@@ -391,9 +394,27 @@ AUTHOR: Simon
 AUTHOR: Jim
 \subsubsection{Oversampled Images}
 \label{sec:acOversampledWarping}
-\begin{itemize}
-\item Just use Lanczos.
-\end{itemize}
+
+Oversampled images are warped to a new \hyperref[sec:spWCS]{WCS} and resampled using a two dimensional Lancsoz kernel of configurable order. The baselined default order is 3.
+
+The one dimensional Lancsoz kernel of order $a$ is defined as
+\[
+L(x) = \begin{cases}
+       \operatorname{sinc}(x)\, \operatorname{sinc}(x/a) & \text{if}\;\; -a < x < a\\ 0 & \text{otherwise.}
+       \end{cases}
+\]
+The two dimensional Lancsoz kernel is $L(x, y) = L(x) \cdot L(y)$.
+
+For each integer pixel position in the remapped image, the associated pixel position in the source image is determined using the source and destination WCS. The warping kernel is then applied to the source image to compute the remapped pixel value. A flux conservation factor is applied based on the relative sizes of the pixel in the source and destination WCS.
+
+For performance reasons, it is desirable to reduce the total number of WCS calculations. It is therefore acceptable to perform the mapping between source and destination images over a regular grid and linearly interpolate between grid points, rather than mapping every pixel independently.
+
+Since chromaticity is accounted for in the \hyperref[sec:spPSF]{PSF} rather than the WCS, no special account is taken of color when warping.
+
+\begin{note}
+The above describes the current warping implementation in afw. We should identify deficiencies with the current implementation to establish resource requirements.
+\end{note}
+
 \subsubsection{Undersampled Images}
 \label{sec:acUndersampledWarping}
 \begin{itemize}

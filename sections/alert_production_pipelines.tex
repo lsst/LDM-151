@@ -112,7 +112,7 @@ longer than buffer of data at summit
 
 Iterate till convergence (convergence criteria TBD)
 \begin{itemize}
-\item \hyperref[sec:background]{Background estimation}
+\item \hyperref[sec:acBackgroundEstimation]{Background estimation}
 \item Source detection
 \item Selection of PSF candidate stars
 \item PSF determination
@@ -130,8 +130,8 @@ Iterate till convergence (convergence criteria TBD)
 \noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item  Source measurement - \hyperref[sec:measurement]{Single Visit Measurement}
-\item  \hyperref[sec:apertureCorrection]{Aperture correction}
+\item  Source measurement - \hyperref[sec:acSingleVisitMeasurement]{Single Visit Measurement}
+\item  \hyperref[sec:acApCorr]{Aperture correction}
 \end{itemize}
 
 \paragraph{Photometric and Astrometric calibration:}~
@@ -148,12 +148,12 @@ OCS PSF, WCS, metadata (TBD)
 \noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item \hyperref[sec:association]{Source association}
-\item CCD level \hyperref[sec:photometric]{photometric solution}
-\item Visit level \hyperref[sec:photometric]{photometric solution}
+\item \hyperref[sec:acMatching]{Source association}
+\item CCD level \hyperref[sec:acSingleCCDPhotometricFit]{photometric solution}
+\item Visit level \hyperref[sec:acSingleVisitPhotometricFit]{photometric solution}
 \item Remove known astrometric distortions
 \item Fit remaining residual
-\item Single visit composed \hyperref[sec:astrometric]{astrometric solution}
+\item Single visit composed \hyperref[sec:acSingleVisitAstrometricFit]{astrometric solution}
 \item Output information for OCS telemetry: WCS ACTION clarify OCS interactions
 \end{itemize}
 
@@ -216,8 +216,8 @@ PSF for science image
 \item Compute PSF matching kernel and spatial model using ZOGY approach
 \item Difference science and template images
 \item Apply correction for correlated noise
-\item Difference image \hyperref[sec:detection]{source detection}
-\item Difference image  \hyperref[sec:measurement]{source
+\item Difference image \hyperref[sec:acSourceDetection]{source detection}
+\item Difference image  \hyperref[sec:acDiffImMeasurement]{source
     measurement}: dipole fit, trailed source measurement
 \item Measure flux on snap difference for all DIASources
 \end{itemize}
