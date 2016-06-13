@@ -95,8 +95,8 @@ For templates, try:
 
 Will be especially challenging in crowded fields, but it needs to work in that regime as well.
 
-\subsubsection{Single Visit Deblending}
-\label{sec:acSingleVisitDeblending}
+\subsubsection{Single Frame Deblending}
+\label{sec:acSingleFrameDeblending}
 \begin{itemize}
 \item Generate HeavyFootprint deblends using only a single image.
 \item May need to be able to work with approximate/guess PSF, even in crowded fields, if we need to deblend before PSF estimation in DRP.
@@ -123,12 +123,12 @@ AUTHOR: Jim
 \subsubsection{Variants}
 Measurement is run in several contexts, but always consists of running an ordered list of algorithm plugins on either individual objects or families thereof.  Each context corresponds to different variant of the measurement driver code, and has a different set of plugin algorithms and approaches to measuring blended objects.
 
-\paragraph{Single Visit Measurement:} Measure a direct single-visit CCD image, assuming deblend information already exists and can be used to replace neighbors with noise (see \ref{sec:acReplaceNeighborsWithNoise}).
-\label{sec:acSingleVisitMeasurement}
+\paragraph{Single Frame Measurement:} Measure a direct single-visit CCD image, assuming deblend information already exists and can be used to replace neighbors with noise (see \ref{sec:acReplaceNeighborsWithNoise}).
+\label{sec:acSingleFrameMeasurement}
 
-Single Visit Measurement is run in both \hyperref[sec:apSingleFrameProcessing]{AP's Single Frame Processing pipeline}) and DRP's \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}, \hyperref[sec:drpRefineImChar]{RefineImChar}, and \hyperref[sec:drpFinalImChar]{FinalImChar}.  It must be capable of running on wavefront sensor images, though this may require different plugin algorithms.
+Single Frame Measurement is run in both \hyperref[sec:apSingleFrameProcessing]{AP's Single Frame Processing pipeline}) and DRP's \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}, \hyperref[sec:drpRefineImChar]{RefineImChar}, and \hyperref[sec:drpFinalImChar]{FinalImChar}.  It must be capable of running on wavefront sensor images, though this may require different plugin algorithms.
 
-The driver for Single Visit Measurement is passed an input/output \hyperref[sec:spTablesSource]{SourceCatalog} and an \hyperref[sec:spImagesExposure]{Exposure} to measure.  Plugins take an input/output \hyperref[sec:spTablesSource]{SourceRecord} and an \hyperref[sec:spImagesExposure]{Exposure} containing only the object to be measured.
+The driver for Single Frame Measurement is passed an input/output \hyperref[sec:spTablesSource]{SourceCatalog} and an \hyperref[sec:spImagesExposure]{Exposure} to measure.  Plugins take an input/output \hyperref[sec:spTablesSource]{SourceRecord} and an \hyperref[sec:spImagesExposure]{Exposure} containing only the object to be measured.
 
 \paragraph{Multi-Coadd Measurement:} Simultaneously measure a suite of coadds representing different bandpasses, epoch ranges, and flavors.  This is run only in DRP's \hyperref[sec:drpMeasureCoadds]{MeasureCoadds} pipeline.
 \label{sec:acMultiCoaddMeasurement}
@@ -492,8 +492,8 @@ AUTHOR: Jim
 \subsection{Star/Galaxy Classification}
 \label{sec:acClassification}
 AUTHOR: Jim
-\subsubsection{Single Visit S/G}
-\label{sec:acSingleVisitClassification}
+\subsubsection{Single Frame S/G}
+\label{sec:acSingleFrameClassification}
 \begin{itemize}
 \item Extendedness or trace radius difference that classifies sources based on single frame measurements that can utilize the PSF model.  Used to select single-frame calibration stars, and probably aperture correction stars.
 \end{itemize}
