@@ -574,10 +574,30 @@ Actual detection on these images may be done with a lower threshold than our fin
 
 The details of the suite of detection images and morphological filters is a subject requiring further algorithmic research on precursor data (or LSST/ComCam data) at full LSST depths with at least approximately the right filter set.
 
+After detection, CoaddSources may be deblended and characterized by running the \hyperref[sec:acSingleFrameDeblending]{Single Frame Deblending}, \hyperref[sec:acSingleFrameMeasurement]{Single Frame Measurement}, and \hyperref[sec:acSingleFrameClassification]{Single Frame Classification} algorithmic components on DeepCoadd and ShortPeriodCoadd combinations that correspond to the LikelihoodCoadd combinations used for detection.  These characterizations (like the rest of the CoaddSource tables) will be discarded after the \hyperref[sec:drpDeepAssociate]{DeepAssociate} pipeline is run, but may be necessary to inform higher-level association algorithms run there.  The requirements on characterization processing in this pipeline will be set by the needs of the \hyperref[sec:drpDeepAssociate]{DeepAssociate} pipeline, but we do not expect it to involve significant new code beyond what will be used by the various ImChar pipelines.
+
+The only output of DeepDetect is the suite of CoaddSource tables (one for each detection image) containing \hyperref[sec:spFootprints]{Footprints}, peaks, and characterizations necessary for association.
+
 \subsubsection{DeepAssociate}
 \label{sec:drpDeepAssociate}
+
+In DeepAssociate, we perform a sophisticated spatial match of all CoaddSources and DIASources, generating tables of DIAObjects, Object candidates, and SSObject detections.  We do \emph{not} include the Source table in this merge, as virtually all Sources correspond to astrophysical objects better detected in \hyperref[sec:drpDeepDetect]{DeepDetect} or \hyperref[sec:drpDiffIm]{DiffIm}.
+
+The baseline plan for association is to first associate DIASources into DIAObjects using the same approach used in Alert Production (i.e. the \hyperref[sec:acDIAObjectGeneration]{DIAObject Generation} algorithmic component), then associate DIAObjects with the multiple CoaddSource tables (using the \hyperref[sec:acObjectGeneration]{Object Generation} algorithmic component).  DIASources not associated into DIAObjects will be considered candidates for merging SSObjects, which will happen in the \hyperref[sec:drpMOPS]{MOPS} pipeline.
+
+These association steps must be considerably more sophisticated than simple spatial matching; they must utilize the limited flux and classification information available from detection to decide whether to merge sources detected in different contexts.  This will require astrophysical models to be included in the matching algorithms at some level; for instance:
+\begin{itemize}
+\item We must be able to associate the multiple detections that correspond to high proper-motion stars into a single Object.
+\item We must not associate supernovae with their host galaxies, despite the fact that their positions may be essentially the same.
+\end{itemize}
+To meet these goals (as well as similar ones which still need to be specififed), DeepAssociate will have to generate \emph{multiple} hypotheses for some blend families.  Some of these conflicting hypotheses will be rejected by the \hyperref[sec:drpDeepDeblend]{DeepDeblend}, while others may be present in the final Object catalog (flags will be used to indicate different interpretations and our most likely interpretation).  This is a generalization of the simple parent/child hierarchy used to describe different blend hypotheses in the SDSS database (see Section~\ref{sec:introDataUnits}).
+
+It is possible that associations could be improved by doing both merge steps simultaneously (under the hypothesis that CoaddSource presence or absence could be used to improve DIASource association).  This is considered a fallback option if the two-stage association procedure described above cannot be made to work adequately.
+
 \subsubsection{DeepDeblend}
 \label{sec:drpDeepDeblend}
+
+
 \subsubsection{MeasureCoadds}
 \label{sec:drpMeasureCoadds}
 
@@ -618,11 +638,12 @@ Extract Afterburner pipelines from ``DRP Top-Level Overview'' on confluence and 
 \subsubsection{GatherContributed}
 \label{sec:drpGatherContributed}
 
-\subsection{UNCAPTURED DEPENDENCIES}
+\subsection{UNSTRUCTURED OPEN QUESTIONS}
 
 \begin{itemize}
 \item Where does the initial reference catalog at the start of the DRP come from?  This could require special observations in commissioning or before the start of the survey, as well as addition algorithms and software.  If DRP always uses a reference catalog for star selection in ImChar, we need to actually do the classification for that at some point.
 \item How do we test all of the wavelength-dependent photometric calibration and PSF stuff on precursor data?  Are we going to characterize DECam well enough to just use it directly, or do we need to mock things up or rely more on JointCal?
 \item Input selection for DRP.  How do we decide what to throw away?  Is this a SQuaRE job?  Do we ever throw images away because the pipeline can't process them?  Do we report these back to the scheduler, or just hope it all averages out?
+\item Shouldn't we be making difference images from short-period coadds, instead of using the short-period coadds directly?
 \end{itemize}
 
