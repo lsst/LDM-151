@@ -418,6 +418,8 @@ AUTHOR: Jim
 
 \subsection{Model Spatial Variation of PSF}
 \subsubsection{Within a CCD}
+\label{sec:acModelSpatialPSF}
+
 \begin{itemize}
 \item Estimate PSF at discrete locations using a set of basis functions
 \item Fit interpolation functions to fit coefficients to enable interpolation
@@ -733,7 +735,13 @@ we require a heavily regularized regression.
 The initial implementation for the DCR corrected template will invert
 the linear equations assuming smoothness in the between adjacent
 pixels and as a function of wavelength by adopting first and second
-order finite difference matrices (ref nate).  An prototype
+order finite difference matrices (ref nate).  
+
+2 separate regularizations smooth in pixel and smooth in wavelength
+
+matrix extends in size.
+
+An prototype
 implementation has been demonstrated for the 1D case.  A second
 approach will be to forward model the problem by iteratively updating
 $I$ based on the set of observations (ref, budavari). 
