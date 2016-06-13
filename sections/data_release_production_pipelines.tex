@@ -428,7 +428,8 @@ This pipeline group is responsible for producing the following final data produc
 \item[DeepCoadd] A coadd data product built to optimize depth at the possible expense of seeing.
 \item[BestSeeingCoadd] A coadd data product built to optimize image quality at the possible expense of depth.  Depending on the algorithm used, this may be the same as DeepCoadd.
 \item[ShortPeriodCoadd] A coadd data product built from exposures in a short range of epochs, such as a year, rather than the full survey.
-\item[LikelihoodCoadd] A coadd formed by correlating each image with its own PSF before combining them, used for detection and possibly building other coadds.  Short-period likelihood coadds may also be built.
+\item[LikelihoodCoadd] A coadd formed by correlating each image with its own PSF before combining them, used for detection and possibly building other coadds.
+\item[ShortPeriodLikelihoodCoad] Short-period likelihood coadds will also be built.
 \item[TemplateCoadd] A coadd data product used for difference imaging in both DRP and AP, \emph{or} some other tract/patch/filter data product from which the template for a given airmass can be derived.
 \end{description}
 
@@ -532,8 +533,25 @@ Like \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, Updat
 \subsubsection{WarpRemaining}
 \label{sec:drpWarpRemaining}
 
+This pipeline is responsible for the full suite of resampled images used to build coadds in \hyperref[sec:drpCoaddRemaining]{CoaddRemaining}, after all CalExp components have been finalized.  It produces some combination of the following data products, depending on the scenario(s) described at the beginning of Section~\ref{sec:drp_coaddition_and_diffim}:
+\begin{description}
+\item[LikelihoodWarp] CalExp images are correlated with their own PSF, then resampled, via the \hyperref[sec:spKernels]{Convolution Kernels} software primitive and the \hyperref[sec:acWarping]{Image Warping} algorithmic component.  LikelihoodWarp is computed in all scenarios, but in option \ref{option:no-decorrelated-coadds} it may not need to propogate uncertainty beyond the variance, as the resulting coadd will be used only for detection.
+\item[MatchedWarp] As in \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch}, CalExp images are resampled then matched to a common PSF, using \hyperref[sec:acWarping]{Image Warping} and \hyperref[sec:acPSFHomogenization]{PSF Homogenization}.  MatchWarp is only produced in option \ref{option:no-decorrelated-coadds}.
+\item[DirectWarp] CalExp images are simply resampled, with no further processing of the PSF, using \hyperref[sec:acWarping]{Image Warping}.  MatchWarp is only produced in option \ref{option:no-decorrelated-coadds}.
+\end{description}
+
+Given that all of these steps involve resampling the image, it would be desirable to do the resampling once up front, and then proceed with the PSF processing.  While this is mathematically possible for all of these cases, it would signficantly complicate the PSF correlation step required for building LikelihoodWarps.
+
 \subsubsection{CoaddRemaining}
 \label{sec:drpCoaddRemaining}
+
+In CoaddRemaining, we build the suite of coadds used for deep detection, deblending, and object characterization.  This includes the Likelihood, ShortPeriodLikelihood, Deep, BestSeeing, ShortPeriod, and ConstantPSF Coadds.
+
+The algorithms again depend on the scenarios outlined at the beginning of Section~\ref{sec:drp_coaddition_and_diffim}:
+\begin{description}
+\item[A,B] All non-template coadds are built from LikelihoodWarps.  We start by building ShortPeriodLikelihoodCoadds by simple coaddition of the LikelihoodWarps, using the \hyperref[sec:acCoaddition]{Image Coaddition} algorithmic component.  We decorrelate these using the \hyperref[sec:acCoaddDecorrelation]{Coadd Decorrelation} algorithmic component to produce ShortPeriodCoadds, then sum the ShortPeriodLikelihoodCoadds to produce the full LikelihoodCoadd.  The full LikelihoodCoadd is then decorrelated to produce DeepCoadd and ConstantPSFCoadd.
+\item[C] We generate LikelihoodCoadd and ShortPeriodLikelihoodCoadds using the same approach as above (though the accuracy requirements for uncertainty propagation are eased). ShortPeriodCoadd, DeepCoadd, and BestSeeingCoadd are then built as different combinations of DirectWarp images, again using the \hyperref[sec:acCoaddition]{Image Coaddition} algorithmic component.  ConstantPSFCoadds are built by combining MatchedWarps.
+\end{description}
 
 \subsection{Object Definition}
 \label{sec:drp_object_definition}
