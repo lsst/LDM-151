@@ -622,10 +622,52 @@ The output of the MeasureCoadds pipeline is an update to the Object table, which
 \subsection{Overlap Resolution}
 \label{sec:drp_overlap_resolution}
 
+The two overlap resolution pipelines are together responsible for finalizing the definitions of Objects by merging redundant processing done in tract and patch overlap regions.  In most cases, object definitions in the overlap region will be the same, making the problem trivial, and even when the definitions are different we can frequently resolve the problem using purely geometrical arguments.  However, some difficult cases will remain, mostly relating to blend families that are defined differently on either side.
+
+We currently assume that overlap resolution actually drops Object rows when it merges them; this will avoid redundant processing in the performance critical \hyperref[sec:drpMultiFit]{MultiFit} pipeline.  A slower but perhaps safer alternative would be to simply flag redundant Objects.  This would also allow tract overlap resolution to be moved after the \hyperref[sec:drpMultiFit]{MultiFit} and \hyperref[sec:drpForcedPhotometry]{ForcedPhotometry} pipelines, which would simplify large-scale parallelization and data flow by moving the first operation requiring more than one tract (\hyperref[sec:drpResolveTractOverlaps]{ResolveTractOverlaps} until after all image processing is complete.
+
 \subsubsection{ResolvePatchOverlaps}
 \label{sec:drpResolvePatchOverlaps}
+
+In patch overlap resolution, all contributing patches to an area (there can be between one and four) share the same pixel grid, and we furthermore expect that they will have the same coadd pixel values.  This should ensure that any above-threshold pixel in one patch is also above threshold in all others, which in turn should guarantee that patches agree on the extent of each blend family (as defined by the parent \hyperref[sec:spFootprints]{Footprint}).
+
+A common pixel grid also allows us to define the overlap areas as exact rectangular regions; we consider each patch to have an inner region (which directly abuts the inner regions of neighboring patches) and an outer region (which extends into the inner regions of neighboring patches).  If we consider the case of two overlapping patches, blend families in those patches can fall into five different categories:
+\begin{itemize}
+\item If the family falls strictly within one patch's inner region, it is assigned to that patch (and the other patch's version of the family is dropped).
+\item If the family crosses the boundary between patch inner regions...
+  \begin{itemize}
+  \item ...but is strictly within both patches' outer regions, it is assigned to the patch whose inner region includes more of the family's footprint area.
+  \item ...but is strictly within only one patch's outer region, it is assigned to that patch.
+  \item ...and is not strictly within either patch's outer region, the two families must be merged at an Object-by-Object level.  The algorithm used for this procedure is yet to be developed, but will be implemented by the \hyperref[sec:acBlendedOverlapResolution]{Blended Overlap Resolution} algorithmic component.
+  \end{itemize}
+\end{itemize}
+Overlap regions with more than two patches contributing have more possibilities, but are qualitatively no different.
+
+\begin{note}[TODO]
+  Add figure explaining inner and outer patch regions.
+\end{note}
+
+If pixel values in patch overlap regions cannot be guaranteed to be identical, patch overlap resolution becomes significantly harder (but no harder than tract overlap resolution), because adjacent patches may disagree on the above categories to which a family belongs.
+
+Patch overlap resolution can be run independently on every distinct overlap region that has a different set of patches contributing to it; in the limit of many patches per tract, there are three times as many overlap regions as patches (each patch has four overlap regions shared by two patches, and four overlap regions each shared by four patches).
+
 \subsubsection{ResolveTractOverlaps}
 \label{sec:drpResolveTractOverlaps}
+
+Tract overlap resolution operates under the same principles as patch overlap resolution, but the fact that different tracts have different coordinate systems and subtly different pixel values makes the problem significantly more complex.
+
+While we do not attempt to define inner and outer regions for tracts, we can still define discrete overlap regions in which the set of contributing tracts is constant (though these regions must now be defined using spherical geometry).  Because tracts may differ on the extent and membership of blend families, it will be useful here to define the concept of a ``blend chain'': within an overlap region a families blend chain is the recursive union of all families it overlaps with in any tract that contributes to that overlap region see Figure~TODO.  A blend chain is thus the maximal cross-tract definition of the extent of a blend family, and hence we can use it to categorize blends in tract overlaps:
+\begin{itemize}
+\item If a blend chain is strictly contained by only one tract, all families within that chain are assigned to that tract.
+\item If a blend chain is strictly contained by more than one tract, all families within that chain are assigned to the tract whose center is closest to the centroid of the blend chain.
+\item If a blend chain is not strictly contained by any tract, all families in the chain must be merged at an Object-by-Object level.  This is done by the \hyperref[sec:acBlendedOverlapResolution]{Blended Overlap Resolution} algorithmic component, after first transforming all measurements to a new coordinate system defined to minimize distortion due to projection (such as a tangent projection at the blend chain's centroid).
+\end{itemize}
+
+ResolveTractOverlaps is the first pipeline in Data Release Production to require access to processed results from more than one tract.
+
+\begin{note}[TODO]
+  Add figure explaining blend chains.
+\end{note}
 
 \subsection{Multi-Epoch Object Characterization}
 \label{sec:drp_multi_epoch_object_characterization}
@@ -663,5 +705,6 @@ Extract Afterburner pipelines from ``DRP Top-Level Overview'' on confluence and 
 \item How do we test all of the wavelength-dependent photometric calibration and PSF stuff on precursor data?  Are we going to characterize DECam well enough to just use it directly, or do we need to mock things up or rely more on JointCal?
 \item Input selection for DRP.  How do we decide what to throw away?  Is this a SQuaRE job?  Do we ever throw images away because the pipeline can't process them?  Do we report these back to the scheduler, or just hope it all averages out?
 \item Shouldn't we be making difference images from short-period coadds, instead of using the short-period coadds directly?
+\item Do we need to resolve tract overlaps in Source and DIASource as well?
 \end{itemize}
 

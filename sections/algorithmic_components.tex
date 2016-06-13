@@ -663,18 +663,11 @@ AUTHOR: Jim
 \item Also merge in DIASources or (if already self-associated) DIAObjects.
 \end{itemize}
 
-\subsubsection{Cross-Patch Merging}
-\label{sec:acCrossPatchMerging}
+\subsubsection{Blended Overlap Resolution}
+\label{sec:acBlendedOverlapResolution}
 AUTHOR: Jim
 \begin{itemize}
-\item Resolve duplicates in patch overlap regions by flagging ``primary'' objects.  Difficult due to blending.
-\end{itemize}
-
-\subsubsection{Cross-Tract Merging}
-\label{sec:acCrossTractMerging}
-AUTHOR: Jim
-\begin{itemize}
-\item Resolve duplicates in tract overlap regions by flagging ``primary'' objects.  Difficult due to blending.
+\item Given two or more overlapping blend families (with associated measurements), merge them by selecting the ``best'' measurement for each child object.
 \end{itemize}
 
 \subsection{Ephemeris Calculation}
