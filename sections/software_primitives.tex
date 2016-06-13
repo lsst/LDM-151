@@ -7,6 +7,16 @@
 \subsubsection{Exposure}
 \label{sec:spImagesExposure}
 
+\begin{description}
+\item[Image] A 2-d array of calibrated, background-subtracted pixel values in counts.
+\item[Mask] A boolean representation of artifacts, detections, saturation, and other image.  This may include (but is not limited to) a 2-d integer arrays with bits interpreted as different ``mask planes''; it may also include using \hyperref[sec:spFootprints]{Footprints} to describe labeled regions.
+\item[Variance] A representation of the uncertainty in the image.  This includes at least a 2-d array capturing the variance in each pixel, and it may involve some other scheme to capture the variance.
+\item[Background] An object describing the background model that was subtracted from the image; the original unsubtracted image can be obtained by adding an image of this model to the Exposure's image plane.  Backgrounds are more complex than merely an image or even an interpolated binned image; background estimation will proceed in several stages, and these stages (which may happen in different coordinate systems) must be combined to form the full background model.
+\item[PSF] A model of the PSF; see \hyperref[sec:spPSF]{PSF}.  This includes a model for aperture corrections.
+\item[WCS] The astrometric solution that related the image's pixel coordinate system to coordinates on the sky; see \hyperref[sec:spWCS]{WCS}.
+\item[PhotoCalib] The photometric solution that relates the image's pixel values to magnitudes as a function of source wavelength or SED.  Some PhotoCalibs may represent global calibration and some may represent relative calibration.
+\end{description}
+
 \subsection{Tables}
 \label{sec:spTables}
 
@@ -18,6 +28,9 @@
 
 \subsubsection{Object}
 \label{sec:spTablesObject}
+
+\subsubsection{Reference}
+\label{sec:spTablesReference}
 
 \subsection{Footprints}
 \label{sec:spFootprints}

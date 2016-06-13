@@ -5,15 +5,14 @@ matrix:
     - python: "3.5"
       env: LTD_MASON_BUILD=true
 before_install:
-  - "sudo apt-get update && sudo apt-get install -y --no-install-recommends texlive-fonts-recommended texlive-latex-extra texlive-fonts-extra dvipng texlive-latex-recommended latexmk poppler-utils"
+  - "sudo apt-get update && sudo apt-get install -y --no-install-recommends texlive-fonts-recommended texlive-latex-extra texlive-fonts-extra dvipng texlive-latex-recommended latexmk poppler-utils latex-xcolor"
 install:
   - pip install "ltd-mason>=0.2,<0.3"
 script:
   - latexmk -bibtex -pdf -f DM_Applications_Design.tex
-  - pdfunite LDM-151-CoverPage.pdf DM_Applications_Design.pdf LDM-151.pdf
   - latexmk -bibtex -pdf -f -cd blended-measurement/blended-measurement.tex
 after_success:
-  - cp LDM-151.pdf deployment/LDM-151.pdf
+  - cp DM_Applications_Design.pdf deployment/LDM-151.pdf
   - cp blended-measurement/blended-measurement.pdf deployment/blended-measurement.pdf
   - ltd-mason-travis --html-dir deployment
 env:
