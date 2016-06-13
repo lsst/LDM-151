@@ -376,7 +376,7 @@ Note that RefineImChar does not update the CalExp's WCS, PhotoCalib, Image, or V
 \subsubsection{FinalImChar}
 \label{sec:drpFinalImChar}
 
-FinalImChar is responsible for producting the final PSF models and source measurements.  While similar to \hyperref[sec:drpRefineImChar]{RefineImChar}, it is run after at least one iteration of the \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} and \hyperref[sec:drpDiffIm]{DiffIm} pipelines, which provide it with the final background model and mask, respectively.
+FinalImChar is responsible for producting the final PSF models and source measurements.  While similar to \hyperref[sec:drpRefineImChar]{RefineImChar}, it is run after at least one iteration of the \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} and possibly \hyperref[sec:drpUpdateMasks]{UpdateMasks} pipelines, which provide it with the final background model and mask.
 
 The steps in FinalImChar are identical to those in \hyperref[sec:drpRefineImChar]{RefineImChar}, with just a few exceptions:
 
@@ -414,7 +414,7 @@ The processing flow in this pipeline group again centers around incremental upda
 \item The first version of the CalExp dataset is produced by running the \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}, \hyperref[sec:drpStandardJointCal]{StandardJointCal}, and \hyperref[sec:drpRefineImChar]{RefineImChar} pipelines, as described in Section~\ref{sec:drp_imchar_and_jointcal}.
 \item We generate an updated Background and Mask via the \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} and \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} pipelines.  This produces the final CalExp Background and Image, and possibly the final Mask.
 \item If the CalExp Mask has been finalized, we run the \hyperref[sec:drpFinalImChar]{FinalImChar} and \hyperref[sec:drpFinalJointCal]{FinalJointCal} pipelines.  These produce the final PSF, WCS, and PhotoCal.  If the Mask has not been finalized, we execute at least one iteration of the next step before this one.
-\item We run the \hyperref[sec:drpWarpTemplates]{WarpTemplates}, \hyperref[sec:drpCoaddTemplates]{CoaddTemplates}, and \hyperref[sec:drpDiffim]{DiffIm} pipelines to generate the DIASource and DIAExp datasets.  These steps may generate better CalExp Masks than we can obtain from \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, and we may require multiple iterations of these pipelines to converge to the best Mask.
+\item We run the \hyperref[sec:drpWarpTemplates]{WarpTemplates}, \hyperref[sec:drpCoaddTemplates]{CoaddTemplates}, and \hyperref[sec:drpDiffIm]{DiffIm} pipelines to generate the DIASource and DIAExp datasets.  We may then be able to generate better CalExp Masks than we can obtain from \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} by comparing the DIAExp masks across visits in the \hyperref[sec:drpUpdateMasks]{UpdateMasks} pipeline.
 \item After all CalExp components have been finalized, we run the \hyperref[sec:drpWarpRemaining]{WarpRemaining} and \hyperref[sec:drpCoaddRemaining]{CoaddRemaining} to build additional coadd data products.
 \end{enumerate}
 The baseline ordering of these steps is thus \{1,2,3,4,5\}, but \{1,2,4,3,4,5\} is perhaps just as likely, and we may ultimately require an ordering that repeats steps 2 or 3.  Final decisions on the ordering and number of iteration will require testing with mature pipelines and a deep dataset taken with a realistic cadence; it is possible the configuration could even change between data releases as the survey increases in depth.  Fortunately, this reconfiguring should not require significant new algorithm development.
@@ -432,19 +432,22 @@ This pipeline group is responsible for producing the following final data produc
 \item[TemplateCoadd] A coadd data product used for difference imaging in both DRP and AP, \emph{or} some other tract/patch/filter data product from which the template for a given airmass can be derived.
 \end{description}
 
-It is possible that our algorithms will allow some coadd data products to be merged, which will also have implications on the pipelines used to build them.  There are two major branch points:
+The nature of these coadd data products depends critically on whether we are able to develop efficient algorithms for optimal coaddition, and whether these coadds are suitable for difference imaging.  These algorithms are mathematically well-defined but computationally difficult; see \href{http://dmtn-015.lsst.io/en/latest/}{DMTN-15} for more information.  We will refer to the coadds produced by these algorithms as ``decorrelated coadds''; a variant with constant PSF (``constant-PSF partially decorrelatd coadd'') is also possible.  This choice is also mixed with the question of how we will correct for differential chromatic refraction in difference imaging; some algorithms for DCR correction involve templates that are the result of inference on input exposures rather than coaddition.  There are five main scenarios for our use of decorrelated coadds:
 \begin{description}
-\item[A] Can we develop an algorithm that efficiently decorrelates likelihood coadds (see \href{http://dmtn-015.lsst.io/en/latest/}{DMTN-15} and Section~\ref{sec:acCoaddDecorrelation})?
+  \item[A] \label{option:decorrelated-everything} We use decorrelated coadds for all final coadd products.  DeepCoadd and ShortPeriodCoadd will be standard decorrelated coadds with a spatially-varying PSF, and ConstantPSFCoadd and TemplateCoadd will be constant-PSF partially-decorrelated coadds.  The BestSeeingCoadd data product will be dropped, as it will be redundant with DeepCoadd.  This will make coadds more expensive and complex to build, and require more algorithm development for coaddition, but will improve coadd-based measurements, make it easier to warm-start multi-epoch measurements.  Difference imaging may be easier, and more visits may be usable as inputs to templates due to softened or eliminated seeing cut.
+  \item[B] \label{option:decorrelated-meas-coadds} We use decorrelated coadds for all coadds but TemplateCoadd.  Measurement is still improved, and the additional computational cost of coaddition is limited to a single pipeline that is not run iteratively.  Difference imaging may be harder, and the number of visits eligible for inclusion in templates may be reduced.  In this scenario, we still have two options for building templates:
   \begin{description}
-  \item[Yes:] DeepCoadd and ShortPeriodCoadd will be decorrelated coadds, and ConstantPSFCoadd will be a constant-PSF partially-decorrelated coadd.  The BestSeeingCoadd data product will be dropped, as it will be redundant with DeepCoadd.  This will make coadds more expensive and complex to build, and require more algorithm development for coaddition.
-  \item[No:] DeepCoadd, BestSeeingCoadd, and ShortPeriodCoadd will be direct coadds, and ConstantPSFCoadd will be a PSF-matched coadd.  This will yield lower-quality coadd measurements and make it harder to warm-start multi-epoch measurements.
+    \item[B1] \label{option:psf-matched-templates-b} Templates will be built as PSF-matched coadds, or a product of PSF-matched coadds.
+    \item[B2] \label{option:inferred-templates-b}Templates are the result of inference on resampled exposures with no PSF-matching.
   \end{description}
-\item[B] Can we build decorrelated coadds suitable for difference imaging (like direct coadds, decorrelated coadds may have subtly poorly-defined PSFs in the neighborhood of variable objects)?
+  \item[C] \label{option:no-decorrelated-coadds} We do not use decorrelated coadds at all.  DeepCoadd, BestSeeingCoadd, and ShortPeriodCoadd will be direct coadds, and ConstantPSFCoadd will be a PSF-matched coadd.  Coaddition will be simpler and faster, but downstream algorithms may require more sophistication, coadd measurements may be lower quality, and multi-epoch measurements may be more difficult to optimize.  Here we again have the same two options for templates as option \ref{option:decorrelated-meas-coadds}:
   \begin{description}
-  \item[Yes:] We will use constant-PSF partially-decorrelated coadds for difference imaging templates.  Because templates must support DCR correction, we do not assume that the TemplateCoadd and ConstantPSFCoadd datasets are identical (though they may be, especially in the redder bands).  This will make template generation more complex and expensive, and require additional algorithm development for coaddition.
-  \item[No:] We will use PSF-matched coadds for difference imaging templates.  This will increase noise in templates and limit the visits that can be used to build a template (which may matter if a broad or finely-sampled range or airmasses is necessary for DCR correction).
+    \item[C1] \label{option:psf-matched-templates-c} Templates will be built as PSF-matched coadds, or a product of PSF-matched coadds.
+    \item[C2] \label{option:inferred-templates-c} Templates are the result of inference on resampled exposures with no PSF-matching.
   \end{description}
 \end{description}
+It is also possible to combine multiple scenarios across different bands.  In particular, we may not need special templates to handle DCR in redder bands, so we may select a simpler approach to dealing with them in those bands.  The final selection between these options will require experiments on LSST data or precursor data with similar DCR and seeing, though decorrelated coaddition algorithms and some approaches to DCR correction may be ruled out earlier if preliminary algorithm development does not go well.
+
 Further differences in the pipelines themselves due to the presence or absence of decorrelated coadds will be described in the sections below.
 
 \subsubsection{WarpAndPsfMatch}
@@ -470,20 +473,64 @@ The steps involved in background matching are described below.  All of these ope
 \item We build a PSF-matched coadd by adding all of the visit images (including the reference) and subtracting all of the difference image backgrounds; this yields a coadd that contains only the reference image background, which we then model and subtract by again using the \hyperref[sec:acBackgroundEstimation]{Background Estimation} algorithmic component.  Combining the images will be performed by the \hyperref[sec:acCoaddition]{Coaddition} algorithmic component, which will also generate new CalExp masks by analyzing the per-pixel, multi-visit histograms of image and mask values (e.g. generalized statistical outlier rejection) to distinguish transients and artifacts from variable sources.
 \end{enumerate}
 
-We are assuming in the baseline plan that we can use a matched-to PSF in \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} large enough to match all visit images to it without deconvolution.  If a large marged-to PSF adversely affects subsequent processing in \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, we may need to develop an iterative approach in which we apply \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} only to better-seeing visits first, using a smaller target PSF, run \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} on these, and then re-match everything to a larger target PSF and repeat with a larger set of input visits.  However, this problem would suggest that the \hyperref[sec:DiffIm]{DiffIm} pipeline would be even better at finding artifacts, so a more likely mitigation strategy would be to simply defer final Mask generation to after at least one iteration of \hyperref[sec:DiffIm]{DiffIm}, as described in the discussion of Figure~\ref{fig:drp_coaddition_and_diffim} at the beginning of Section~\ref{sec:drp_coaddition_and_diffim}.
+We are assuming in the baseline plan that we can use a matched-to PSF in \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} large enough to match all visit images to it without deconvolution.  If a large marged-to PSF adversely affects subsequent processing in \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, we may need to develop an iterative approach in which we apply \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} only to better-seeing visits first, using a smaller target PSF, run \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} on these, and then re-match everything to a larger target PSF and repeat with a larger set of input visits.  However, this problem would suggest that the \hyperref[sec:drpDiffIm]{DiffIm} and \hyperref[sec:drpUpdateMasks]{UpdateMasks} pipelines would be even better at finding artifacts, so a more likely mitigation strategy would be to simply defer final Mask generation to after at least one iteration of those pipelines, as described in the discussion of Figure~\ref{fig:drp_coaddition_and_diffim} at the beginning of Section~\ref{sec:drp_coaddition_and_diffim}.
 
 The outputs of BackgroundMarchAndReject are updated Background and Mask components for the CalExp product.  Because it is not built with the final photometric and astrometric calibration, the PSF-matched coadd built here is discarded.
 
 \subsubsection{WarpTemplates}
 \label{sec:drpWarpTemplates}
 
+This pipeline is responsible for generating the resampled visit-level images (TemplateWarp) used to build template coadds for difference imaging.  The algorithmic content of this pipeline and the nature of its outputs depends on whether we are using decorrelated coadds (\ref{option:decorrelated-everything} at the beginning of \ref{sec:drp_coaddition_and_diffim}), PSF-matched coadds (\ref{option:psf-matched-templates-b} or \ref{option:psf-matched-templates-c}), or inferring templates (\ref{option:inferred-templates-b} or \ref{option:inferred-templates-c}).
+
+If we are using decorrelated coadds (\ref{option:decorrelated-everything}), the output is equivalent to the LikelihoodWarp data product produced by the \hyperref[sec:drpWarpRemaining]{WarpRemaining} pipeline (aside from differences due to the state of the input CalExps), and the algorithm to produce it the same:
+\begin{itemize}
+\item We correlate the image with its own PSF by delegating to the \hyperref[sec:spKernels]{Convolution Kernels} software primitive.
+\item We resample the image by delegating to the \hyperref[sec:acWarping]{Image Warping} algorithmic component.
+\end{itemize}
+As with other convolution-and-warping pipelines, it is possible we will instead develop a single algorithmic component to perform both operations.  These operations must include full propogation of uncertainty.
+
+If we are not using decorrelated coadds (\ref{option:psf-matched-templates-b} or \ref{option:psf-matched-templates-c}), the output is equivalent to the MatchedWarp data product, and the algorithm is the same as the \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} pipeline that produces.  We cannot reuse existing MatchedWarps simply because we need to utilize updated CalExps.
+
+If we are inferring templates (\ref{option:inferred-templates-b} or \ref{option:inferred-templates-c}), this pipeline is only responsible for resampling, producing an output equivalent to the DirectWarp data product produced by the \hyperref[sec:drpWarpRemaining]{WarpRemaining} pipeline.  This work is delegated to the \hyperref[sec:acWarping]{Image Warping} algorithmic component.
+
 \subsubsection{CoaddTemplates}
 \label{sec:drpCoaddTemplates}
+
+This pipeline generates the TemplateCoadd dataset used as the reference image for difference imaging.  This may not be a simple coadd, at least in bluer bands; in order to correct for differential chromatic refraction during difference imaging, we may need to add a wavelength or airmass dimension to the usual 2-d image, making a 3-d dimensional quantity.  The size of the third dimension will likely be small, however, so it should be safe to generally consider TemplateCoadd to be a small suite of coadds, in which a 2-d image is the result a different sum of or fit to the usual visit-level images (the TemplateWarp dataset, in this case).
+
+Most of the work is done by the \hyperref[sec:acDCRTemplates]{DCR-Corrected Template Generation} algorithmic component, but its behavior depends on which of the coaddition scenarios is selected from the list at the beginning of Section~\ref{sec:drp_coaddition_and_diffim}):
+\begin{description}
+\item[A,B1,C1] One or more coadd-like images (corresponding to different wavelengths, airmasses, etc.) are created by delegating to the \hyperref[sec:acCoaddition]{Coaddition} algorithmic component to sum the TemplateWarp images with different weights.  \textbf{A only:} coadded images are then partially decorrelated to constant PSF by delegating to the \hyperref[sec:acCoaddDecorrelation]{Coadd Decorrelation} algorithmic component.
+\item[B2,C2] The template is inferred from the resample visit images using an inverse algorithm that is yet to be developed.
+\end{description}
+
 \subsubsection{DiffIm}
 \label{sec:drpDiffIm}
 
-\subsubsection{WarpRemainder}
-\label{sec:drpWarpRemainder}
+In the DiffIm pipeline, we subtract a warped TemplateCoadd from each CalExp, yielding the DIAExp image, where we detect and characterize DIASources.  This is quite similar to Alert Production's \hyperref[sec:apAlertDetection]{Alert Detection} pipeline but may not be identical for several reasons.  The AP variant must be optimized for low latency, and hence may avoid full-visit processing that is perfectly acceptable in DRP.  In addition, the input CalExps will have been better characterized in DRP, which may make some steps taken in AP unimportant or even counterproductive.  However, we expect that the algorithmic components utilized in DRP are the same as those used by AP.
+
+The steps taken by DRP DiffIm are:
+\begin{enumerate}
+\item Retrieve the DiffIm template appropriate for the CalExps to be processed (probably handling a full visit at a time), delegating to the \hyperref[sec:acRetrieveTemplate]{Template Retrieval} algorithmic component.  This selects the appropriate region of sky, and if necessary, collapses a higher-dimensional template dataset to a 2-d image appropriate for the CalExp's airmass.
+\item (optional) Correlate the CalExp with its own PSF, delegating to the \hyperref[sec:spKernels]{Convolution Kernel} software primitive.  This is the ``preconvolution'' approach to difference imaging, which makes PSF matching easier by performing PSF-correlation for detection first, reducing or eliminating the need for deconvolution.  This approach is theoretically quite promising but still needs development.
+\item Resample the template to the coordinate system of the CalExp, by delegating to the \hyperref[sec:acWarping]{Image Warping} algorithmic component.
+\item Match the template's PSF to the CalExp's PSF and subtract them, by delegating to the \hyperref[sec:acImageSubtraction]{Image Subtraction} algorithmic component.
+\item Run \hyperref[sec:acSourceDetection]{Source Detection} on the difference image.  We correlate the image with its PSF first using the \hyperref[sec:spKernels]{Convolution Kernels} software primitive unless this was done prior to subtraction.
+\item (optional) Decorrelate the CalExp by delegating to the \hyperref[sec:acDiffImDecorrelation]{Difference Image Decorrelation} algorithmic component.
+\item Run \hyperref[sec:acDiffImMeasurement]{DiffIm Measurement} on the difference image to characterize difference sources.  If preconvolution is used but decorrelation is not, the difference image cannot be measured using algorithms applied to standard images; alternate algorithms may be developed for some measurements, but perhaps not all.
+\end{enumerate}
+
+DiffIm can probably be run entirely independently on each CCD image; this will almost certainly be taken in Alert Production.  However, joint processing across a full visit may be more computationally efficient for at least some parts of template retrieval, and PSF-matching may produce better results if a more sophisticated full-visit matching algorithm is developed.
+
+\subsubsection{UpdateMasks}
+\label{sec:drpUpdateMasks}
+
+UpdateMasks is an optional pipeline that is only run if DIAExp masks are being used to update CalExp masks.  As such, it is not run after the last iteration of \hyperref[sec:drpDiffIm]{DiffIm}, and is never run if \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} constructs the final CalExp masks.
+
+Like \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, UpdateMasks compares the histogram of mask values at a particular spatial point to determine which masks correspond to transients (both astrophysical sources and artifacts; we want to reject both from coadds) and which correspond to variable objects.  This work is delegated to \hyperref[sec:acCoaddition]{Coaddition}.
+
+\subsubsection{WarpRemaining}
+\label{sec:drpWarpRemaining}
 
 \subsubsection{CoaddRemaining}
 \label{sec:drpCoaddRemaining}

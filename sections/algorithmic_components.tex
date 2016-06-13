@@ -140,6 +140,8 @@ The driver for Multi-Coadd Measurement is passed an input/output \hyperref[sec:s
 
 The signatures of difference image measurement's drivers and algorithms are at least somewhat TBD; they will take at least a difference image \hyperref[sec:spImagesExposure]{Exposures} and a \hyperref[sec:spTablesSource]{SourceCatalog/SourceRecord}, but some plugins such as dipole measurement may require access to a direct image as well.  Because difference imaging dramatically reduces blending, difference image measurement may require any approach to blended measurement (though any use of the associated direct image would require deblending).
 
+If preconvolution is used to construct difference images, but they are not subsequently decorrelated, the algorithms run in difference image measurement cannot be implemented in the same way as those run in other measurement variants, and algorithms that cannot be expressed as a PSF-convolved model fit (such as second-moment shapes and all aperture fluxes) either cannot be implemented or require local decorrelation.
+
 \paragraph{Multi-Epoch Measurement:} Measure multiple direct images simultaneously by fitting the same \hyperref[sec:spWCS]{WCS}-transformed, \hyperref[sec:spPSF]{PSF}-convolved model to them.  Blended objects in Multi-Epoch Measurement will be handled by \emph{at least} fitting them simutaneously (\ref{sec:acSimultaneousFitting}), which may in turn require hybrid galaxy/star models (\ref{sec:acHybridModels}).  These models may then be used as templates for deblending and replace-with-noise (\ref{sec:acReplaceNeighborsWithNoise}) measurement if this improves the results.
 \label{sec:acMultiEpochMeasurement}
 
@@ -454,7 +456,7 @@ The above describes the current warping implementation in afw. We should identif
 \label{sec:acCoaddition}
 AUTHOR: Jim
 \begin{itemize}
-\item Can do outlier rejection (but usually doesn't).
+\item Must be able to do generalized outlier rejection, using histograms of detection masks produced on difference images.
 \item Needs to propagate full uncertainty somehow.
 \item May need to propagate larger-scale per-exposure masks to get right PSF model or other coadded quantities.
 \item Should be capable of combining coadds from different bands and/or epoch ranges ranges as well as combining individual exposures.
