@@ -9,7 +9,7 @@
 \end{figure}
 
 \begin{note}[TODO]
-  Update figure to reflect merging BootstrapJointCal and RefineJointCal into just StandardJointCal (flow is the same, but these pipelines do exactly the same thing, so there's no need for different names).
+  Update figure to reflect changes to sections in text.
 \end{note}
 
 A Data Release Production is run every year (twice in the first year of operations) to produce a set of catalog and image data products derived from all observations from the beginning of the survey to the point the production began.  This includes running a variant of the difference image analysis run in Alert Production, in addition to direct analysis of individual exposures and coadded images.  The data products produced by a Data Release Production are summarized in table~\ref{table:drp_data_products}.
@@ -66,8 +66,6 @@ From a conceptual standpoint, data release production can be split into five gro
 \begin{enumerate}
 \item We characterize and calibrate each exposure, estimating point-spread functions, background models, and astrometric and photometric calibration solutions.  This iterates between processing individual exposures independently and jointly fitting catalogs derived from multiple overlapping exposures.  These steps are described more fully in section~\ref{sec:drp_imchar_and_jointcal}.
 \item We alternately combine images and subtract them, using differences to find artifacts and time-variable sources while building coadds that produce a deeper view of the static sky.  Coaddition and difference imaging is described in section~\ref{sec:drp_coaddition_and_diffim}.
-\item We detect and deblend on coadds, while associating these detection with detections from difference imaging to define objects.  We then merge catalogs in the overlap regions between patches and tracts to produce a single contiguous catalog over the full sky.  This is described in section~\ref{sec:drp_object_definition}.
-\item We measure objects on coadds and visit-level direct and difference images in object characterization, as described section~\ref{sec:drp_object_characterization}.
 \item After all image processing is complete, we run additional catalog-only pipelines to fill in additional object properties.  Unlike previous stages, this postprocessing is not localized on the sky, as it may use statistics computed from the full data release to improve our characterization of individual objects.  Postprocessing pipelines are described in section~\ref{sec:drp_postprocessing}.
 \end{enumerate}
 This conceptual ordering is an oversimplification of the actual processing flow, however; as shown in Figure~\ref{fig:drp_summary}, pipeline groups are actually interleaved.
@@ -207,7 +205,7 @@ We assume there is no warping involved in combining snaps.  If this is needed, w
 
 Delegate to the \hyperref[sec:acWavefrontSensorPSF]{Wavefront Sensor PSF algorithmic component} to generate an approximate PSF using only data from the wavefront sensors and observational metadata (e.g. reported seeing).
 
-Processing the wavefront sensors will likely require some form of detection and measurement; we currently consider this to be part of the \hyperref[sec:acWavefrontSensorPSF]{Wavefront Sensor PSF} code, though it may delegate to e.g. \hyperref[sec:acSourceDetection]{Source Detection} and/or \hyperref[sec:acSingleVisitMeasurement]{Single Visit Measurement}.
+Processing the wavefront sensors will likely require some form of detection and measurement; we currently consider this to be part of the \hyperref[sec:acWavefrontSensorPSF]{Wavefront Sensor PSF} code, though it may delegate to e.g. \hyperref[sec:acSourceDetection]{Source Detection} and/or \hyperref[sec:acSingleFrameMeasurement]{Single Frame Measurement}.
 
 The required quality of this PSF estimate is TBD; setting preliminary requirements will involve running a version of BootstrapImChar with at least mature detection and PSF-modeling algorithms on precursor data taken in crowded fields, and final requirements will require proceessing full LSST camera data in crowded fields.  However, robustness to poor data quality and crowding is much more important than accuracy; this stage need only provide a good enough result for subsequent stages to prcoeed.
 
@@ -230,14 +228,14 @@ Because we will use wavefront data to constrain the PSF, we also run detection o
 \paragraph{DeblendSources}
 \label{sec:drpBootstrapImChar_DeblendSources}
 
-Delegate to the \hyperref[sec:acSingleVisitDeblending]{Single Visit Deblending algorithmic component} to split \hyperref[sec:spFootprints]{Footprints} with multiple peaks into deblend families.
+Delegate to the \hyperref[sec:acSingleFrameDeblending]{Single Frame Deblending algorithmic component} to split \hyperref[sec:spFootprints]{Footprints} with multiple peaks into deblend families.
 
 Because we will use wavefront data to constrain the PSF, we also run deblending on the wavefront sensors.  It is possible that this will require a different algorithmic component if we cannot just treat the wavefront sensors as science sensors with an out-of-focus PSF, and we need deblending to extract wavefront information.
 
 \paragraph{MeasureSources}
 \label{sec:drpBootstrapImChar_MeasureSources}
 
-Delegate to the \hyperref[sec:acSingleVisitMeasurement]{Single Visit Measurement algorithmic component} to measure source properties.
+Delegate to the \hyperref[sec:acSingleFrameMeasurement]{Single Frame Measurement algorithmic component} to measure source properties.
 
 In BootstrapImChar, we anticipate using the \hyperref[sec:acReplaceNeighborsWithNoise]{Neighbor Noise Replacement} approach to deblending, with the following plugin algorithms:
 \begin{itemize}
@@ -382,8 +380,8 @@ The steps in FinalImChar are identical to those in \hyperref[sec:drpRefineImChar
 
 \begin{itemize}
 \item The background is not re-estimated and subtracted.
-\item The suite of plugin run by \hyperref[sec:acSingleVisitMeasurement]{Single Visit Measurement} is expanded to included all algorithms indicated in the first column of Figure~\ref{fig:measurement-matrix}.  This should provide all measurements in the DPDD Source table description.
-\item We also classify sources by delegating to \hyperref[sec:acSingleVisitClassification]{Single Visit Classification}, to fill the final Source table's \emph{extendedness} field.  It is possible this will also be run during \hyperref[sec:drpRefineImChar]{RefineImChar} and \hyperref[sec:drpBootstrapImChar]{BootstrapImChar} for diagnostic purposes.
+\item The suite of plugin run by \hyperref[sec:acSingleFrameMeasurement]{Single Frame Measurement} is expanded to included all algorithms indicated in the first column of Figure~\ref{fig:measurement-matrix}.  This should provide all measurements in the DPDD Source table description.
+\item We also classify sources by delegating to \hyperref[sec:acSingleFrameClassification]{Single Frame Classification}, to fill the final Source table's \emph{extendedness} field.  It is possible this will also be run during \hyperref[sec:drpRefineImChar]{RefineImChar} and \hyperref[sec:drpBootstrapImChar]{BootstrapImChar} for diagnostic purposes.
 \end{itemize}
 
 \subsubsection{FinalJointCal}
@@ -409,7 +407,7 @@ The next group of pipelines in a Data Release Production consist of image coaddi
 }
 \end{figure}
 
-The processing flow in this pipeline group again centers around incremental updates to the CaExp dataset, which are limited here to its Background and Mask component (the Image component is also updated, but only to subract the updated background).  It will also return to the previous pipeline group described in Section~\ref{sec:drp_imchar_and_jointcal} to update other CalExp components.  The data flow between pipelines is shown in Figure~\ref{fig:drp_coaddition_and_diffim}, with the numbered steps are described further below:
+The processing flow in this pipeline group again centers around incremental updates to the CalExp dataset, which are limited here to its Background and Mask component (the Image component is also updated, but only to subract the updated background).  It will also return to the previous pipeline group described in Section~\ref{sec:drp_imchar_and_jointcal} to update other CalExp components.  The data flow between pipelines is shown in Figure~\ref{fig:drp_coaddition_and_diffim}, with the numbered steps are described further below:
 \begin{enumerate} % note that the figure numbers aren't automatically linked
 \item The first version of the CalExp dataset is produced by running the \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}, \hyperref[sec:drpStandardJointCal]{StandardJointCal}, and \hyperref[sec:drpRefineImChar]{RefineImChar} pipelines, as described in Section~\ref{sec:drp_imchar_and_jointcal}.
 \item We generate an updated Background and Mask via the \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} and \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} pipelines.  This produces the final CalExp Background and Image, and possibly the final Mask.
@@ -553,35 +551,134 @@ The algorithms again depend on the scenarios outlined at the beginning of Sectio
 \item[C] We generate LikelihoodCoadd and ShortPeriodLikelihoodCoadds using the same approach as above (though the accuracy requirements for uncertainty propagation are eased). ShortPeriodCoadd, DeepCoadd, and BestSeeingCoadd are then built as different combinations of DirectWarp images, again using the \hyperref[sec:acCoaddition]{Image Coaddition} algorithmic component.  ConstantPSFCoadds are built by combining MatchedWarps.
 \end{description}
 
-\subsection{Object Definition}
-\label{sec:drp_object_definition}
+\subsection{Coadd Processing}
+\label{sec:drp_coadd_processing}
 
-\begin{note}[Detection/Association/Deblending Diagram]
-Extract process\_coadds pipeline from ``DRP Top-Level Overview'' on confluence and expand detail to show data flow and ordering of ``Task/Process'' boxes.
-\end{note}
+In comparison to the previous two pipeline groups, coadd processing is relatively simple.  All pipelines operate on individual patches, and there is no large-scale iteration between pipelines.  These pipelines may individually require complex parallelization at a lower level, as they will frequently have memory usage above what can be expected to fit on a single core.
 
 \subsubsection{DeepDetect}
 \label{sec:drpDeepDetect}
+
+This pipeline simply runs the \hyperref[sec:acSourceDetection]{Source Detection} algorithmic component on combinations of LikelihoodCoadds and ShortPeriodLikelihoodCoadds, then optionally performs additional preliminary characterization on related coadds.  These combinations are optimized for detecting objects with different SEDs, and there are a few different scenarios for what combinations we'll produce (which are not mutually exclusive):
+\begin{itemize}
+\item We could simply detect on each per-band LikelihoodCoadds separately.
+\item We could build a small suite of cross-band LikelihoodCoadds corresponding to simple and artificial but approximately spanning SEDs (flat spectrums, step functions, etc.).
+\item We could build a large suite of cross-band LikelihoodCoadds corresponding to a library of real star, galaxy, and QSO SEDs.
+\item We could build a single $\chi^2$ coadd, which is only optimal for objects the color of the sky, but may be close enough to optimal to detect a broad range of SEDs.
+\end{itemize}
+Any of these combinations may also be used to combine ShortPeriodLikelihoodCoadds.
+
+We may also convolve the images further or bin them to improve our detection efficiency for extended objects.
+
+Actual detection on these images may be done with a lower threshold than our final target threshold of 5$\sigma$, to account for loss of efficiency due using the incorrect SED or morphological filter.
+
+The details of the suite of detection images and morphological filters is a subject requiring further algorithmic research on precursor data (or LSST/ComCam data) at full LSST depths with at least approximately the right filter set.
+
+After detection, CoaddSources may be deblended and characterized by running the \hyperref[sec:acSingleFrameDeblending]{Single Frame Deblending}, \hyperref[sec:acSingleFrameMeasurement]{Single Frame Measurement}, and \hyperref[sec:acSingleFrameClassification]{Single Frame Classification} algorithmic components on DeepCoadd and ShortPeriodCoadd combinations that correspond to the LikelihoodCoadd combinations used for detection.  These characterizations (like the rest of the CoaddSource tables) will be discarded after the \hyperref[sec:drpDeepAssociate]{DeepAssociate} pipeline is run, but may be necessary to inform higher-level association algorithms run there.  The requirements on characterization processing in this pipeline will be set by the needs of the \hyperref[sec:drpDeepAssociate]{DeepAssociate} pipeline, but we do not expect it to involve significant new code beyond what will be used by the various ImChar pipelines.
+
+The only output of DeepDetect is the suite of CoaddSource tables (one for each detection image) containing \hyperref[sec:spFootprints]{Footprints}, peaks, and characterizations necessary for association.
+
 \subsubsection{DeepAssociate}
 \label{sec:drpDeepAssociate}
+
+In DeepAssociate, we perform a sophisticated spatial match of all CoaddSources and DIASources, generating tables of DIAObjects, Object candidates, and SSObject detections.  We do \emph{not} include the Source table in this merge, as virtually all Sources correspond to astrophysical objects better detected in \hyperref[sec:drpDeepDetect]{DeepDetect} or \hyperref[sec:drpDiffIm]{DiffIm}.
+
+The baseline plan for association is to first associate DIASources into DIAObjects using the same approach used in Alert Production (i.e. the \hyperref[sec:acDIAObjectGeneration]{DIAObject Generation} algorithmic component), then associate DIAObjects with the multiple CoaddSource tables (using the \hyperref[sec:acObjectGeneration]{Object Generation} algorithmic component).  DIASources not associated into DIAObjects will be considered candidates for merging SSObjects, which will happen in the \hyperref[sec:drpMOPS]{MOPS} pipeline.
+
+These association steps must be considerably more sophisticated than simple spatial matching; they must utilize the limited flux and classification information available from detection to decide whether to merge sources detected in different contexts.  This will require astrophysical models to be included in the matching algorithms at some level; for instance:
+\begin{itemize}
+\item We must be able to associate the multiple detections that correspond to high proper-motion stars into a single Object.
+\item We must not associate supernovae with their host galaxies, despite the fact that their positions may be essentially the same.
+\end{itemize}
+To meet these goals (as well as similar ones which still need to be specififed), DeepAssociate will have to generate \emph{multiple} hypotheses for some blend families.  Some of these conflicting hypotheses will be rejected by the \hyperref[sec:drpDeepDeblend]{DeepDeblend}, while others may be present in the final Object catalog (flags will be used to indicate different interpretations and our most likely interpretation).  This is a generalization of the simple parent/child hierarchy used to describe different blend hypotheses in the SDSS database (see Section~\ref{sec:introDataUnits}).
+
+It is possible that associations could be improved by doing both merge steps simultaneously (under the hypothesis that CoaddSource presence or absence could be used to improve DIASource association).  This is considered a fallback option if the two-stage association procedure described above cannot be made to work adequately.
+
+The output of the DeepAssociate pipeline is the first version of the Object table, containing a superset of all Objects that will be characterized in later pipelines.
+
 \subsubsection{DeepDeblend}
 \label{sec:drpDeepDeblend}
+
+This pipeline simply delegates to the \hyperref[sec:acMultiCoaddDeblending]{Multi-Coadd Deblending} algorithmic component to deblend all Objects in a particular patch, utilizing all non-likelihood coadds of that patch.  This yields \hyperref[sec:spFootprints]{HeavyFootprints} containing consistent deblended pixels for every object in every (non-likelihood) coadd, while rejecting as many deblend hypotheses as possible to reduce the number of hypotheses that must be subsequently measured.
+
+While the pipeline-level code and data flow is simple, the algorithmic component is not.  Not only must deblending deal with arbirarily complex superpositions of objects with unknown morphologies, it must do so consistently across bands and the epoch ranges (with different PSFs) and ensure proper handling of Objects spawned by DIASources that may not even appear in coadds.  It must also parallelize this work efficiently over multiple cores; in order to fit patch-level images for all coadds in memory, the processing of at least the largest individual blend families must themselves be parallelized.  This may be done by splitting the largest blend families into smaller groups that can be processed in parallel with only a small amount of serial iteration; it may also be done by using low-level multithreading over pixels.
+
+The output of the DeepDeblend pipeline an update to the Object table, which adds columns (mostly flags) and removes some rows from the table produced by DeepAssociate.
+
+\subsubsection{MeasureCoadds}
+\label{sec:drpMeasureCoadds}
+
+The MeasureCoadds pipeline delegates to the \hyperref[sec:acMultiCoaddMeasurement]{Multi-Coadd Measurement} algorithmic component to jointly measure all Objects on all coadds in a patch.
+
+Like \hyperref[sec:drpDeepDeblend]{DeepDeblend}, this pipeline is itself quite simple, but it delegates to a complex algorithmic component (but a simpler one than \hyperref[sec:acMultiCoaddDeblending]{Multi-Coadd Deblending}).  There are three classes of open questions in how multi-coadd measurement will proceed:
+\begin{itemize}
+\item What parameters will be fit jointly across bands, and which will be fit independently?  The measurement framework for multi-coadd measurement is designed to support joint fitting, but it is likely that some algorithms will simply be \hyperref[sec:acSingleFrameMeasurement]{Single Frame Measurement} or \hyperref[sec:acForcedMeasurement]{Forced Measurement} plugins that are simply run independently on the DeepCoadd and/or ConstantPSFCoadd in each band.  Making these decisions will require experimentation on deep precursor and simulated data.
+\item How will we measure blended objects?  Coadd measurement will at least begin by using the \hyperref[sec:spFootprints]{HeavyFootprints} produced by \hyperref[sec:drpDeepDeblend]{DeepDeblend} to use the \hyperref[sec:acReplaceNeighborsWithNoise]{Neighbor Noise Replacement} approach, but we may then use \hyperref[sec:acSimultaneousFitting]{Simultaneous Fitting} to generate improved warm-start parameters for \hyperref[sec:drpMultiFit]{MultiFit} or to build models we can use as PSF-deconvolved templates to enable the \hyperref[sec:acDeblendTemplateProjection]{Deblend Template Projection} approach in \hyperref[sec:drpMultiFit]{MultiFit} and/or \hyperref[sec:drpForcedPhotometry]{ForcedPhotometry}.
+\item How will we parallelize?  As with \hyperref[sec:drpDeepDeblend]{DeepDeblend}, keeping the full suite of coadds in memory will require processing at least some blend families using many cores.  For algorithms that don't require joint fitting across different coadds, this could be done by measuring each coadd independently in parallel, but the most expensive algorithms (e.g. galaxy model fitting) are likely to be the ones where we'll want to fit jointly across bands.
+\end{itemize}
+
+The output of the MeasureCoadds pipeline is an update to the Object table, which adds columns containing measured quantities.
+
+\subsection{Overlap Resolution}
+\label{sec:drp_overlap_resolution}
+
+The two overlap resolution pipelines are together responsible for finalizing the definitions of Objects by merging redundant processing done in tract and patch overlap regions.  In most cases, object definitions in the overlap region will be the same, making the problem trivial, and even when the definitions are different we can frequently resolve the problem using purely geometrical arguments.  However, some difficult cases will remain, mostly relating to blend families that are defined differently on either side.
+
+We currently assume that overlap resolution actually drops Object rows when it merges them; this will avoid redundant processing in the performance critical \hyperref[sec:drpMultiFit]{MultiFit} pipeline.  A slower but perhaps safer alternative would be to simply flag redundant Objects.  This would also allow tract overlap resolution to be moved after the \hyperref[sec:drpMultiFit]{MultiFit} and \hyperref[sec:drpForcedPhotometry]{ForcedPhotometry} pipelines, which would simplify large-scale parallelization and data flow by moving the first operation requiring more than one tract (\hyperref[sec:drpResolveTractOverlaps]{ResolveTractOverlaps} until after all image processing is complete.
+
 \subsubsection{ResolvePatchOverlaps}
 \label{sec:drpResolvePatchOverlaps}
+
+In patch overlap resolution, all contributing patches to an area (there can be between one and four) share the same pixel grid, and we furthermore expect that they will have the same coadd pixel values.  This should ensure that any above-threshold pixel in one patch is also above threshold in all others, which in turn should guarantee that patches agree on the extent of each blend family (as defined by the parent \hyperref[sec:spFootprints]{Footprint}).
+
+A common pixel grid also allows us to define the overlap areas as exact rectangular regions; we consider each patch to have an inner region (which directly abuts the inner regions of neighboring patches) and an outer region (which extends into the inner regions of neighboring patches).  If we consider the case of two overlapping patches, blend families in those patches can fall into five different categories:
+\begin{itemize}
+\item If the family falls strictly within one patch's inner region, it is assigned to that patch (and the other patch's version of the family is dropped).
+\item If the family crosses the boundary between patch inner regions...
+  \begin{itemize}
+  \item ...but is strictly within both patches' outer regions, it is assigned to the patch whose inner region includes more of the family's footprint area.
+  \item ...but is strictly within only one patch's outer region, it is assigned to that patch.
+  \item ...and is not strictly within either patch's outer region, the two families must be merged at an Object-by-Object level.  The algorithm used for this procedure is yet to be developed, but will be implemented by the \hyperref[sec:acBlendedOverlapResolution]{Blended Overlap Resolution} algorithmic component.
+  \end{itemize}
+\end{itemize}
+Overlap regions with more than two patches contributing have more possibilities, but are qualitatively no different.
+
+\begin{note}[TODO]
+  Add figure explaining inner and outer patch regions.
+\end{note}
+
+If pixel values in patch overlap regions cannot be guaranteed to be identical, patch overlap resolution becomes significantly harder (but no harder than tract overlap resolution), because adjacent patches may disagree on the above categories to which a family belongs.
+
+Patch overlap resolution can be run independently on every distinct overlap region that has a different set of patches contributing to it; in the limit of many patches per tract, there are three times as many overlap regions as patches (each patch has four overlap regions shared by two patches, and four overlap regions each shared by four patches).
+
 \subsubsection{ResolveTractOverlaps}
 \label{sec:drpResolveTractOverlaps}
 
-\subsection{Object Characterization}
-\label{sec:drp_object_characterization}
+Tract overlap resolution operates under the same principles as patch overlap resolution, but the fact that different tracts have different coordinate systems and subtly different pixel values makes the problem significantly more complex.
+
+While we do not attempt to define inner and outer regions for tracts, we can still define discrete overlap regions in which the set of contributing tracts is constant (though these regions must now be defined using spherical geometry).  Because tracts may differ on the extent and membership of blend families, it will be useful here to define the concept of a ``blend chain'': within an overlap region a families blend chain is the recursive union of all families it overlaps with in any tract that contributes to that overlap region see Figure~TODO.  A blend chain is thus the maximal cross-tract definition of the extent of a blend family, and hence we can use it to categorize blends in tract overlaps:
+\begin{itemize}
+\item If a blend chain is strictly contained by only one tract, all families within that chain are assigned to that tract.
+\item If a blend chain is strictly contained by more than one tract, all families within that chain are assigned to the tract whose center is closest to the centroid of the blend chain.
+\item If a blend chain is not strictly contained by any tract, all families in the chain must be merged at an Object-by-Object level.  This is done by the \hyperref[sec:acBlendedOverlapResolution]{Blended Overlap Resolution} algorithmic component, after first transforming all measurements to a new coordinate system defined to minimize distortion due to projection (such as a tangent projection at the blend chain's centroid).
+\end{itemize}
+
+ResolveTractOverlaps is the first pipeline in Data Release Production to require access to processed results from more than one tract.
+
+\begin{note}[TODO]
+  Add figure explaining blend chains.
+\end{note}
+
+\subsection{Multi-Epoch Object Characterization}
+\label{sec:drp_multi_epoch_object_characterization}
 
 \begin{note}[Object Characterization Diagram]
 Extract multifit/forced\_photometry pipelines from ``DRP Top-Level Overview'' on confluence and expand detail to show data flow and ordering of ``Task/Process'' boxes.
 \end{note}
 
-\subsubsection{MeasureCoadds}
-\label{sec:drpMeasureCoadds}
 \subsubsection{MultiFit}
 \label{sec:drpMultiFit}
+
 \subsubsection{ForcedPhotometry}
 \label{sec:drpForcedPhotometry}
 
@@ -601,11 +698,13 @@ Extract Afterburner pipelines from ``DRP Top-Level Overview'' on confluence and 
 \subsubsection{GatherContributed}
 \label{sec:drpGatherContributed}
 
-\subsection{UNCAPTURED DEPENDENCIES}
+\subsection{UNSTRUCTURED OPEN QUESTIONS}
 
 \begin{itemize}
 \item Where does the initial reference catalog at the start of the DRP come from?  This could require special observations in commissioning or before the start of the survey, as well as addition algorithms and software.  If DRP always uses a reference catalog for star selection in ImChar, we need to actually do the classification for that at some point.
 \item How do we test all of the wavelength-dependent photometric calibration and PSF stuff on precursor data?  Are we going to characterize DECam well enough to just use it directly, or do we need to mock things up or rely more on JointCal?
 \item Input selection for DRP.  How do we decide what to throw away?  Is this a SQuaRE job?  Do we ever throw images away because the pipeline can't process them?  Do we report these back to the scheduler, or just hope it all averages out?
+\item Shouldn't we be making difference images from short-period coadds, instead of using the short-period coadds directly?
+\item Do we need to resolve tract overlaps in Source and DIASource as well?
 \end{itemize}
 
