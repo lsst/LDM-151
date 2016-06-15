@@ -672,15 +672,43 @@ ResolveTractOverlaps is the first pipeline in Data Release Production to require
 \subsection{Multi-Epoch Object Characterization}
 \label{sec:drp_multi_epoch_object_characterization}
 
-\begin{note}[Object Characterization Diagram]
-Extract multifit/forced\_photometry pipelines from ``DRP Top-Level Overview'' on confluence and expand detail to show data flow and ordering of ``Task/Process'' boxes.
-\end{note}
+The highest quality measurements for the vast majority of LSST objects will be performed by the \hyperref[sec:drpMultiFit]{MultiFit} and \hyperref[sec:drpForcedPhotometry]{ForcedPhotometry} pipelines.   These measurements include stellar proper motions and parallax, galaxy shapes and fluxes, and light curves for all objects.  These supersede many (but not all) measurements previously made on coadds and difference images by using deep, multi-epoch information to constrain models while fitting directly to the original CalExp (or DIAExp) images.
+
+The difference between the two pipelines is their parallelization axis: an instance of the \hyperref[sec:drpMultiFit]{MultiFit} pipeline processes a single Object family at a time, utilizing all of the CalExps that overlap that family as input, while \hyperref[sec:drpForcedPhotometry]{ForcedPhotometry} processes one CalExp or DIAExp at a time, iterating over all Objects within its bounding box.  Together these three pipelines must perform three roles:
+\begin{itemize}
+\item Fit moving point source and galaxy models to all Objects, adding new columns or updating existing columns in the Object table.  This requires access to all images simultaneously, so it must be done in \hyperref[sec:drpMultiFit]{MultiFit}.
+\item Fit fixed-position point source models for each object (using the \hyperref[sec:drpMultiFit]{MultiFit}-derived positions) to each DIAExp image separately, populating the ForcedSource table.  This \emph{differential forced photometry} could concievably be done in \hyperref[sec:drpMultiFit]{MultiFit}, but will probably be more efficient to do in \hyperref[sec:drpForcedPhotometry]{ForcedPhotometry}.
+\item Fit fixed-position point source models for each object to each CalExp image separately, also populating the ForcedSource table.  This \emph{direct forced photometry} can easily be done in either pipeline, but doing it \hyperref[sec:drpMultiFit]{MultiFit} should give us more options for dealing with blending, and it may decrease I/O costs as well.
+\end{itemize}
 
 \subsubsection{MultiFit}
 \label{sec:drpMultiFit}
 
+MultiFit is the single most computationally demanding pipeline in Data Release Production, and its data flow is essentially orthogonal to that of all previous pipelines.  Instead of processing flow based on data products, each MultiFit job is an Object family covering many distinct images, and hence efficient I/O will require the orchestration layer to process these jobs in an order that minimizes the number of times each image is loaded.
+
+From the Science Pipelines side, MultiFit is implemented as two routines, mediated by the orchestration later:
+\begin{itemize}
+\item The MultiFit ``launcher'' processes the Object table and defines family-level MultiFit jobs, including the region of sky required and the corresponding data IDs and pixel-area regions (unless the latter two are more efficiently derived from the sky area by the orchestration layer).
+\item The MultiFit ``fitter'' processes a single Object family, accepting all required image data from the orchestration layer and returning an Object record (and possibly a table of related ForcedSources).  This is the \hyperref[sec:acMultiEpochMeasurement]{Multi-Epoch Measurement} algorithmic component.
+\end{itemize}
+
+This simple picture is complicated by the presence of extremely large blend families, however.  Some blend families may be large enough that a single MultiFit job could require more memory than is available on a full node (or require more cores on a node than can be utilized by lower-level parallelization).  We see two possibilities for addressing this problem:
+\begin{itemize}
+\item The fitter could utilize cross-node communication to extend jobs over more nodes.  The most obvious approach would give each node full responsibility for any processing a on group of full CalExps it holds in memory, as well as responsibility for ``directing'' a number of MultiFit jobs.  These jobs would delegate pixel processing on CalExps to the nodes responsible for them (this constitutes the bulk of the processing).  This would require low-latency but low-bandwidth communication; the summary information passed between the directing jobs and the CalExp-level processing jobs is much smaller than the actual CalExps or even the portion of a CalExp used by a particular fitting job, but this communication happens within a relatively tight loop (though not the innermost loop).  This approach will also require structuring the algorithmic code to abstract out communication, and may require an alternate mode to run small jobs for testing.
+\item The launcher could define a graph of sub-family jobs that correspond to an iterative divide-and-conquer approach to large families.  This approach will require more flexibilty in the algorithmic code to handle more combinations of fixed and free parameters (to deal with neighboring objects on the edges of the images being considered), more tuning and experimentation, and more sophisticated launcher code.  Fitting individual large objects in this scenario could also require binning images in the orchestration or data access layer.
+\end{itemize}
+It is unclear which of these approaches will be more computationally expensive.  The first option may reduce I/O or total network usage at the expense sensitivity to network latency.  The second option may require redundant processing by forcing iterative fitting, but that sort of iterative fitting may lead to faster convergence and hence be used even in the first option.
+
+If direct forced photometry is performed in MultiFit, moving-point source models will simply be re-fit with per-epoch amplitudes allowed to vary independently and all other parameters held fixed.  The same approach could be used to perform differential forced photometry, but this would require also passing DIAExp pixel data to MultiFit.
+
+Significant uncertainty also remains in how MultiFit will handle blending even in small families, but this decision will not have larger-scale processing impacts, and will be discussed further in Section~\ref{sec:acBlendedMeasurement}.
+
 \subsubsection{ForcedPhotometry}
 \label{sec:drpForcedPhotometry}
+
+In ForcedPhotometry, we simply measure point-source and possibly aperture photometry (the baseline is point source photometry, but aperture photometry should be implemented for diagnostic use and as a fallback) on individual CalExp or DIAExp images, using positions from the Object table.
+
+Aside from querying the Object table for the list of Objects overlapping the image, all work is delegated to the \hyperref[sec:acForcedMeasurement]{Forced Measurement} algorithmic component.  The only algorithmic challenge is how to deal with blending.  If only differential forced photometry is performed in this pipeline, it may be appropriate to simply fit all Objects within each family simultaneously with point source models.  The other alterative is to project templates from \hyperref[sec:drpMultiFit]{MultiFit} or possibly \hyperref[sec:drpMeasureCoadds]{MeasureCoadds} and replace neighbors with noise (as described in Sections~\ref{sec:acDeblendTemplateProjection} and \ref{sec:acReplaceNeighborsWithNoise}).
 
 \subsection{Postprocessing}
 \label{sec:drp_postprocessing}
@@ -698,7 +726,7 @@ Extract Afterburner pipelines from ``DRP Top-Level Overview'' on confluence and 
 \subsubsection{GatherContributed}
 \label{sec:drpGatherContributed}
 
-\subsection{UNSTRUCTURED OPEN QUESTIONS}
+\subsection{UNSTRUCTURED OPEN QUESTIONS / WORK NOT CAPTURED}
 
 \begin{itemize}
 \item Where does the initial reference catalog at the start of the DRP come from?  This could require special observations in commissioning or before the start of the survey, as well as addition algorithms and software.  If DRP always uses a reference catalog for star selection in ImChar, we need to actually do the classification for that at some point.
