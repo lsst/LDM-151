@@ -459,6 +459,7 @@ AUTHOR: Jim
 \item Must be able to do generalized outlier rejection, using histograms of detection masks produced on difference images.
 \item Needs to propagate full uncertainty somehow.
 \item Needs to propagate PSFs.
+\item Needs to propagate wavelength-dependent photometric calibration.
 \item May need to propagate larger-scale per-exposure masks to get right PSF model or other coadded quantities.
 \item Should be capable of combining coadds from different bands and/or epoch ranges ranges as well as combining individual exposures.
 \item Also needs to support combining snaps
@@ -669,6 +670,16 @@ AUTHOR: Jim
 \begin{itemize}
 \item Given two or more overlapping blend families (with associated measurements), merge them by selecting the ``best'' measurement for each child object.
 \end{itemize}
+
+\subsection{Raw Measurement Calibration}
+\label{sec:acRawMeasurementCalibration}
+
+AUTHOR: Jim
+\begin{itemize}
+\item Apply astrometric and photometric calibrations to measurements in raw units, transforming them to calibrated quantities.
+\item May be applied within the database after ingest in some contexts, but needs to be available outside the database as well.
+\end{itemize}
+
 
 \subsection{Ephemeris Calculation}
 \label{sec:acEphemerisCalculation}
