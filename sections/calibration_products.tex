@@ -18,114 +18,116 @@ The work performed in this WBS serves two complementary roles:
 \end{itemize}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Inputs}
-
+\label{sec:calibInputs} 
 The following lists input datasets which will be available to the Calibration Products Pipeline. It should be noted that these are the raw inputs, and as such, the algorithmic sections for items that are listed as camera team deliverables are shown as ``None'', as these will already have been derived. However, many of these items are re-listed in the outputs section (\ref{sec:calibrationOutputDatasets}), where the algorithms to recalculate/monitor these on the mountain are discussed.
 
 
-\subsubsection{Bias Frames}\label{inputs:biases} 
+\subsubsection{Bias Frames}\label{sec:calibInputs:biases} 
 Sets of bias frames for the production of master biases.
 \alg None - these just need to be taken.
 
 
-\subsubsection{Gain Values}\label{inputs:gain} 
+\subsubsection{Gain Values}\label{sec:calibInputs:gain} 
 \cameraTeam
 Gain values for all amplifiers;  note that these are required to high accuracy (0.1\%), as they are used while determining the photometric flats.
 \alg Determination is subtle but not hard; both \fefiftyfive\ and PTC gain measurement techniques need to be applied with some care to get good results. Given the \bfeffect\ and non-linearity, it's not clear to what accuracy PTC can give gains, but \fefiftyfive\ can certainly provide gain to $\ll$0.1\% 
 
 
-\subsubsection{Linearity}\label{inputs:linearityCurve} 
+\subsubsection{Linearity}\label{sec:calibInputs:linearityCurve} 
 \cameraTeam
 The linearity curve for every amplifier.
 \alg None.
 
 
-\subsubsection{Darks}\label{inputs:dark}
+\subsubsection{Darks}\label{sec:calibInputs:dark}
 Sets of 300s dark frames.
 \alg None - these just need to be taken.
 
 
-\subsubsection{Crosstalk}\label{inputs:crosstalk}
+\subsubsection{Crosstalk}\label{sec:calibInputs:crosstalk}
 \cameraTeam
 The crosstalk matrix for every pair of amplifiers in the camera.
 \alg None.
 
 
-\subsubsection{Defect Map}\label{inputs:defectList} 
+\subsubsection{Defect Map}\label{sec:calibInputs:defectList} 
 \cameraTeam
 A list of all bad pixels in each CCD.
 \alg None.
 
 
-\subsubsection{Saturation levels}\label{inputs:saturationLevel}
+\subsubsection{Saturation levels}\label{sec:calibInputs:saturationLevel}
 \cameraTeam
 The level (in electrons (or ADU?)), for each amplifier, at which charge bleeds to a neighbouring pixel. 
 \alg None.
 
 
-\subsubsection{Broadband Flats}\label{inputs:broadFlat}
+\subsubsection{Broadband Flats}\label{sec:calibInputs:broadFlat}
 Sets of flats taken through the standard LSST filters.  We will	need flats taken at a number of flux levels to measure brighter-fatter and check linearity.
 \alg None - these just need to be taken.
 
 
-\subsubsection{Monochromatic Flats}\label{inputs:monoFlat}
+\subsubsection{Monochromatic Flats}\label{sec:calibInputs:monoFlat}
 Sets of `monochromatic' (\c 1nm) flat-field screen images taken without the filter in the beam.
 \alg None - these just need to be taken.
 
 
-\subsubsection{CBP Data}\label{inputs:CBP}
+\subsubsection{CBP Data}\label{sec:calibInputs:CBP}
 Sets of \textit{C}ollimated \textit{B}eam \textit{P}rojector images. The proposed resolutions and steps in these datasets are preliminary.
 \alg Scripting the CBP/8.4m to take each of these datasets in concert. The scripting/control requirements for the CBP are dealt with separately in \ref{CBP_control}.
 
 
-\paragraph{CBP dataset 1}\label{inputs:CBP:mono}
+\paragraph{CBP dataset 1}\label{sec:calibInputs:CBP:mono}
 Sets of CBP images scanned in wavelength at 1nm resolution every 1nm for a fixed set of spot positions on the camera, and for fixed footprint on M1.  No filter should be in the beam.
 	
 	
-\paragraph{CBP dataset 2}\label{inputs:CBP:spot}
+\paragraph{CBP dataset 2}\label{sec:calibInputs:CBP:spot}
 Sets of CBP images scanned in wavelength at 20nm resolution every 100nm, while rotating the CBP about a pupil to move the spot pattern around the camera for a fixed footprint on M1.  No filter should be in the beam.
 
 	
-\paragraph{CBP dataset 3}\label{inputs:CBP:M1}
+\paragraph{CBP dataset 3}\label{sec:calibInputs:CBP:M1}
 Sets of CBP images scanned in wavelength at 20nm resolution every 100nm for a fixed set of spot positions on the camera, and for a number of footprints on M1; the minimum number of footprints is \c 6 for a 30cm CBP, but in reality we will explore more pointings to test azimuthal symmetry. No filter should be in the beam.
 
 
-\paragraph{CBP dataset 4}\label{inputs:CBP:filter}
+\paragraph{CBP dataset 4}\label{sec:calibInputs:CBP:filter}
 Sets of CBP images scanned in wavelength at 1nm resolution every 1nm for a fixed set of spot positions on the camera, and for fixed footprint on M1.  Repeated for every filter. \Nb the wavelength range for each scan need only cover the range for which the filter transmits appreciable light.
 
 
-\paragraph{CBP dataset 5}\label{inputs:CBP:leak}
+\paragraph{CBP dataset 5}\label{sec:calibInputs:CBP:leak}
 Sets of CBP images scanned in wavelength at 20nm resolution every 20nm for a fixed set of spot positions on the camera, and for fixed footprint on M1. Repeated for every filter.
 
 
-\paragraph {CBP Crosstalk}\label{inputs:CBP:crosstalk}
+\paragraph {CBP Crosstalk Measurement}\label{sec:calibInputs:CBP:crosstalk}
 Sets of CBP images taken with a suitable designed sparse mask to allow us to identify and measure all crosstalk images.  The simplest sparse mask would have only a single spot, used to illuminate each amplifier in the camera in turn (but less sparse solutions are probably also possible).  The wavelengths used are unimportant, and there are no constraints on beam footprints on M1 or filter choice.
 
 
-\subsubsection{Filter Transmission}\label{inputs:filterTransmission}
+\subsubsection{Filter Transmission}\label{sec:calibInputs:filterTransmission}
 \cameraTeam
 Transmission curves for all the filters as a function of position.
 \alg None.
 
 
-\subsubsection{Stellar spectra}\label{inputs:starSpectrum} 
+\subsubsection{Stellar spectra}\label{sec:calibInputs:starSpectrum} 
 Spectrophotometrically-calibrated spectra for stars in the field of view for almost all visits.
-\alg xxx Need to write this. Could potentially involve Team Stubbs/Guyonnet though.
+\alg \xxx Need to write this. Could potentially involve Team Stubbs/Guyonnet though.
 
 
-\subsubsection{Other stellar spectra (\nb~!= \ref{inputs:starSpectrum})}\label{inputs:standardStarSpectrum}
+\subsubsection{Other stellar spectra (\nb~!= \ref{inputs:starSpectrum})}\label{sec:calibInputs:standardStarSpectrum}
 Known spectra for bright stars in the field of view of all visits.
-\alg xxx Need to write this. Could potentially involve Team Stubbs/Guyonnet though.
+\alg \xxx Need to write this. Could potentially involve Team Stubbs/Guyonnet though.
 
 
-\subsubsection{Atmospheric Characterisation}\label{inputs:atmosphericData}
+\subsubsection{Atmospheric Characterisation}\label{sec:calibInputs:atmosphericData}
 Externally measured parameters of the atmosphere, for example barometric pressure and ozone.
 \alg None, except for interfacing with the site team or whoever is responsible for the equipment to automate getting these readings from the environmental monitors.
 
 
-\subsubsection{Photometric Standards}\label{inputs:photometricStandards} 
+\subsubsection{Photometric Standards}\label{sec:calibInputs:photometricStandards} 
 Photometric standards, of a range of colours. GAIA is a likely source for these data.
 \alg None.
 
@@ -136,17 +138,19 @@ Photometric standards, of a range of colours. GAIA is a likely source for these 
 
 \subsection{Outputs from LSST's Calibration Product Pipelines \\
 	/ Inputs to Alert/DRP Pipelines}
-\label{sec:calibrationOutputDatasets}
+\label{sec:calibProducts}
 
 This section details the output from the Calibration Products Pipeline. Algorithms for the production of each item are discussed in detail, and includes the re-derivation of the items previously just listed as camera team deliverables.
 
+
 \subsubsection{Master Bias}\label{calibProducts:bias}
-Trimmed, overscan subtracted, bias frame for each CCD.
-\alg Construction algorithm exists in \texttt{pipe\_drivers}.
+Trimmed, overscan subtracted, master bias frame for each CCD on the focal plane. \rednote (Including wavefront sensors?)
+\alg Prototype construction algorithm exists in \texttt{pipe\_drivers}. Final version must be configurable to use scalar-, vector- or array-type overscan subtraction, and be robust to contamination from cosmic rays.
+
 
 \subsubsection{Master Darks}\label{calibProducts:dark}
-Trimmed, overscan subtracted, dark frame scaled to 1 second for each CCD.
-\alg Construction algorithm exists in \texttt{pipe\_drivers}.
+Trimmed, overscan and bias-frame subtracted, master dark frame, scaled to 1 second for each CCD on the focal plane. \rednote (Including wavefront sensors?)
+\alg Prototype construction algorithm exists in \texttt{pipe\_drivers}. Final version must be configurable to use scalar-, vector- or array-type overscan subtraction, and be robust to contamination from cosmic rays when coadding.
 
 
 \subsubsection{Master Linearity}\label{calibProducts:linearityCurve}
@@ -155,27 +159,37 @@ Linearity curves; identical to \ref{inputs:linearityCurve}, unless updated durin
 
 
 \subsubsection{Master Fringe Frames}\label{calibProducts:fringeFrames}
-Some variety of fringe frames. We hope that we will not need these, but should plan for their existence as a backup.
-\alg Construction of these fringe frames from \hyperref[inputs:monoFlat]{monochromatic flats} using existing algorithm in \texttt{pipe\_drivers}.
+Some variety of fringe frames. We hope that these will not be necessary \footnote{\xxx add footnote saying why briefly}, but should baseline for their existence as a backup.
+\alg Construction of these fringe frames from \hyperref[inputs:monoFlat]{monochromatic flats}, likely using the existing algorithm in \texttt{pipe\_drivers}.
 
 
 \subsubsection{Master Gain Values}\label{calibProducts:gains}
 Per-amplifier gains; identical to \ref{inputs:gain}, unless updated during operations.
-\alg Potentially difficult. We will have almost arbitrarily accurate gain measurements as an input, but monitoring the evolution of these gains to the required accuracy is currently an unsolved problem. Ticket \hyperref{https://jira.lsstcorp.org/browse/DM-6030}{}{}{\texttt{DM-6030}} exists to explore the possibility of using cosmic ray muons and radioisotope contamination in the camera for this purpose. If this fails (likelihood moderate-high) then another method will need to be devised.
+\alg Potentially difficult, and needs to be developed. We will have almost arbitrarily accurate gain measurements as an input, but monitoring the evolution of these gains to the required accuracy is currently an unsolved problem. Ticket \hyperref{https://jira.lsstcorp.org/browse/DM-6030}{}{}{\texttt{DM-6030}} exists to explore the possibility of using cosmic ray muons and the unavoidable radioisotope contamination inside the camera for this purpose. If this fails \footnote{Merlin's estimate is that the likelihood of this is moderate-to-high, Robert disagrees)} then another method will need to be devised. The necessary accuracy of this measurement should be firmly established.
+
 
 \subsubsection{Master Defects}\label{calibProducts:defectList}
-A list of all bad pixels in each CCD; identical to \ref{calibProducts:defectList}, unless updated during operations.     
-\alg Statistical analysis of dark frames, flats and ``pocket-pumping" exposures will determine the defect list.
+A list of all bad pixels in each CCD; identical to \ref{calibProducts:defectList}, unless updated during operations.
+\alg Algorithm to perform statistical analysis of dark frames, flats and ``pocket-pumping" exposures to determine an updated defect list.
 
 
 \subsubsection{Saturation Levels}\label{calibProducts:saturationLevel}
-The level (in electrons (or ADU? xxx)), for each amplifier, at which charge bleeds to a neighbouring pixel; identical to \ref{calibProducts:saturationLevel}, unless updated during operations.     
-\alg Easily measurable with the CBP, but need to code to detect leakage and calculate threshold level. %\rednote{Does bleeding occur in the serial register? If not, why do we expect it to be a per-amplifier thing? Could it potentially not be a per-pixel effect? This is surely known, but I should discuss with someone.}
+The level (in electrons (or ADU? \xxx)), for each amplifier, at which charge bleeds to a neighbouring pixel; identical to \ref{calibProducts:saturationLevel}, unless updated during operations.
+\alg Measurement is easy using the CBP, but need to code to detect bleeding and then calculate the threshold level. 
 
+%%% progress marker %%%
 
 \subsubsection{Crosstalk}\label{calibProducts:crosstalk}
-The crosstalk matrix for every pair of amplifiers in the camera; identical to \ref{calibProducts:crosstalk}, unless updated during operations.
-\alg The validity of \ref{calibProducts:crosstalk} is questionable to the extent where it is not clear whether it should even be a \textbf{Camera Team deliverable}. We must be able to measure this on the mountain using the CBP. The involves dithering one or more spot masks around the focal plane and measuring the coefficients. Should be highly multiplexable using a multi-pinhole mask. Need code to extract the crosstalk coefficients from these measurements.
+The crosstalk matrix for every pair of amplifiers in the camera; identical to \ref{calibProducts:crosstalk}, unless updated during operations. However, the need for update is very high as the validity of \ref{calibProducts:crosstalk} is questionable to the extent where it is not clear whether it should even be a \textbf{Camera Team deliverable}. The reason for this is that the inter-CCD and inter-raft couplings, though supposedly small (especially in the case of inter-raft coupling), depends on the exact physical locations of all the PCB and flex cables with respect to one another. We must therefore be able to measure this on the mountain using the CBP.
+
+It should be noted that although this is not ``hard'' in the intellectual sense, it is a fiddly thing and easy to get wrong, both in the measurement and the correction; our focal plane is likely to be heterogeneous, and the readout directions of the amplifiers different between the chip flavours, meaning that crosstalk ghosts may appear mirror in one or more axes. Further more, whilst unlikely to exist, should a timing offset be present between REBs (one could imagine the readout drawing slightly too much peak power, and it being slightly staggered to reduce this), then the crosstalk ghost positions will change.
+\alg In the un-multiplexed limit, this involves dithering a single CBP spot around the focal plane and measuring the crosstalk ghosts (whilst careful disambiguating these from optical ghosts using CBP trickery). Clearly some multiplexing will be possible using a multi-pinhole mask. We should probably baseline for a one-spot-per-CCD mask, a one-spot-per-raft-mask, and ideally a one-spot-per-amplifier mask.
+
+We will need CBP dithering scripts (mask-specific raster scanning routines, and then re-raster scanning at a different M1 position for the previous focal plane positions to differentiate crosstalk and optical ghosts), code to perform the differentiation, and then measure the coupling coefficients. This will be fiddly as the sensor types will be relevant. \hyperref{http://iopscience.iop.org/article/10.1088/1748-0221/10/05/C05010}{}{}{POC Crosstalk reference} \xxx\ add this as a proper citation and insert into bib.
+\begin{note}
+	See three queries on crosstalk which I have put in \secsymbol\ref{sec:calibQuestions}.
+\end{note}
+
 
 
 \subsubsection{\emph{Im}pure Monochromatic Flats}\label{calibProducts:monoFlat}
@@ -226,7 +240,9 @@ It is not currently clear where the responsibility for characterizing ghosts and
 
 
 \subsection{CBP Control}\label{CBP_control}
-The procurement of the CBP includes the procurement of the necessary control software  \rednote{Check with Patrick Ingraham that this is correct}. However, it will still remain to write scripts for the CBP and interfaces with the OCS to allow making all of the desired measurements, especially as several of these, namely \rednote{xxx, xxx \& xxx} require doing so in concert with the 8.4m.
+The procurement of the CBP includes the procurement of the necessary low-level control drivers/software. T\&S TCS own the task of taking the vendor-provided low-level routines and turning these into real-world usable routines (higher level functions for \eg homing, slew-to-position, mount requested filter \etc.)
+
+However, it will still remain to write scripts for the CBP and interfaces with the OCS to allow making all of the desired measurements, especially as several of these, namely \rednote{\xxx, \xxx \& \xxx} require doing so in concert with the 8.4m.
 
 
 
@@ -244,29 +260,43 @@ The procurement of the CBP includes the procurement of the necessary control sof
 
 
 
-%
-%%
-%%
-%
-%
-%
-%
-%
-%
-%
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Calibration Telescope Input Data}
 \label{sec:calibrationTelescopeDatasets}
-This section details to input data required to calibrate the calibration (auxiliary/Calypso) telescope itself.
+This section details to input data required to calibrate the calibration (\auxtelescope) telescope itself. Broadly, this will include most of the ingredients listed in \secsymbol\ref{sec:calibInputs}, but namely:
+
+\begin{itemize}
+	\item Gain values
+	\item Crosstalk matrix
+	\item Linearity curve
+	\item Defect map
+	\item Saturation levels
+	\item Bias frames
+	\item Dark frames
+	\item Broadband flatfields
+	\item Narrowband flatfields \footnote{It is now part of the baseline design that there is a broadband and narrowband lightsource at the \auxtelescope.}  \rednote{What is required in this respect? See \ref{sec:calibQuestions}}.
+	\item Filter/grating/grism transmissions
+\end{itemize}
+
+Further to these ``standard'' camera calibration ingredients, the following will also be required as inputs for the 
+
+\subsubsection{}\label{calypso:atmosphericAbsorption} The atmospheric absorption as a function of wavelength (at moderate spectral resolution) for almost each visit.
 
 
-\subsubsection{}\label{calypso:atmosphericAbsorption} The atmospheric absorption as a function of wavelength (at
-moderate spectral resolution) for almost each visit.
-\subsubsection{}\label{calypso:nightSkySpectrum} Spectrum of the night sky near the Calypso boresight, with $R
-\sim 200$.\footnote{It is not entirely clear whether these will be taken on the Calypso or 8.4m	boresight.}
+\subsubsection{}\label{calypso:nightSkySpectrum} Spectrum of the night sky near the Calypso boresight, with $R \sim 200$. \footnote{It is not entirely clear whether these will be taken on the Calypso or 8.4m	boresight.}
 
 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Calibration Telescope Output Data}
 \label{sec:calibrationTelescopeDatasets}
@@ -275,8 +305,9 @@ This section details the calibrated outputs from the calibration (auxiliary/Caly
 
 \subsubsection{}\label{calypso:atmosphericAbsorption}
 The atmospheric absorption as a function of wavelength (at moderate spectral resolution) for almost each visit.
+ 
 \subsubsection{}\label{calypso:nightSkySpectrum}
-Spectrum of the night sky near the Calypso boresight, with $R\sim 200$.\footnote{It is not entirely clear whether these will be taken on the Calypso or 8.4m boresight.}
+Spectrum of the night sky near the Calypso boresight, with $R \sim 200$.\footnote{It is not entirely clear whether these will be taken on the Calypso or 8.4m boresight.}
 
 \Nb these are clearly not raw data, but will need to be extracted from spectrographic exposures.
 \XXX{Add a description of those pipelines, and of the input data that they require.}
@@ -286,7 +317,6 @@ Spectrum of the night sky near the Calypso boresight, with $R\sim 200$.\footnote
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 \subsection{Prototype Implementation}
 
@@ -302,7 +332,9 @@ While parts of the Calibration Products Pipeline have been prototyped by the LSS
 
 
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Overview of calibration procedure}
 This section, whilst not strictly concerning the \emph{production} of the calibration products themselves, aims to give a broad overview of how these products will be used and why. 
@@ -310,7 +342,7 @@ This section, whilst not strictly concerning the \emph{production} of the calibr
 Whilst this isn't technically part of the CPP remit, without it, all that is here is a list of ingredients, (and how to make the compound ingredients), with no overview of the recipe, which makes for a strange section in a cookbook. If this is no desired or should live somewhere else then feel free to move or \emph{re}move it, but I felt like it should be in here as this stuff is not easy to get ones head around at the best of times.
 \end{note}
 
-Overview goes here! xxx
+Overview goes here! \xxx
 
 %\paragraph{Instrumental sensitivity}
 %
@@ -378,15 +410,33 @@ Overview goes here! xxx
 %Produce Master Pupil Ghost Exposure; Determine CCOB-derived Illumination Correction; Determine Optical Model-derived Illumination Correction; Determine Star Raster Photometry-derived Illumination Correction; Create Master Illumination Correction; Determine Self-calibration Correction-Derived Illumination Correction; Correct Monochromatic Flats; Reduce Spectrum Exposure
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{UNSTRUCTURED OPEN QUESTIONS \\ a.k.a. Merlin's random thoughts/ramblings}\label{sec:calibQuestions}
 
-\subsection{UNSTRUCTURED OPEN QUESTIONS \\ a.k.a. Merlin's random thoughts/ramblings}
-
-This section is just things that I thought of whilst working through this document. They probably don't even belong in here at all, but I wanted to capture them and this seemed a semi-relevant place (and Jim started it!).
+This section is just things that I thought of whilst working through this document. They probably don't belong in here at all, but I wanted to capture them and this seemed a semi-relevant place (and Jim started it!).
 \begin{itemize}
-	\item test
-	\item test 2
+	\item Flat fielding the auxiliary telescope: What is required? What are the plans? We have a flat-field screen in this dome, correct? (Now confirmed) Regarding the bandpasses, what do we have in terms of filters? (Answer: full LSST set on the imager) What do we need? Is it not necessary get an accurate throughput determination at 1nm resolution by taking the CBP or at least the monochromatic laser source over there for a one-off characterization? (Answer:  the laser is not going to happen but there is a monochromatic light source in the \auxtelescope\ baseline.) If not, how are we accurately characterizing the response of the detector which will itself be doing the $R \sim 200$ spectrophotometry of the standard stars?
+	\begin{note}
+		\xxx Need to go back and add in doing monochromatic composite flat-fielding of this telescope, \emph{and} add that these need to be applied somewhere/somehow. The application of \emph{these} to the \auxtelescope\ data really doesn't belong in AP or DRP as all the other photocal stuff does.
+	\end{note}
+	
+	\item Crosstalk coupling: depending on where this happens in the electronic chain, this may be ``conservative" or ``generative", \ie\ if the crosstalk is from a capacitive coupling at an early stage of the readout then the crosstalk which is removed from the victims should be added back in to the aggressors, as this is signal which has been \emph{lost}. However, if it occurs after a significant amount of amplification (likely), then it should just be removed. Again, I'm sure this is known but I'd just like to check as this matters at the sub 1\% level.
+	
+	\item Crosstalk (again): I am lead to believe that crosstalk correction will be applied in the DAQ. If this is correct, then this point is just to note that the calibration system needs to be able to disable this and access the truly raw images in order to make the crosstalk matrix measurements using CBP spots. It will also need to be able to push a new crosstalk matix to the DAQ to confirm meaurements (and to update the system in general).
+	
+	\item  Crosstalk (yet again): Has anyone considered the nightmare scenario where crosstalk is a function of alt, az and rotator position due to changes in these couplings from cable movement? Or is this certain to be only a 1\% change in a 1\% effect, and therefore not a concern?
+	
+	\begin{note}
+		Need to include algorithm for applying crosstalk corrections after the fact in the event that the data-buffer overflows in the case of internet outages between the summit and the US. The also implies that a time history of the measured crosstalk matrices needs to be stored somewhere.
+	\end{note}
+		
+	\item Does bleeding occur only in the serial register? (surely not) If not then why do we expect it to be a per-amplifier thing particularly, rather than a per pixel effect, as it is presumably defined by the depth of each well? This is surely known, but I should discuss with someone.
+	
 \end{itemize}
+
 
 
 
