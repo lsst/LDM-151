@@ -4,29 +4,127 @@
 \subsection{Cartesian Geometry}
 \label{sec:spCartesianGeometry}
 
+\begin{itemize}
+\item Geometry in image, focal plane coordinate systems.
+\item Includes continuous (floating point) and discrete (integer) versions of some things; integer versions refer to entire pixels, which makes them somewhat different.
+\item May need augmented versions of some classes to allow them to know what coordinate system they're in.
+\item May need augmented versions of some classes to store uncertainty.
+\item All classes need to be persistable.  Some need to be persistable to individual records (via e.g. FunctorKeys)
+\item All classes have counterpart Spherical classes related to them by WCS transforms.
+\end{itemize}
+
 \subsection{Points}
 \label{sec:spCartesianPoints}
+
+\begin{itemize}
+\item Needs sensible handling of arithmetic operators.  Currently implemented by making Extent a separate class, adding CoordinateExpr for elementwise comparisons -- but those aren't the only options.
+\item Need continuous (PointD) and discrete (PointI) versions.
+\item 3-d continuous Point/Extent also useful, especially in representing unit vectors on the sphere.  May not need to be the same template class (and maybe it shouldn't be, if it simplifies our code).
+\item Probably need to make these immutable (or have an immutable version) at least in Python so they can be exposed as properties.
+\item Needs to be persistable to individual records in the table library.
+\item Probably needs augmented version with uncertainty.
+\item Probably needs augmented version with coordinate system.
+\end{itemize}
+
+\subsection{Arrays of Points}
+\label{sec:spCartesianPointArrays}
+
+\begin{itemize}
+\item Need containers for Points that work well in both C++ and Python -- more than just a naively-wrapped \texttt{std::vector} would provide (in terms of NumPy interoperability, mostly).  Probably something based on ndarray, translating to a NumPy array with x and y fields?
+\item Unclear if we need a container with dynamic size.  Could probably use \texttt{std::vector} and Python \texttt{list} while building arrays, then freeze into a fixed, viewable array.
+\item Probably needs augmented version with coordinate system (all points in same coordinate system).
+\item Should look into what Astropy does here.
+\end{itemize}
 
 \subsection{Boxes}
 \label{sec:spCartesianBoxes}
 
+\begin{itemize}
+\item Need continuous (BoxD) and discrete (BoxI) versions, with different relationships between min, max, and dimensions.
+\item Probably need to make these immutable (or have an immutable version) at least in Python so they can be exposed as properties.
+\item Needs to be persistable to individual records in the table library.
+\item Spherical counterpart is actually \hyperref[sec:spSphericalPolygons]{Spherical Polygon}.
+\end{itemize}
+
 \subsection{Polygons}
 \label{sec:spCartesianPolygons}
+
+\begin{itemize}
+\item Only continuous version needed.
+\item Mostly used to represent large-scale masks (regions around bright stars, vignetted regions).
+\item Needs to support rasterization to mask and/or footprint.
+\item Needs to support efficient topological operation and predicates with other Polygons, Points, and Boxes (probably not Ellipses).
+\end{itemize}
 
 \subsection{Ellipses}
 \label{sec:spCartesianEllipses}
 
+\begin{itemize}
+\item Only continuous version needed.
+\item Mostly used to represent source/object shapes.
+\item Needs to support many different ellipse parameterizations.
+\item Needs to support fast evaluation of elliptically-symmetric functions (via computing the generating affine transform)
+\item Need version that knows its position and one that doesn't.
+\item Needs to support rasterization to mask and/or footprint
+\item May need an immutable version in Python (not yet certain).
+\item May needan  augmented version with uncertainty.
+\end{itemize}
+
+
 \subsection{Spherical Geometry}
 \label{sec:spSphericalGeometry}
+
+The spherical geometry library is a dependency of the database as well as applications, it includes fundamental types that are logically present in database tables (as groups of fields), and some geometry classes are important for spatial indexing.
+
+\begin{itemize}
+\item Geometry on the sky
+\item All positions and distances are Angles; need type safety for angle unit.
+\item May need augmented versions of some classes to allow them to know what coordinate system they're in.
+\item May need augmented versions of some classes to store uncertainty.
+\item All classes need to be persistable.  Some need to be persistable to individual records (via e.g. FunctorKeys)
+\end{itemize}
 
 \subsection{Points}
 \label{sec:spSphericalPoints}
 
+\begin{itemize}
+\item Needs sensible handling of arithmetic operators.  Point/Extent split probably an even better idea here.
+\item Probably need to make these immutable (or have an immutable version) at least in Python so they can be exposed as properties.
+\item Needs to be persistable to individual records in the table library.
+\item Probably needs augmented version with uncertainty.
+\item Probably needs augmented version with coordinate system.
+\end{itemize}
+
+\subsection{Arrays of Points}
+\label{sec:spSphericalPointArrays}
+
+Same requirements as \hyperref[sec:spCartesianPointArrays]{Cartesian Arrays of Points}.
+
 \subsection{Boxes}
 \label{sec:spSphericalBoxes}
 
+\begin{itemize}
+\item Not obvious we need this at all.
+\item Defined on long/lat grid, so not a box in any Cartesian projection.
+\item Needs special handling for poles?
+\end{itemize}
+
 \subsection{Polygons}
 \label{sec:spSphericalPolygons}
+
+\begin{itemize}
+\item Connecting points with great circles is probably sufficient, even if this only approximately maps to Cartesian polygons in most projections; we will have very few Cartesian polygons that extend beyond the size of one CCD, and for those great circles should be fine.
+\item Needs to support efficient topological operation and predicates with other Polygons, Points, and Boxes (probably not Ellipses).
+\item May need to support rasterization to some spherical pixelization scheme (e.g. HTM), but those requirements are probably driven more by database.
+\end{itemize}
+
+\subsection{Ellipses}
+\label{sec:spSphericalEllipses}
+
+\begin{itemize}
+\item Doesn't need to be a true spherical geometry - we really just need a Cartesian ellipse with angular position and size, defined via a gnomonic plane projection centered on the ellipse.  All spherical ellipses will be small enough that we don't have to worry about the topology of large ellipses.
+\item Probably needs augmented version with uncertainty.
+\end{itemize}
 
 \subsection{Images}
 \label{sec:spImages}
