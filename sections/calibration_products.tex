@@ -174,56 +174,71 @@ A list of all bad pixels in each CCD; identical to \ref{calibProducts:defectList
 
 
 \subsubsection{Saturation Levels}\label{calibProducts:saturationLevel}
-The level (in electrons (or ADU? \xxx)), for each amplifier, at which charge bleeds to a neighbouring pixel; identical to \ref{calibProducts:saturationLevel}, unless updated during operations.
-\alg Measurement is easy using the CBP, but need to code to detect bleeding and then calculate the threshold level. 
-
-%%% progress marker %%%
-
-\subsubsection{Crosstalk}\label{calibProducts:crosstalk}
-The crosstalk matrix for every pair of amplifiers in the camera; identical to \ref{calibProducts:crosstalk}, unless updated during operations. However, the need for update is very high as the validity of \ref{calibProducts:crosstalk} is questionable to the extent where it is not clear whether it should even be a \textbf{Camera Team deliverable}. The reason for this is that the inter-CCD and inter-raft couplings, though supposedly small (especially in the case of inter-raft coupling), depends on the exact physical locations of all the PCB and flex cables with respect to one another. We must therefore be able to measure this on the mountain using the CBP.
-
-It should be noted that although this is not ``hard'' in the intellectual sense, it is a fiddly thing and easy to get wrong, both in the measurement and the correction; our focal plane is likely to be heterogeneous, and the readout directions of the amplifiers different between the chip flavours, meaning that crosstalk ghosts may appear mirror in one or more axes. Further more, whilst unlikely to exist, should a timing offset be present between REBs (one could imagine the readout drawing slightly too much peak power, and it being slightly staggered to reduce this), then the crosstalk ghost positions will change.
-\alg In the un-multiplexed limit, this involves dithering a single CBP spot around the focal plane and measuring the crosstalk ghosts (whilst careful disambiguating these from optical ghosts using CBP trickery). Clearly some multiplexing will be possible using a multi-pinhole mask. We should probably baseline for a one-spot-per-CCD mask, a one-spot-per-raft-mask, and ideally a one-spot-per-amplifier mask.
-
-We will need CBP dithering scripts (mask-specific raster scanning routines, and then re-raster scanning at a different M1 position for the previous focal plane positions to differentiate crosstalk and optical ghosts), code to perform the differentiation, and then measure the coupling coefficients. This will be fiddly as the sensor types will be relevant. \hyperref{http://iopscience.iop.org/article/10.1088/1748-0221/10/05/C05010}{}{}{POC Crosstalk reference} \xxx\ add this as a proper citation and insert into bib.
+The level (in electrons (or ADU? \xxx)), for each amplifier, at which charge bleeds to a neighboring pixel; identical to \ref{calibProducts:saturationLevel}, unless updated during operations.
+\alg Measurement is easy using the CBP or flat-fielding, but need code to detect saturation and then calculate the threshold level.
 \begin{note}
-	See three queries on crosstalk which I have put in \secsymbol\ref{sec:calibQuestions}.
+	Merlin needs to talk to RHL about what he meant here as bleeding/blooming $\neq$ amplifier saturation. Which does he imagine this was referring to? I believe he means blooming, but others parts imply amplifier saturation so need to clarify.
 \end{note}
 
 
 
+\subsubsection{Crosstalk}\label{calibProducts:crosstalk}
+The crosstalk matrix for every pair of amplifiers in the camera; identical to \ref{calibProducts:crosstalk}, unless updated during operations. However, the need for updating is high as the validity of \ref{calibProducts:crosstalk} depends on it being measured with the camera in its final configuration. The reason for this is that the inter-CCD and inter-raft couplings, though supposedly small (especially in the case of inter-raft coupling), depends on the exact physical locations of all the PCB and flex cables with respect to one another. We must therefore be able to measure this on the mountain using the CBP.
+
+Whilst this is not ``hard'' in the intellectual sense, it is a fiddly thing and easy to get wrong, both in the measurement and potentially the correction; the LSST focal plane is likely to be heterogeneous, and the readout direction between the amplifiers differ between the chip flavours, meaning that crosstalk ghosts may appear mirrored in one or more axes. Furthermore, whilst unlikely to exist, should a timing offset exist between REBs, the crosstalk ghost positions would change.
+\alg In the un-multiplexed limit, this involves dithering a single CBP spot around the focal plane and measuring the crosstalk ghosts (whilst careful disambiguating these from optical ghosts using CBP trickery). Clearly some multiplexing will be possible using a multi-pinhole CBP mask. We should probably baseline for a one-spot-per-CCD mask, a one-spot-per-raft-mask, and ideally a one-spot-per-amplifier mask.
+
+We will need to write CBP dithering scripts (mask-specific raster scanning routines, and then re-raster scanning at a different M1 position for the previous focal plane positions to differentiate crosstalk and optical ghosts), code to perform this differentiation, and then make the measurement the coupling coefficients. This will be fiddly as the sensor types will be relevant. \hyperref{http://iopscience.iop.org/article/10.1088/1748-0221/10/05/C05010}{}{}{POC Crosstalk reference} \xxx\ add this as a proper citation and insert into bib.
+\begin{note}
+	See queries on crosstalk which I have put in \secsymbol\ref{sec:calibQuestions}.
+\end{note}
+
+
 \subsubsection{\emph{Im}pure Monochromatic Flats}\label{calibProducts:monoFlat}
-Sets of `monochromatic' (\c 1nm) trimmed, overscan subtracted, flat-field images for each filter.  These flats will \textit{include} ghost and scattered light.
+Sets of `monochromatic' (\c 1nm) trimmed, overscan-subtracted, flat-field images for each filter.  These flats will \textit{include} ghost and scattered light.
 \alg Construction algorithm likely almost exists in \texttt{pipe\_drivers}.
 
 
 \subsubsection{Pure Monochromatic Flats}\label{calibProducts:monoPhotoFlat}
-Sets of `monochromatic' (\c 1nm) trimmed, overscan subtracted, flat-field images for each filter.  These flats will \textit{exclude} ghost and scattered light.
+Sets of `monochromatic' (\c 1nm) trimmed, overscan-subtracted, flat-field images for each filter.  These flats will \textit{exclude} ghost and scattered light.
 \alg Constructed from \ref{calibProducts:monoPhotoFlat} and the ghost catalogue / system optical model.
 
 
 \subsubsection{PhotoFlats}\label{calibProducts:standardPhotoFlat}
 The linear combination of \ref{calibProducts:monoPhotoFlat} data weighted by a flat-spectrum source (or other defined standard SED), absorbed by a standard atmosphere.
-\alg Combination of \ref{calibProducts:monoPhotoFlat} should be simple; need to define the ``standard atmosphere".
+\alg Combination of \ref{calibProducts:monoPhotoFlat} should be simple; need to define the ``standard atmosphere''.
 
 
 \subsubsection{Low-res narrow-band flats}\label{calibProducts:monoPhotoFlatLowRes}
 A low-resolution (in both space and wavelength) version of  \ref{calibProducts:monoPhotoFlat}.
-\alg \rednote{Not clear to me a) why these exist and b) what a low spatial resolution flat means. Construction shouldn't be hard though.}
+\alg Scripting to perform the necessary sweeps of the laser light source, and characterization of its output as the pulse energy will likely need to be normalized to. \rednote{Not clear to Merlin a) exactly why these exist and b) what a ``low spatial resolution'' \emph{flat field image} actually means. Construction shouldn't be hard though.}
 
 
-\subsubsection{Pixel Sizes}\label{calibProducts:pixelSizeMap} 
+\subsubsection{Pixel Sizes }\label{calibProducts:pixelSizeMap}
 A map of the pixel-size distortions.  At worse, this will be a $n_{\mbox{width}}\times n_{\mbox{height}}\times 2$ datacube of floats.
 \alg Algorithm to measure this is currently a (somewhat) unsolved problem. It has been shown by Aaron Roodman \& co. that these can be measured from flat-fields, but the problem is under-constrained, and thus the stability (nay, validity) of their measurements is questionable, despite seeming to work. Further thought is required to establish whether their method can be used, and if not, devise another one (though it is not obvious how the problem can be made to be well constrained). 
-
+\\ \dragons ?
 
 \subsubsection{Brighter-fatter Coefficients}\label{calibProducts:brighterFatterCoeffs}
 Coefficients needed to model the brighter-fatter effects. We hope that these are a small number of floats per CCD, but this is not yet entirely clear.
-\alg A number of techniques to measure these exist (mostly developed by members of the DESC SAWG). One or more of these will need to be implemented in the DM framework.
+\alg A number of techniques exist to measure these (mostly developed by members of the DESC SAWG). One or more of these will need to be implemented in the DM framework.
+\\ \dragons ?
+
+
+\subsubsection{CTE Measurement}\label{calibProducts:CTE}
+Measurement of the charge transfer efficiency for all elements of the camera. At ``best'' this is a single number per amplifier, but this case is the worst for science as it means the dominant trap is in the serial register and thus affecting all columns equally. At ``worst'' with respect to data-product size (or at ``best'' for science) this is a number per column in the simple case, though one could imagine characterizing the specific defects and their locations on the chips, in which case this is a per-pixel product. Nominal case should be considered as per-column.
+\alg Measurement of CTE is subtle, but not hard, and several established methods exist for doing this. The \fefiftyfive method won't be possible due to lack of a radioisotope source in the camera, but the flat-field overscan excess measurement method and flat-field correlation method would both be possible using existing input data products. See \xxx for further reading on these methods, one of which would need to be implemented within the DM framework.
+
+\begin{note}
+	CTE measurement and correction sections needs to be added to RHL's calibration documents. This is looking like it is unlikely to be a negligible effect for photometry, astrometry and shape measurement, and I don't think it's currently mentioned anywhere.
+\end{note}
+
 
 \subsubsection{Filter Transmission}\label{calibProducts:filterTransmission}
-Measurement of filter transmission, measure \emph{in-situ}. As well as the filter transmission from the camera team in \ref{inputs:filterTransmission}, we further baseline the development of a procedure for measuring the filter response at 1\,nm resolution using the approach described in \cite{Lupton15}.
+Measurement of filter transmission \emph{in-situ}. As well as the filter transmission measurement from the camera team in \ref{sec:calibInputs:filterTransmission}, we further baseline the development of a procedure for measuring the filter response at 1\,nm resolution using the approach described in \cite{Lupton15}.
+\alg Created from measurements in \secsymbol\ref{sec:calibInputs:CBP}. \rednote{\xxx Check that the method cited above is what you think it is and will therefore be done with the products referenced above. }
 
+%%% progress marker %%%
 
 \subsubsection{Ghost catalog}\label{calibProducts:GhostCatalog}
 A catalog of optical ghosts and glints which is available for use in other parts of the system. Detailed characterization of ghosts in the LSST system will only be possible when the system is operational. Our baseline design therefore calls for this system to be prototyped using data from precursor instrumentation; we note that ghosts in \eg HSC are well known and more significant than are expected in LSST.
@@ -423,18 +438,21 @@ This section is just things that I thought of whilst working through this docume
 		\xxx Need to go back and add in doing monochromatic composite flat-fielding of this telescope, \emph{and} add that these need to be applied somewhere/somehow. The application of \emph{these} to the \auxtelescope\ data really doesn't belong in AP or DRP as all the other photocal stuff does.
 	\end{note}
 	
-	\item Crosstalk coupling: depending on where this happens in the electronic chain, this may be ``conservative" or ``generative", \ie\ if the crosstalk is from a capacitive coupling at an early stage of the readout then the crosstalk which is removed from the victims should be added back in to the aggressors, as this is signal which has been \emph{lost}. However, if it occurs after a significant amount of amplification (likely), then it should just be removed. Again, I'm sure this is known but I'd just like to check as this matters at the sub 1\% level.
+	\item Crosstalk coupling: depending on where this happens in the electronic chain, this may be ``conservative" or ``generative", \ie\ if the crosstalk is from a capacitive coupling at an early stage of the readout then the crosstalk which is removed from the victims should be added back in to the aggressors, as this is signal which has been \emph{lost}. However, if it occurs after a significant amount of amplification (likely), then it should just be removed. Again, I'm sure this is known but I'd just like to check as this matters at the sub 1\% level. \rednote{Answer: Very likely generative, but the reasoning for this assumes a low impedance on the output analog lines (such that the voltage does not drop when capacitive coupling occurs) but this is actually not necessarily the case, and perhaps should be checked more thoroughly. Can likely persuade POC/AN/HP to investigate if necessary.}
 	
-	\item Crosstalk (again): I am lead to believe that crosstalk correction will be applied in the DAQ. If this is correct, then this point is just to note that the calibration system needs to be able to disable this and access the truly raw images in order to make the crosstalk matrix measurements using CBP spots. It will also need to be able to push a new crosstalk matix to the DAQ to confirm meaurements (and to update the system in general).
+	\item Crosstalk (again): I am lead to believe that crosstalk correction will be applied in the DAQ. If this is correct, then this point is just to note that the calibration system needs to be able to disable this and access the truly raw images in order to make the crosstalk matrix measurements using CBP spots. It will also need to be able to push a new crosstalk matix to the DAQ to confirm meaurements (and to update the system in general). \rednote{RHL says this is already captured somewhere relevant.}
 	
-	\item  Crosstalk (yet again): Has anyone considered the nightmare scenario where crosstalk is a function of alt, az and rotator position due to changes in these couplings from cable movement? Or is this certain to be only a 1\% change in a 1\% effect, and therefore not a concern?
+	\item Crosstalk (yet again): Has anyone considered the nightmare scenario where crosstalk is a function of alt, az and rotator position due to changes in these couplings from cable movement? Or is this certain to be only a 1\% change in a 1\% effect, and therefore not a concern? \rednote{Answer: Turns out that it really is very unlikely indeed, as almost everything comes from intra-flex-cable coupling and wire-bond coupling, which won't move when the camera is repositioned.}
 	
 	\begin{note}
 		Need to include algorithm for applying crosstalk corrections after the fact in the event that the data-buffer overflows in the case of internet outages between the summit and the US. The also implies that a time history of the measured crosstalk matrices needs to be stored somewhere.
 	\end{note}
 		
-	\item Does bleeding occur only in the serial register? (surely not) If not then why do we expect it to be a per-amplifier thing particularly, rather than a per pixel effect, as it is presumably defined by the depth of each well? This is surely known, but I should discuss with someone.
+	\item Does bleeding occur only in the serial register? (surely not) If not then why do we expect it to be a per-amplifier thing particularly, rather than a per pixel effect, as it is presumably defined by the depth of each well? This is surely known, but I should discuss with someone. \rednote{Answer: There is more than one thing here: bleeding/blooming $\neq$ saturation. Blooming levels are a per-pixel effect (though likely very similar throughout a chip), whilst ``saturation'' is in the amplifier/ADC, which is obviously per-channel. }
 	
+	\item Pulse-to-pulse variation in the narrowband laser. When averaged over, what is the RMS? And how stable is the mean over time? (I have met lasers which drift \bfeffect{like crazy}). How do these properties change as one sweeps the wavelength around as would be required for taking the 20nm width flats?
+	
+	\item Note to self about idea of using CBP to induce bleeding to measure the pixel area variations directly (well `depth' $\propto$ pixel area), to solve the unsolved problem in \secsymbol\ref{calibProducts:pixelSizeMap}. Need to think about this in more detail as this just came to me - does it provide extra information to make this problem well-constrained? Or is this completely unhelpful?
 \end{itemize}
 
 
