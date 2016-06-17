@@ -1,8 +1,44 @@
 \section{Software Primitives}
 \label{sec:software-primitives}
 
+\subsection{Cartesian Geometry}
+\label{sec:spCartesianGeometry}
+
+\subsection{Points}
+\label{sec:spCartesianPoints}
+
+\subsection{Boxes}
+\label{sec:spCartesianBoxes}
+
+\subsection{Polygons}
+\label{sec:spCartesianPolygons}
+
+\subsection{Ellipses}
+\label{sec:spCartesianEllipses}
+
+\subsection{Spherical Geometry}
+\label{sec:spSphericalGeometry}
+
+\subsection{Points}
+\label{sec:spSphericalPoints}
+
+\subsection{Boxes}
+\label{sec:spSphericalBoxes}
+
+\subsection{Polygons}
+\label{sec:spSphericalPolygons}
+
 \subsection{Images}
 \label{sec:spImages}
+
+\subsubsection{Simple Images}
+\label{sec:spImagesSimple}
+
+\subsubsection{Masks}
+\label{sec:spImagesMasks}
+
+\subsubsection{MaskedImages}
+\label{sec:spImagesMaskedImages}
 
 \subsubsection{Exposure}
 \label{sec:spImagesExposure}
@@ -17,6 +53,9 @@
 \item[PhotoCalib] The photometric solution that relates the image's pixel values to magnitudes as a function of source wavelength or SED.  Some PhotoCalibs may represent global calibration and some may represent relative calibration.
 \end{description}
 
+\subsection{Multi-Type Associative Containers}
+\label{sec:spAssociativeContainers}
+
 \subsection{Tables}
 \label{sec:spTables}
 
@@ -29,19 +68,97 @@
 \subsubsection{Reference}
 \label{sec:spTablesReference}
 
+\subsubsection{Joins}
+\label{sec:spTablesJoins}
+
+\subsubsection{Queries}
+\label{sec:spTablesQueries}
+
 \subsection{Footprints}
 \label{sec:spFootprints}
 
-\subsection{Convolution Kernels}
-\label{sec:spKernels}
-Must support correlation as well.
+\subsubsection{PixelRegions}
+\label{sec:spFootprintsPixelRegions}
+
+\subsubsection{Functors}
+\label{sec:spFootprintsFunctors}
+
+\subsubsection{Peaks}
+\label{sec:spFootprintsPeaks}
+
+\subsubsection{FootprintSets}
+\label{sec:spFootprintsSets}
+
+\subsubsection{HeavyFootprints}
+\label{sec:spFootprintsHeavy}
+
+\subsubsection{Thresholding}
+\label{sec:spFootprintsThresholding}
 
 \subsection{Basic Statistics}
 \label{sec:spStatistics}
 
-\subsection{Point-Spread Functions}
-\label{sec:spPSF}
+\subsection{Chromaticity Utilities}
+\label{sec:spChromaticity}
+
+\subsubsection{Filters}
+\label{sec:spChromaticityFilters}
+
+\subsubsection{SEDs}
+\label{sec:spChromaticitySEDs}
+
+\subsubsection{Color Terms}
+\label{sec:spColorTerms}
+
+\subsection{PhotoCalib}
+\label{sec:spPhotoCalib}
+
+\subsection{Convolution Kernels}
+\label{sec:spKernels}
+
+\begin{itemize}
+\item Supports spatially-varying convolution with a variety of tricks for special kernels (e.g. spatially varying linear combinations of fixed kernels, kernels separable in x and y).
+\item Must support correlation as well.
+\item Closely related to PSFs, but kernels are not wavelength dependent, and PSFs are.
+\item Closely related to image resampling.  Can a resampling kernel be a Kernel?  Implies that output pixel grid is different from input pixel grid.
+\item Should be able to compose Kernels.
+\end{itemize}
 
 \subsection{Coordinate Transformations}
 \label{sec:spWCS}
 
+\subsection{Numerical Integration}
+\label{sec:spIntegration}
+
+\subsection{Random Number Generation}
+\label{sec:spRandomNumbers}
+
+\subsection{Interpolation and Approximation of 2-D Fields}
+\label{sec:spInterpApprox}
+
+\subsection{Pixel Interpolation}
+\label{sec:spPixelInterpolation}
+
+\subsection{Common Functions and source Profiles}
+\label{sec:spFunctions}
+
+\subsection{Camera Descriptions}
+\label{sec:spCameraDescriptions}
+
+\subsection{Numerical Optimization}
+\label{sec:spOptimization}
+
+\subsection{Monte Carlo Sampling}
+\label{sec:spMonte Carlo}
+
+\subsection{Point-Spread Functions}
+\label{sec:spPSF}
+
+Includes aperture corrections.
+
+\subsubsection{N-Way Matching}
+\label{sec:spNWayMatching}
+AUTHOR: MWV
+\begin{itemize}
+\item Match sources and associate objects from M catalogs each with $\sim$N sources.  The API should match in either (x, y) or (RA, Dec).  Positions for source detections solutions will be assumed to already be correct.  Order of individual catalogs should not matter.  Algorithm will need to be able to run on M$\sim$1,000 visits.  Such a tool will allow flexible analyses without the requirement for a larger database structure or full coadd-based object identifiction and forced photometry.  Even within the framework of a complete Level-2 DRP release, such a N-way matching capability will also be important for comparing the results of single-visit photometry with the deep coadd-based object detection and forced photometry.  A specific example use case for lightweight quality assessment is taking the processed catalogs for M=1,000 images each with N=2,000 sources and creating object associations add derived repeatability and time-variable summary statistics.  This algorithm and associated API should provide a general purpose tool useful for algorithm developers, data quality assessment, and science users.  A trivial in-memory version (using full catalogs), a streamlined in-memory version (load only the coordinates), and a larger-than-memory version will each be useful and important and will entail increasingly more significant design and performance efforts.
+\end{itemize}

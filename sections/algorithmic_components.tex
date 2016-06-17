@@ -964,6 +964,8 @@ image quality results in the blending of sources, must work at high
 and low Galactic latitude, and must allow for sources with varying and
 variable SEDs.
 
+Algorithmic components in this section will typically (but perhaps not always) delegate to the \hyperref[sec:spTablesNWayMatching]{N-Way Matching} software primitives, which provide spatial indexing and data structures for simple spatial matches.
+
 \subsubsection{Single CCD to Reference Catalog, Semi-Blind}
 \label{sec:acSingleCCDReferenceMatching}
 
@@ -1064,13 +1066,6 @@ run match in 3D distance space (using the budavari approach?)
 AUTHOR: Jim
 \begin{itemize}
 \item Match sources from multiple visits to a single reference catalog, assuming good WCS solutions.
-\end{itemize}
-
-\subsubsection{N-Way Matching Across Multiple Visits}
-\label{sec:acNWayMatching}
-AUTHOR: MWV
-\begin{itemize}
-\item Match sources and associate objects from M catalogs each with $\sim$N sources.  The API should match in either (x, y) or (RA, Dec).  Positions for source detections solutions will be assumed to already be correct.  Order of individual catalogs should not matter.  Algorithm will need to be able to run on M$\sim$1,000 visits.  Such a tool will allow flexible analyses without the requirement for a larger database structure or full coadd-based object identifiction and forced photometry.  Even within the framework of a complete Level-2 DRP release, such a N-way matching capability will also be important for comparing the results of single-visit photometry with the deep coadd-based object detection and forced photometry.  A specific example use case for lightweight quality assessment is taking the processed catalogs for M=1,000 images each with N=2,000 sources and creating object associations add derived repeatability and time-variable summary statistics.  This algorithm and associated API should provide a general purpose tool useful for algorithm developers, data quality assessment, and science users.  A trivial in-memory version (using full catalogs), a streamlined in-memory version (load only the coordinates), and a larger-than-memory version will each be useful and important and will entail increasingly more significant design and performance efforts.
 \end{itemize}
 
 \subsubsection{DIAObject Generation}
