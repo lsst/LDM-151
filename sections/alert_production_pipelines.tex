@@ -13,13 +13,12 @@
 \subsection{Single Frame Processing Pipeline (\wbsSFM)}
 \label{sec:apSingleFrameProcessing}
 
-\subsubsection{Key Requirements}
-
 Single Frame Processing (SFM) Pipeline is responsible for reducing raw
 or camera corrected image data to \emph{calibrated exposures}, and the
 detection and measurement of \Sources (using the components
 functionally a part of the Object Characterization Pipeline).
 
+\subsubsection{Key Requirements}
 
 SFM pipeline functions include:
 \begin{itemize}
@@ -30,10 +29,9 @@ SFM pipeline functions include:
 \item Per-CCD PSF determination;
 \item Per-CCD WCS determination and astrometric registration of images;
 \item Per-CCD sky background determination;
-\item Source detection and measurement
+\item Source detection and measurement on single frame images
 \item Generation of metadata required by the OCS
 \end{itemize}
-
 
 Calibrated exposure produced by the SFM pipeline must possess all
 information necessary for measurement of source properties by
@@ -43,16 +41,16 @@ It shall be possible to run this pipeline in two modes: a ``fast" mode
 needed in nightly operations for Level 1 data reductions where no
 source characterization is done beyond what's required for zero-point,
 PSF, sky, and WCS determination (image reduction); and a ``full" mode
-that will be run for Level 2 data reductions.
-It should be possible for this pipeline or a subset of this pipeline
-to be run at the telescope facility.
-\emph{AJC: is the level 2 a requirement}
+that will be run for Level 2 data reductions.  It should be possible
+for this pipeline or a subset of this pipeline to be run at the
+telescope facility during commissioning and operations.  \emph{AJC: is the level 2 a requirement}
 
 
 \subsubsection{Baseline Design}
 
-Single Frame Processing pipeline will be implemented as a flexible framework where different data can be easily treated differently, and new processing steps can be added without modifying the stack code.
-\\
+Single Frame Processing pipeline will be implemented as a flexible
+framework where different data can be easily treated differently, and
+new processing steps can be added without modifying the stack code.
 
 It will consist of three primary components:
 %
@@ -65,36 +63,32 @@ It will consist of three primary components:
 
 In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS \emph{Photo} pipeline \cite{LuptonPhoto}.
 
-Output information for OCS telemetry: ACTION clarify OCS interactions
-
 \paragraph{Instrumental Signature Removal:}~
 
 \noindent
-{\bf Input Data:}\\
+{\bf Input Data:}
 \begin{itemize}
-\item Camera corrected (crosstalk, overscan, linearity) images
+\item Camera corrected images (crosstalk, overscan, linearity)
 \item Sensor defect lists
-\item Metadata including electronic parameters (saturation limits, readnoise, electronic
-  footprint)
+\item Metadata including electronic parameters (saturation limits,
+  readnoise, electronic footprint)
 \end{itemize}
 
 \noindent
-{\bf Output Data}\\
+{\bf Output Data:}
 \begin{itemize}
 \item Calexp images
 \end{itemize}
 
-{\bf Ancillary Products?}\\
-\begin{itemize}
-\item Source detection and measurements
-\item ICExp background subtracted images
-\item Post ISR exposure
-\end{itemize}
+\noindent 
+{\bf Actions in case of failure:}\\
+In the case camera data are not available due to a network outage that
+is longer than the data buffer at the summit the ISR processing will
+work on raw images (i.e.\ without the camera corrections) and be run
+in a batch mode.
 
-{\bf Actions in case of failure}\\
-Actions in case camera data are not available due to network outage
-longer than buffer of data at summit
-{\bf Alternative procedures}\\
+\noindent 
+{\bf Alternative procedures:}\\
 
 \noindent
 {\bf Subtasks:}
@@ -112,12 +106,17 @@ longer than buffer of data at summit
 
 \paragraph{PSF determination and background determination:}~
 
+Iterative procedure to fit and remove background, identify sources to
+5$\sigma$, select bright sources (50$\sigma$), and fit a PSF
+model. Convergence criteria for the procedure is not defined but the
+default procedure assumes three iterations.
+
 \noindent
-{\bf Input Data:}\\
+{\bf Input Data:}
 \begin{itemize}
-\item Access to XXX images from ISR 
+\item Access to ICexp images from ISR 
 \end{itemize}
-{\bf Output Data}\\
+{\bf Output Data}
 \begin{itemize}
 \item IC images 
 \item IC source catalog 
@@ -128,10 +127,6 @@ longer than buffer of data at summit
 \noindent
 {\bf Subtasks:}
 
-Iterative procedure to fit and remove background, identify sources to
-5$\sigma$, select bright sources (50$\sigma$) and fit a PSF
-model. Convergence criteria for the procedure is not defined but the
-default procedure assumes three iterations.
 
 \begin{itemize}
 \item \hyperref[sec:acBackgroundEstimation]{Background estimation}
