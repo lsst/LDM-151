@@ -787,13 +787,3 @@ Further specification of special programs (and DM plans for processing them) and
 This pipeline is just a placeholder for any DM work associated with gathering, building, and/or validating major community-contributed data products.
 
 In addition to data products produced by DM, a data release production also includes official products (essentially additional Object table columns) produced by the community.  These include photometric redshifts and dust reddening maps.  While DM's mandate does not extend to developing algorithms or code for these quantities, its responsibilities may include validation and running user code at scale.  The parties responsible for producing these datasets and their relationship to DM needs to be better defined in terms of policy before a system for including community-contributed data products in a data release can be designed.
-
-\subsection{UNSTRUCTURED OPEN QUESTIONS / WORK NOT CAPTURED}
-
-\begin{itemize}
-\item Where does the initial reference catalog at the start of the DRP come from?  This could require special observations in commissioning or before the start of the survey, as well as addition algorithms and software.  If DRP always uses a reference catalog for star selection in ImChar, we need to actually do the classification for that at some point.
-\item How do we test all of the wavelength-dependent photometric calibration and PSF stuff on precursor data?  Are we going to characterize DECam well enough to just use it directly, or do we need to mock things up or rely more on JointCal?
-\item Input selection for DRP.  How do we decide what to throw away?  Is this a SQuaRE job?  Do we ever throw images away because the pipeline can't process them?  Do we report these back to the scheduler, or just hope it all averages out?
-\item Do we need to resolve tract overlaps in Source and DIASource as well?
-\end{itemize}
-

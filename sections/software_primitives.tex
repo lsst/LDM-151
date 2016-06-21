@@ -1,47 +1,520 @@
 \section{Software Primitives}
 \label{sec:software-primitives}
 
+\subsection{Cartesian Geometry}
+\label{sec:spCartesianGeometry}
+
+\begin{itemize}
+\item Geometry in image, focal plane coordinate systems.
+\item Includes continuous (floating point) and discrete (integer) versions of some things; integer versions refer to entire pixels, which makes them somewhat different.
+\item May need augmented versions of some classes to allow them to know what coordinate system they're in.
+\item May need augmented versions of some classes to store uncertainty.
+\item All classes need to be persistable.  Some need to be persistable to individual records (via e.g. FunctorKeys)
+\item All classes have counterpart Spherical classes related to them by WCS transforms.
+\end{itemize}
+
+\subsection{Points}
+\label{sec:spCartesianPoints}
+
+\begin{itemize}
+\item Needs sensible handling of arithmetic operators.  Currently implemented by making Extent a separate class, adding CoordinateExpr for elementwise comparisons -- but those aren't the only options.
+\item Need continuous (PointD) and discrete (PointI) versions.
+\item 3-d continuous Point/Extent also useful, especially in representing unit vectors on the sphere.  May not need to be the same template class (and maybe it shouldn't be, if it simplifies our code).
+\item Probably need to make these immutable (or have an immutable version) at least in Python so they can be exposed as properties.
+\item Needs to be persistable to individual records in the table library.
+\item Probably needs augmented version with uncertainty.
+\item Probably needs augmented version with coordinate system.
+\end{itemize}
+
+\subsection{Arrays of Points}
+\label{sec:spCartesianPointArrays}
+
+\begin{itemize}
+\item Need containers for Points that work well in both C++ and Python -- more than just a naively-wrapped \texttt{std::vector} would provide (in terms of NumPy interoperability, mostly).  Probably something based on ndarray, translating to a NumPy array with x and y fields?
+\item Unclear if we need a container with dynamic size.  Could probably use \texttt{std::vector} and Python \texttt{list} while building arrays, then freeze into a fixed, viewable array.
+\item Probably needs augmented version with coordinate system (all points in same coordinate system).
+\item Should look into what Astropy does here.
+\end{itemize}
+
+\subsection{Boxes}
+\label{sec:spCartesianBoxes}
+
+\begin{itemize}
+\item Need continuous (BoxD) and discrete (BoxI) versions, with different relationships between min, max, and dimensions.
+\item Probably need to make these immutable (or have an immutable version) at least in Python so they can be exposed as properties.
+\item Needs to be persistable to individual records in the table library.
+\item Spherical counterpart is actually \hyperref[sec:spSphericalPolygons]{Spherical Polygon}.
+\end{itemize}
+
+\subsection{Polygons}
+\label{sec:spCartesianPolygons}
+
+\begin{itemize}
+\item Only continuous version needed.
+\item Mostly used to represent large-scale masks (regions around bright stars, vignetted regions).
+\item Needs to support rasterization to mask and/or footprint.
+\item Needs to support efficient topological operation and predicates with other Polygons, Points, and Boxes (probably not Ellipses).
+\end{itemize}
+
+\subsection{Ellipses}
+\label{sec:spCartesianEllipses}
+
+\begin{itemize}
+\item Only continuous version needed.
+\item Mostly used to represent source/object shapes.
+\item Needs to support many different ellipse parameterizations.
+\item Needs to support fast evaluation of elliptically-symmetric functions (via computing the generating affine transform)
+\item Need version that knows its position and one that doesn't.
+\item Needs to support rasterization to mask and/or footprint
+\item May need an immutable version in Python (not yet certain).
+\item May needan  augmented version with uncertainty.
+\end{itemize}
+
+
+\subsection{Spherical Geometry}
+\label{sec:spSphericalGeometry}
+
+The spherical geometry library is a dependency of the database as well as applications, it includes fundamental types that are logically present in database tables (as groups of fields), and some geometry classes are important for spatial indexing.
+
+\begin{itemize}
+\item Geometry on the sky
+\item All positions and distances are Angles; need type safety for angle unit.
+\item May need augmented versions of some classes to allow them to know what coordinate system they're in.
+\item May need augmented versions of some classes to store uncertainty.
+\item All classes need to be persistable.  Some need to be persistable to individual records (via e.g. FunctorKeys)
+\end{itemize}
+
+\subsection{Points}
+\label{sec:spSphericalPoints}
+
+\begin{itemize}
+\item Needs sensible handling of arithmetic operators.  Point/Extent split probably an even better idea here.
+\item Probably need to make these immutable (or have an immutable version) at least in Python so they can be exposed as properties.
+\item Needs to be persistable to individual records in the table library.
+\item Probably needs augmented version with uncertainty.
+\item Probably needs augmented version with coordinate system.
+\end{itemize}
+
+\subsection{Arrays of Points}
+\label{sec:spSphericalPointArrays}
+
+Same requirements as \hyperref[sec:spCartesianPointArrays]{Cartesian Arrays of Points}.
+
+\subsection{Boxes}
+\label{sec:spSphericalBoxes}
+
+\begin{itemize}
+\item Not obvious we need this at all.
+\item Defined on long/lat grid, so not a box in any Cartesian projection.
+\item Needs special handling for poles?
+\end{itemize}
+
+\subsection{Polygons}
+\label{sec:spSphericalPolygons}
+
+\begin{itemize}
+\item Connecting points with great circles is probably sufficient, even if this only approximately maps to Cartesian polygons in most projections; we will have very few Cartesian polygons that extend beyond the size of one CCD, and for those great circles should be fine.
+\item Needs to support efficient topological operation and predicates with other Polygons, Points, and Boxes (probably not Ellipses).
+\item May need to support rasterization to some spherical pixelization scheme (e.g. HTM), but those requirements are probably driven more by database.
+\end{itemize}
+
+\subsection{Ellipses}
+\label{sec:spSphericalEllipses}
+
+\begin{itemize}
+\item Doesn't need to be a true spherical geometry - we really just need a Cartesian ellipse with angular position and size, defined via a gnomonic plane projection centered on the ellipse.  All spherical ellipses will be small enough that we don't have to worry about the topology of large ellipses.
+\item Probably needs augmented version with uncertainty.
+\end{itemize}
+
 \subsection{Images}
 \label{sec:spImages}
 
-\subsubsection{Exposure}
-\label{sec:spImagesExposure}
+\subsubsection{Simple Images}
+\label{sec:spImagesSimple}
 
+\begin{itemize}
+\item Conceptually just a numpy array + xy0
+\item Still need to fix xy0 behavior on iterators/locators
+\item Constness is a mess
+\item Need more Pythonic interface to templates.
+\item Needs FITS import/export in addition to some round-trip internal representation.  May need FITS roundtrip.
+\end{itemize}
+
+\subsubsection{Masks}
+\label{sec:spImagesMasks}
+
+\begin{itemize}
+\item Should not rely entirely on bits in integer images; consider extending to include:
+    \begin{itemize}
+    \item a container of Footprints (actually \hyperref[sec:spFootprintsPixelRegions]{PixelRegions}).
+    \item a container of \hyperref[spCartesianPolygons]{Polygons} or other geometries.
+    \end{itemize}
+\item May want to switch from compile-time number of bits (Array<uintN,2>) to dynamic (Array<uint8,3>).
+\item Can we do anything to fix confusing semi-singleton mask plane dict behavior, while getting the functionality we want?
+\item Also all requirements of simple images.
+\end{itemize}
+
+\subsubsection{MaskedImages}
+\label{sec:spImagesMaskedImages}
+
+Includes components:
 \begin{description}
 \item[Image] A 2-d array of calibrated, background-subtracted pixel values in counts.
 \item[Mask] A boolean representation of artifacts, detections, saturation, and other image.  This may include (but is not limited to) a 2-d integer arrays with bits interpreted as different ``mask planes''; it may also include using \hyperref[sec:spFootprints]{Footprints} to describe labeled regions.
 \item[Variance] A representation of the uncertainty in the image.  This includes at least a 2-d array capturing the variance in each pixel, and it may involve some other scheme to capture the variance.
+\end{description}
+
+Other notes:
+\begin{itemize}
+\item Want to support constant mask and variance, probably via single-pixel images with zero strides.
+\item Want NumPy-like view of all three planes.  Probably a new object that implements array interface without inheriting from numpy.ndarray.
+\item Also all requirements of simple images.
+\end{itemize}
+
+\subsubsection{Exposure}
+\label{sec:spImagesExposure}
+
+Includes components:
+\begin{description}
+\item[MaskedImage] Image, mask, variance.
 \item[Background] An object describing the background model that was subtracted from the image; the original unsubtracted image can be obtained by adding an image of this model to the Exposure's image plane.  Backgrounds are more complex than merely an image or even an interpolated binned image; background estimation will proceed in several stages, and these stages (which may happen in different coordinate systems) must be combined to form the full background model.
 \item[PSF] A model of the PSF; see \hyperref[sec:spPSF]{PSF}.  This includes a model for aperture corrections.
 \item[WCS] The astrometric solution that related the image's pixel coordinate system to coordinates on the sky; see \hyperref[sec:spWCS]{WCS}.
 \item[PhotoCalib] The photometric solution that relates the image's pixel values to magnitudes as a function of source wavelength or SED.  Some PhotoCalibs may represent global calibration and some may represent relative calibration.
+\item[CameraGeom] Object describing the detector this image corresponds to, if applicable.  Could go on a subclass of Exposure for sensor-level images.
+\item[CoaddInputs] Table(s) describing the inputs that went into this coadd.  Could go on a subclass of Exposure for sensor-level images.
 \end{description}
+
+Other notes:
+\begin{itemize}
+\item Probably missing some components in the above list.
+\item Want to forward more MaskedImage operations to Exposure (so we don't have to say getMaskedImage() all the time).
+\item Need to be able to persist and pass around non-image components separately.
+\item Need to integrate ValidPolygon component in current design with Mask.
+\item Needs FITS import/export in addition to some round-trip internal representation.  May need FITS roundtrip.
+\end{itemize}
+
+
+\subsection{Multi-Type Associative Containers}
+\label{sec:spAssociativeContainers}
+
+\begin{itemize}
+\item Replacement(s) for PropertyList/PropertySet.
+\item Needs to be more Pythonic; more like dict.
+\item Need a variant that can be used to round-trip FITS headers.
+\end{itemize}
 
 \subsection{Tables}
 \label{sec:spTables}
 
+All classes need round-trip internal persistence and FITS, ASCII, SQL import/export.
+
 \subsubsection{Source}
 \label{sec:spTablesSource}
+
+\begin{itemize}
+\item In-memory data structure for Source, DIASource, ForcedSource tables.
+\item Has (Heavy)Footprint attached.
+\item Always has ID, coord (at least conceptually; may be computed on-the-fly).
+\item Has slots.
+\end{itemize}
 
 \subsubsection{Object}
 \label{sec:spTablesObject}
 
+\begin{itemize}
+\item In-memory data structure for Object, DIAObject.
+\item Must be able to represent information from multiple bands and coadd flavors (array fields? nested rows of another type?)
+\item Needs to have multiple (Heavy)Footprints attached.
+\item Needs to have join to table of Monte Carlo samples.
+\item Maybe just want to be able to attach arbitrary objects?
+\item Has slots.
+\end{itemize}
+
+\subsubsection{Exposure}
+\label{sec:spTablesExposure}
+
+\begin{itemize}
+\item Want to be able to store all non-image \hyperref[sec:spImagesExposure]{Exposure} components in a single record.
+\end{itemize}
+
+\subsubsection{AmpInfo}
+\label{sec:spTablesAmpInfo}
+
+\begin{itemize}
+\item Used to record electronic parameters for amplifiers in \hyperref[sec:spCameraDescriptions]{Camera Descriptions}.
+\end{itemize}
+
 \subsubsection{Reference}
 \label{sec:spTablesReference}
+
+\begin{itemize}
+\item Need table class for (external) reference catalogs.
+\item Has a lot in common with Source and Object, but needs fewer attachments, and typically is in calibrated units instead of raw units.
+\end{itemize}
+
+\subsubsection{Joins}
+\label{sec:spTablesJoins}
+
+\begin{itemize}
+\item Need an in-memory representation of relationships (one-many, many-many, maybe one-one) between tables.
+\item Need pointer-like behavior (e.g. for one-many, a Record looks like it has another Catalog as one of it fields)
+\item Used to represent outputs of \hyperref[sec:spTablesNWayMatching]{N-Way Matching}.
+\item Used to store samples with Object tables.
+\item Used to related ForcedSource to Object and DIASource to DIAObject.
+\end{itemize}
+
+\subsubsection{Queries}
+\label{sec:spTablesQueries}
+
+\begin{itemize}
+\item Need basic SQL-WHERE-like query support, at least in Python.
+\item Could maybe delegate this to Pandas and/or Astropy, use NumPy expressions.
+\item May need to support string expressions (supplied as configuration parameters, for instance).
+\item Actually being able to write SQL could be very nice.  In-memory sqlite back-end?  Some other third-party SQL parser, with our own (numpy-compatible) storage backend?
+\end{itemize}
+
+\subsubsection{N-Way Matching}
+\label{sec:spTablesNWayMatching}
+AUTHOR: MWV
+\begin{itemize}
+\item Match sources and associate objects from M catalogs each with $\sim$N sources.  The API should match in either (x, y) or (RA, Dec).  Positions for source detections solutions will be assumed to already be correct.  Order of individual catalogs should not matter.  Algorithm will need to be able to run on M$\sim$1,000 visits.  Such a tool will allow flexible analyses without the requirement for a larger database structure or full coadd-based object identifiction and forced photometry.  Even within the framework of a complete Level-2 DRP release, such a N-way matching capability will also be important for comparing the results of single-visit photometry with the deep coadd-based object detection and forced photometry.  A specific example use case for lightweight quality assessment is taking the processed catalogs for M=1,000 images each with N=2,000 sources and creating object associations add derived repeatability and time-variable summary statistics.  This algorithm and associated API should provide a general purpose tool useful for algorithm developers, data quality assessment, and science users.  A trivial in-memory version (using full catalogs), a streamlined in-memory version (load only the coordinates), and a larger-than-memory version will each be useful and important and will entail increasingly more significant design and performance efforts.
+\end{itemize}
+
 
 \subsection{Footprints}
 \label{sec:spFootprints}
 
-\subsection{Convolution Kernels}
-\label{sec:spKernels}
-Must support correlation as well.
+All classes need to be persistable (usually as components of larger data structures such as tables or masks).
+
+\begin{itemize}
+\item Footprint itself includes both Spans and Peaks, representing a detection.
+\item Footprints are guaranteed to be contiguous.
+\item Concept is fine, class itself needs a lot of cleanup.
+\end{itemize}
+
+\subsubsection{PixelRegions}
+\label{sec:spFootprintsPixelRegions}
+
+\begin{itemize}
+\item Very lightweight data structure that is just a container of Spans - represents just a pixel region.
+\item Needs large suite of topological operations.
+\item May be noncontiguous.
+\end{itemize}
+
+\subsubsection{Functors}
+\label{sec:spFootprintsFunctors}
+
+\begin{itemize}
+\item Run functions on each pixel in a PixelRegion
+\item Needs to support unary, binary, maybe ternary?
+\item Needs to support modifing arguments in-place and returning them.
+\item Abstracts whether pixels are from a 2-d image or a flattened 1-d array.
+\end{itemize}
+
+
+\subsubsection{Peaks}
+\label{sec:spFootprintsPeaks}
+
+\begin{itemize}
+\item Needs to record position, rough flux.
+\item Needs to be extensible to also hold at least flags.
+\item Needs very low overhead; will have many, many peaks.
+\item Current implementation uses custom table class, but is a bit clunky.
+\end{itemize}
+
+\subsubsection{FootprintSets}
+\label{sec:spFootprintsSets}
+
+\begin{itemize}
+\item Specialized container for Footprints.
+\item Because Footprints are guaranteed contiguous, most topological operations are here instead (as they have the potential to merge or split Footprints).
+\item Needs better interoperability with table library, which is also a kind of container of Footprints.
+\end{itemize}
+
+\subsubsection{HeavyFootprints}
+\label{sec:spFootprintsHeavy}
+
+\begin{itemize}
+\item A Footprint with its own pixels, stored as a flattened 1-d array.
+\item May sometimes need mask and variance as well, may not.
+\item Definitely need a version that doesn't have mask and variance.
+\end{itemize}
+
+
+\subsubsection{Thresholding}
+\label{sec:spFootprintsThresholding}
+
+\begin{itemize}
+\item Low-level operations for finding above-threshold regions and peaks within them.
+\item Should decompose into operations that just find above-threshold regions (as PixelRegions), operations that just find Peaks within PixelRegions, and a higher-level operation to do both, returning a FootprintSet.
+\end{itemize}
 
 \subsection{Basic Statistics}
 \label{sec:spStatistics}
 
-\subsection{Point-Spread Functions}
-\label{sec:spPSF}
+
+\begin{itemize}
+\item Various robust statistics for central tendency and distribution widths, measured on 2-d and 1-d arrays.
+\item Needs to be able to make use of mask and variance arrays.
+\item Needs to work on 2-D Images and MaskedImages
+\item Needs to work on stacks of aligned pixels for coaddition.
+\end{itemize}
+
+
+\subsection{Chromaticity Utilities}
+\label{sec:spChromaticity}
+
+All classes need to be persistable (usually as components of larger data structures such as tables or camera descriptions).
+
+\subsubsection{Filters}
+\label{sec:spChromaticityFilters}
+
+\begin{itemize}
+\item One or more classes that represent the complete wavelength-dependent throughput of the system and all of the multiplicative components that comprise it (actual filter curves, sensor QE, etc.).
+\item Needs to be able to handle position-dependence as well, including coordinate transformations of position dependency (from e.g. filter coordinate system to focal plane to individual sensors).
+\item Need concrete classes that are mostly fixed with a parameters to represnet highly-variable aspects (e.g. atmospheric absorption)
+\item Probably need another class to represent a telescope or survey's set of filters.
+\end{itemize}
+
+
+\subsubsection{SEDs}
+\label{sec:spChromaticitySEDs}
+
+\begin{itemize}
+\item One or more classes that represent object spectra.
+\item Needs interoperability with filter classes (integrate to yield fluxes, ...?)
+\item Defines canonical approach to inferring SED from colors (which requires a library of canonical SEDs)
+\item Used to evaluate PSF and PhotoCalibs.
+\end{itemize}
+
+\subsubsection{Color Terms}
+\label{sec:spColorTerms}
+
+\begin{itemize}
+\item First-order approximations to mapping between different filter systems.
+\item Unclear (to jbosch) whether we'll use these at all in LSST production pipelines, but definitely needed for work with precursor data.
+\end{itemize}
+
+\subsection{PhotoCalib}
+\label{sec:spPhotoCalib}
+
+Needs to be persistable (usually as components of larger data structures such as \hyperref[sec:spImagesExposure]{Exposure}).
+
+\begin{itemize}
+\item Spatially- and wavelength-dependent photometric calibration.
+\item May be relative or absolute.
+\item Needs to represent rescalings somehow (change from flats-for-backgrounds to monochromatic object flats).
+\item Needs to hold its own uncertainty (may not be just one number).
+\item May ultimately be a hierarchy of classes, intead of just one.
+\end{itemize}
+
+
+\subsection{Convolution Kernels}
+\label{sec:spKernels}
+
+Probably needs to be persistable, but only to ease persistence of higher-level objects that may be built on top of them.
+
+\begin{itemize}
+\item Supports spatially-varying convolution with a variety of tricks for special kernels (e.g. spatially varying linear combinations of fixed kernels, kernels separable in x and y).
+\item Must support correlation as well.
+\item Closely related to PSFs, but kernels are not wavelength-dependent, and PSFs are.  Not clear whether difference imaging kernels should actually be Kernels (they could be more like PSFs if they're wavelenght-dependent).
+\item Closely related to image resampling.  Can a resampling kernel be a Kernel?  Implies that output pixel grid could be different from input pixel grid.
+\item May want to be able to compose Kernels.
+\item Needs to support approximation on different spatial scales (smoothly varying kernels need not be fully evaluated at every pixel).
+\end{itemize}
 
 \subsection{Coordinate Transformations}
 \label{sec:spWCS}
 
+\begin{itemize}
+\item Need general system for 2-d coordinate systems and transformations, including both spherical and Cartesian systems.
+\item Transforms must be composable; conceptually we have a graph with coordinate systems as nodes and transforms as edges.
+\item Needs close integration with geometry libraries.
+\item Needs very lightweight implementations of affine/linear transforms.
+\item Needs interoperability with Image xy0 concept.
+\item Needs serialization to both internal (round-trippable) formats and import/export to standard external formats.  Ideally the internal format would also be at least somewhat external (i.e. shared with Astropy).
+\item Coordinate tranforms are not wavelength-dependent.
+\item See also DMTN-10.
+\end{itemize}
+
+
+\subsection{Numerical Integration}
+\label{sec:spIntegration}
+
+\begin{itemize}
+\item Standard basic numerical integration based on Gaussian quadrature: can probably just wrap an external library.
+\item Unclear whether we also need any differential equation integration.
+\item May need specialized routines for computing multivariate Gaussian and/or Student's T CDFs for Monte Carlo sampling.
+\end{itemize}
+
+
+\subsection{Random Number Generation}
+\label{sec:spRandomNumbers}
+
+\begin{itemize}
+\item Just need standard distributions and generators provided by most external RNG libraries.
+\item Need to design carefully with parallelization primitives to ensure  deterministic results when running in parallel.
+\end{itemize}
+
+\subsection{Interpolation and Approximation of 2-D Fields}
+\label{sec:spInterpApprox}
+
+\begin{itemize}
+\item Unified interface to spline, polynomial, inverse-distance approaches to representing 2-d fields.
+\item Used for at least backgrounds and aperture corrections, maybe PSF modeling, WCS, other things.
+\end{itemize}
+
+\subsection{Pixel Interpolation}
+\label{sec:spPixelInterpolation}
+
+\begin{itemize}
+\item Unified interface to spline, polynomial, inverse-distance approaches to representing 2-d fields.
+\item Used for at least backgrounds and aperture corrections, maybe PSF modeling, WCS, other things.
+\end{itemize}
+
+\subsection{Common Functions and Source Profiles}
+\label{sec:spFunctions}
+
+\begin{itemize}
+\item Library of 2-d functions used for PSFs and galaxy profiles.  Sersics, Gaussians, Moffats, etc.
+\item Maybe delegate to GalSim (would probably require contributing required features to GalSim)?
+\end{itemize}
+
+\subsection{Camera Descriptions}
+\label{sec:spCameraDescriptions}
+
+\begin{itemize}
+\item What we call CameraGeom, but it's more than geometry.
+\item Geometry is built on top of \hyperref[sec:spWCS]{Coordinate Transformations} library.
+\item Electronic descriptions built on top of \hyperref[sec:spTablesAmpInfo]{AmpInfo Tables}.
+\item Throughput descriptions built on top of \hyperref[sec:spChromaticity]{Chromaticity Utilities}
+\end{itemize}
+
+\subsection{Numerical Optimization}
+\label{sec:spOptimization}
+
+\begin{itemize}
+\item Linear least-squares fitting with and without constraints, with and without Bayesian priors.
+\item At least some nonlinear fitting with and without Bayesian priors (extension of Levenberg-Marquardt probably).  May need to handle some limited constraints as well.
+\item Could invest a lot of effort early in this and do it well; this would retire risk elsewhere.  Or we can do this as-needed and probably spend less effort overall, but may find ourself blocked at inconvenient times by lack of hard-to-implement features.
+\end{itemize}
+
+\subsection{Monte Carlo Sampling}
+\label{sec:spMonte Carlo}
+
+\begin{itemize}
+\item Need modern MCMC sampler.  Could probably use external code, but it's not entirely clear we can afford to do this in Python.
+\item Need adaptive importance sampling from mixture distributions and MCMC chains.
+\end{itemize}
+
+\subsection{Point-Spread Functions}
+\label{sec:spPSF}
+
+\begin{itemize}
+\item Includes aperture corrections.
+\item Includes characterization of extended wings of PSF.
+\item Wavelength-dependent.
+\item Must support coaddition of PSF models.
+\item May need know its uncertainty, and be able to sample PSF realizations form this.
+\end{itemize}
