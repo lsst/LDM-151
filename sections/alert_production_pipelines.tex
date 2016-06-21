@@ -13,76 +13,82 @@
 \subsection{Single Frame Processing Pipeline (\wbsSFM)}
 \label{sec:apSingleFrameProcessing}
 
+Single Frame Processing (SFM) Pipeline is responsible for reducing raw
+or camera corrected image data to \emph{calibrated exposures}, and the
+detection and measurement of \Sources (using the components
+functionally a part of the Object Characterization Pipeline).
+
 \subsubsection{Key Requirements}
 
-Single Frame Processing (SFM) Pipeline is responsible for reducing raw image data to \emph{calibrated exposures}, and detection and measurement of \Sources (using the components functionally a part of the Object Characterization Pipeline).
-\\
-
 SFM pipeline functions include:
-%
 \begin{itemize}
-    \item Assembly of per-amplifier images to an image of the entire CCD;
-    \item Instrumental Signature Removal;
-    \item Cosmic ray rejection and snap combining;
-    \item Per-CCD determination of zeropoint and aperture corrections;
-    \item Per-CCD PSF determination;
-    \item Per-CCD WCS determination and astrometric registration of images;
-    \item Per-CCD sky background determination;
-    \item Source detection and measurement
+\item Assembly of per-amplifier images to an image of the entire CCD;
+\item Instrumental Signature Removal;
+\item Cosmic ray rejection and snap combining;
+\item Per-CCD determination of zeropoint and aperture corrections;
+\item Per-CCD PSF determination;
+\item Per-CCD WCS determination and astrometric registration of images;
+\item Per-CCD sky background determination;
+\item Source detection and measurement on single frame images
+\item Generation of metadata required by the OCS
 \end{itemize}
 
-Calibrated exposure produced by the SFM pipeline must possess all information necessary for measurement of source properties by single-epoch Object Characterization algorithms.
+Calibrated exposure produced by the SFM pipeline must possess all
+information necessary for measurement of source properties by
+single-epoch Object Characterization algorithms.
 
-It shall be possible to run this pipeline in two modes: a ``fast" mode needed in nightly operations for Level 1 data reductions where no source characterization is done beyond what's required for zero-point, PSF, sky, and WCS determination (image reduction); and a ``full" mode that will be run for Level 2 data reductions.
+It shall be possible to run this pipeline in two modes: a ``fast" mode
+needed in nightly operations for Level 1 data reductions where no
+source characterization is done beyond what's required for zero-point,
+PSF, sky, and WCS determination (image reduction); and a ``full" mode
+that will be run for Level 2 data reductions.  It should be possible
+for this pipeline or a subset of this pipeline to be run at the
+telescope facility during commissioning and operations.  \emph{AJC: is the level 2 a requirement}
+
 
 \subsubsection{Baseline Design}
 
-Single Frame Processing pipeline will be implemented as a flexible framework where different data can be easily treated differently, and new processing steps can be added without modifying the stack code.
-\\
+Single Frame Processing pipeline will be implemented as a flexible
+framework where different data can be easily treated differently, and
+new processing steps can be added without modifying the stack code.
 
 It will consist of three primary components:
 %
 \begin{itemize}
-    \item A library of useful methods that wrap a small number of atomic operations (e.g., {\tt interpolateFromMask}, {\tt overscanCorrection}, {\tt biasCorrection}, etc.) % RHL things like overscanCorrection aren't atomic (or at least, they use afw::math and afw::cameraGeom primitives)
-    \item A set of classes ({\tt Task}s) that perform higher level jobs
+\item A library of useful methods that wrap a small number of atomic operations (e.g., {\tt interpolateFromMask}, {\tt overscanCorrection}, {\tt biasCorrection}, etc.) % RHL things like overscanCorrection aren't atomic (or at least, they use afw::math and afw::cameraGeom primitives)
+\item A set of classes ({\tt Task}s) that perform higher level jobs
     (e.g., {\tt AssembleCcdTask}, or {\tt FringeTask}), and a top level class to apply corrections to the input data in the proper order. This top level class can be overridden in the instrument specific {\tt obs\_*} packages, making the core SFM pipeline camera agnostic.
-    \item A top-level Task to run the SFM pipeline.
+\item A top-level Task to run the SFM pipeline.
 \end{itemize}
 
 In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS \emph{Photo} pipeline \cite{LuptonPhoto}.
 
-Output information for OCS telemetry: ACTION clarify OCS interactions
-
 \paragraph{Instrumental Signature Removal:}~
 
 \noindent
-{\bf Clarify interaction with butler}\\
-
-{\bf Input Data}\\
+{\bf Input Data:}
 \begin{itemize}
-\item Camera corrected (crosstalk, overscan, linearity) images
+\item Camera corrected images (crosstalk, overscan, linearity)
 \item Sensor defect lists
-\item Metadata including electronic parameters (saturation limits, readnoise, electronic
-  footprint)
+\item Metadata including electronic parameters (saturation limits,
+  readnoise, electronic footprint)
 \end{itemize}
 
 \noindent
-{\bf Output Data}\\
+{\bf Output Data:}
 \begin{itemize}
 \item Calexp images
 \end{itemize}
 
-{\bf Ancillary Products?}\\
-\begin{itemize}
-\item Source detection and measurements
-\item ICExp background subtracted images
-\item Post ISR exposure
-\end{itemize}
+\noindent 
+{\bf Actions in case of failure:}\\
+In the case camera data are not available due to a network outage that
+is longer than the data buffer at the summit the ISR processing will
+work on raw images (i.e.\ without the camera corrections) and be run
+in a batch mode.
 
-{\bf Actions in case of failure?}\\
-Actions in case camera data are not available due to network outage
-longer than buffer of data at summit
-{\bf Alternative procedures?}\\
+\noindent 
+{\bf Alternative procedures:}\\
 
 \noindent
 {\bf Subtasks:}
@@ -100,65 +106,108 @@ longer than buffer of data at summit
 
 \paragraph{PSF determination and background determination:}~
 
+Iterative procedure to fit and remove background, identify sources to
+5$\sigma$, select bright sources (50$\sigma$), and fit a PSF
+model. Convergence criteria for the procedure is not defined but the
+default procedure assumes three iterations.
+
 \noindent
-{\bf Input Data?}\\
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
+{\bf Input Data:}
+\begin{itemize}
+\item Access to ICexp images from ISR 
+\end{itemize}
+{\bf Output Data}
+\begin{itemize}
+\item IC images 
+\item IC source catalog 
+\end{itemize}
+ {\bf Actions in case of failure}\\
+{\bf Alternative procedures}\\
 
 \noindent
 {\bf Subtasks:}
 
-Iterate till convergence (convergence criteria TBD)
+
 \begin{itemize}
 \item \hyperref[sec:acBackgroundEstimation]{Background estimation}
-\item Source detection
-\item Selection of PSF candidate stars
-\item PSF determination
+\item \hyperref[sec:acSourceDetection]{Source detection}
+%\item Single CCD \hyperref[sec:acDeblending]{Deblend sources}
+\item Selection of PSF candidate stars based on signal-to-noise
+  (default 50 $\sigma$) and isolate sources
+\item Single CCD \hyperref[sec:acSingleCCDPSF]{PSF determination}
+%\item Single CCD \hyperref[sec:acModelSpatialPSF]{PSF spatial model}
 \end{itemize}
 
 \paragraph{Source measurement:}~
-
+\label{sec:apSourcemeasurement}
 \noindent
-{\bf Input Data?}\\
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
+{\bf Input Data:}\\
+\begin{itemize}
+\item Access to background subtracted ICexp images
+\item Access to sources detected from ICexp images
+\end{itemize}
+{\bf Output Data:}\\
+\begin{itemize}
+\item IC source catalog with measurements
+\end{itemize}
+ {\bf Actions in case of failure}\\
+{\bf Alternative procedures}\\
 
 \noindent
 {\bf Subtasks:}
+
+Measurement on sources detected for the PSF estimation using a subset
+of parameters as required by the Alert Detection. Measurements are for
+all sources not just bright subset.
 \begin{itemize}
-\item  Source measurement - \hyperref[sec:acSingleFrameMeasurement]{Single Frame Measurement}
-\item  \hyperref[sec:acApCorr]{Aperture correction}
+\item  Source measurement - \hyperref[sec:measurement]{Single visit
+    measurement} for detected sources
+\item  \hyperref[sec:apertureCorrection]{Aperture correction} for
+  detected sources
 \end{itemize}
 
 \paragraph{Photometric and Astrometric calibration:}~
 
 \noindent
-{\bf Input Data?}\\
-DRP's internal reference catalog
-{\bf Output Data?}\\
-OCS PSF, WCS, metadata (TBD) 
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
+{\bf Input Data:}\\
+\begin{itemize}
+\item Access to background subtracted ICexp images
+\item Access to sources detected from ICexp images
+\item Butler access to DRP's internal reference catalog 
+\end{itemize}
+\begin{itemize}
+\item  Calexp images (persisted)
+\item Calibrated source catalog
+\item OCS PSF, WCS, metadata (TBD) 
+\end{itemize}
+ {\bf Actions in case of failure}\\
 
 \noindent
 {\bf Subtasks:}
+
+Photometric and astrometric calibration performed at the scale of a
+single sensor (extended to the scale of a visit depending on required fidelity)
 \begin{itemize}
-\item \hyperref[sec:acMatching]{Source association}
+\item Sensor level \hyperref[sec:acSingleCCDReferenceMatching]{source
+    association} between the DRP reference catalog and sources
+  detected during PSF characterization
 \item CCD level \hyperref[sec:acSingleCCDPhotometricFit]{photometric solution}
-\item Visit level \hyperref[sec:acSingleVisitPhotometricFit]{photometric solution}
-\item Remove known astrometric distortions
-\item Fit remaining residual
-\item Single visit composed \hyperref[sec:acSingleVisitAstrometricFit]{astrometric solution}
+\item Remove known astrometric distortions 
+\item CCD level composed \hyperref[sec:acSingleCCDAstrometricFit]{astrometric
+    solution} to residuals
 \item Output information for OCS telemetry: WCS ACTION clarify OCS interactions
 \end{itemize}
 
+{\bf Alternative procedures}\\
+Dependent on accuracy of single sensor photometric and astrometric calibrations
+\begin{itemize}
+\item Visit level \hyperref[sec:acSingleVisitPhotometricFit]{photometric solution}
+\item Visit level composed 
+  \hyperref[sec:acSingleVisitAstrometricFit]{astrometric solution} to 
+  residuals if required 
+\end{itemize}
 \noindent
-{\bf OUTPUT: Calibrated Exposure and Calibrated Catalog}
+
 
 \subsubsection{Prototype Implementation}
 
@@ -169,6 +218,35 @@ The prototype codes are available in the following repositories: \url{https://gi
 \subsection{Alert Detection (\wbsDiffim)}
 \label{sec:apAlertDetection}
 
+\noindent 
+{\bf Input Data:}\\
+\begin{itemize}
+\item Butler access to Coadd images from DRP that overlap spatially
+  with CalExp images 
+\item Access to DIAObjects that overlap spatially with CalExp images 
+\item Access to Objects that overlap spatially  with CalExp images 
+\item Access to SSObjects whose ephemerides overlap spatially  with CalExp images 
+\item Internal reference catalog for CalExp from DRP 
+\item PSF \hyperref[sec:apSingleFrameProcessing]{measured} from the
+  science image.
+\item Data structures for the real-bogus classifier
+\end{itemize}
+
+
+{\bf Output Data}\\
+\begin{itemize}
+\item DIAimage persisted
+\item DIASources persisted
+\item DIAObjects persisted
+\item DIA forced photometry persisted
+\end{itemize}
+
+{\bf Actions in case of failure:}\\
+{\bf Alternative procedures:}\\
+\begin{itemize}
+\item Butler access to CalExp images from DRP that overlap spatially
+  with current CalExp image  for template generation
+\end{itemize}
 \subsubsection{Key Requirements}
 
 The alert detection pipeline shall difference a visit image against a deeper template, and detect and characterize sources in the difference image in the time required to achieve the 60 second design goal for Level 1 alert processing (current timing allocation: 24 seconds). The algorithms employed by the pipeline shall result in purity and completeness of the sample as required by the \DMSR\@. Image differencing shall perform as well in crowded as in uncrowded fields.
@@ -178,78 +256,77 @@ The alert detection pipeline shall difference a visit image against a deeper tem
 
 \paragraph{Template Generation}~
 
-\noindent
-{\bf Input Data?}\\
-Coadded CalExps or Series of CalExp from which to interpolate a
-template. 
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
+By either querying for Coadd Images that spatially overlap with a
+given CalExp or for a DCR differential chromatic refraction corrected
+template (see \hyperref[sec:acRetrieveTemplate]{Retrieve Diffim
+  Template}) template image.
 
 \noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item Determine appropriate template to use
-\item Generate template for observation
-\end{itemize}
+\item Query for Coadd images that are within a given time interval
+  (default 2 years) of the current sensor image, and are within
+  allowable airmass limits (default XXX). seexs
+  \hyperref[sec:acRetrieveTemplate]{template retrieval}
+\item An alternate approach will be to return an interpolated,
+  DCR-corrected template based on a model of the effect of DCR (see
+  \hyperref[sec:acDCRTemplates]{ DCR template generation}). The
+  direction of the DCR correction will be aligned with the 
+  ``parallactic angle''.
+  \end{itemize}
 
 \paragraph{Image differencing}~
 
-\noindent
-{\bf Input Data?}\\
-Internal reference catalog for CalExp from DRP 
-PSF for science image
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
+Model the matching kernel and its spatial variation using a regression
+approach and a \hyperref[sec:acImageSubtraction]{set of basis functions}
 
 \noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item match DRP sources and sources from SFP
-\item Determine relative astrometric solution
-\item Warp template and measurements to science image frame
-\item Correlate science image with science PSF (pre-convolution)
-\item Determine appropriate PSF matching sources
-\item Compute PSF matching kernel and spatial model using ZOGY approach
-\item Difference science and template images
-\item Apply correction for correlated noise
-\item Difference image \hyperref[sec:acSourceDetection]{source detection}
-\item Difference image  \hyperref[sec:acDiffImMeasurement]{source
-    measurement}: dipole fit, trailed source measurement
+\item Match \hyperref[sec:apSourcemeasurement]{DRP} sources and
+  sources from \hyperref[sec:apSingleFrameProcessing]{SFP}
+\item Determine a relative astrometric solution
+\item Warp the template and measurements to the science image frame
+\item Determine the appropriate PSF matching sources
+\item Decorrelate the science image with an estimate of the science PSF (pre-convolution) 
+\item Compute the PSF matching kernel and spatial model using
+  \hyperref[sec:acDiffImDecorrelation]{ZOGY} approach
+\item Difference the science and template images
+\item Apply a correction for correlated noise
+\item Difference image \hyperref[sec:acSourceDetection]{source
+    detection} to generate DIASources
+\item Difference image  \hyperref[sec:acMeasurement]{source
+    measurement}: \hyperref[sec:acDipoleModels]{dipole fit}, \hyperref[sec:acTrailedPointSourceModels]{trailed source} measurement
 \item Measure flux on snap difference for all DIASources
 \end{itemize}
 
 \paragraph{Real-Bogus classification}~
 
-\noindent
-{\bf Input Data?}\\
-Internal reference catalog for CalExp from DRP 
-PSF for science image
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
+Initial classification step to identify false positives in the image
+difference sources. Training of the classifier will be undertaken
+outside of the nightly processing and will utilize a training sample
+of real variable sources and artifacts based on labelled data. Labels
+will be derived from simulated data and visually classified sources.
 
 \noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item Application of random forest or other classification algorithm
-\item Update DIASources with probabilistic classification 
-\item Filter DIASource list based on classifier
+\item The data structures for the real-bogus machine learning
+  algorithm(s) will be loaded
+\item A random forest or other probabilistic classification algorithm will be
+  applied to the DIASources
+\item Update the DIASources with the probabilistic classification 
+\item Prune the DIASource list based on classifier results
 \end{itemize}
 
 
 \paragraph{Ephemeris Calculation}~
 
 \noindent
-{\bf Input Data?}\\
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
+{\bf Input Data:}\\
+{\bf Output Data:}\\
+{\bf Actions in case of failure:}\\
+{\bf Alternative procedures:}\\
 
 \noindent
 {\bf Subtasks:}
@@ -259,24 +336,39 @@ PSF for science image
 
 \paragraph{Source Association}~
 
-\noindent
-{\bf Input Data?}\\
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
+{\bf Input Data:}\\
+\begin{itemize}
+\item Access to DIAObjects and that overlap spatially with CalExp images 
+\item Access to Objects that overlap spatially  with CalExp images 
+\item Access to SSObjects whose ephemerides overlap spatially  with CalExp images 
+\item Internal reference catalog for CalExp from DRP 
+\item PSF \hyperref[sec:apSingleFrameProcessing]{measured} from the
+  science image.
+\item Data structures for the real-bogus classifier
+\end{itemize}
 
+
+{\bf Output Data}\\
+\begin{itemize}
+\item DIAimage persisted
+\item DIASources persisted
+\item DIAObjects persisted
+\item DIA forced photometry persisted
+\end{itemize}
 \noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item Match all DIASources to predicted Solar System object positions and DIAObject catalog positions
-\item Perform forced photometry of un-associated DIAObjects.(Maybe not if we force photometer all DIAObjects?).
-SSObjects will not be force photometered because
-the precision of the prediction will not be good enough.  Force photometry for external DIAObjects?
-\item Update associated DIAObjects with aggregate quantities: e.g. parallax, proper motion, and variability
-metrics
-\item New spuriousness calculation?
+\item Given the time of an observation and the motion of the sources,
+  propagate positions of all sources (SSObjects and DIASources).
+\item Using the WCS determine the sensor coordinates for all
+  DIAObjects in the catalog
+\item Match all DIASources to all DIAObject catalog positions using a probabilistic \hyperref[sec:acDIAObjectGeneration]{matching algorithm}
+\item Update associated DIAObjects with aggregate quantities
+  e.g. position and flux (in a 30 day rolling wind)
+\item Perform forced photometry of all DIAObjects that intersect with
+  the frame.
 \end{itemize}
+
 
 \subsubsection{Prototype Implementation}
 
@@ -297,14 +389,20 @@ To directly serve the end-users, the Alert Generation Pipeline shall provide a b
 
 \subsubsection{Baseline Design}
 
-\paragraph{Alert generation}~
+{\bf Input Data:}\\
+\begin{itemize}
+\item Access to DIAObjects that overlap spatially with CalExp images 
+\item Access to Template image that overlap spatially with CalExp images  
+\end{itemize}
 
-\noindent
-{\bf Input Data?}\\
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
+
+{\bf Output Data}\\
+\begin{itemize}
+\item DIA event table persisted
+\item VOEvents
+\end{itemize}
+
+\paragraph{Alert generation}~
 
 \noindent
 {\bf Subtasks:}
@@ -316,33 +414,23 @@ To directly serve the end-users, the Alert Generation Pipeline shall provide a b
 \paragraph{Alert Distribution}~
 
 \noindent
-{\bf Input Data?}\\
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
-
-\noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item Filter event records (for content as well as for events)
-\item Author VOEvent
-\item Push to messaging queue
+\item Persist events within an event table (details TBD)
+\item Filter event records (for content as well as for events) to
+  generate VOEvents
+\item Push VOEvents to a messaging queue that persists for a finite
+  period (default length 30 days)
 \end{itemize}
 
 \paragraph{Forced Photometry on all DIAObjects}~
 
 \noindent
-{\bf Input Data?}\\
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
-
-\noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item Compute forced photometry on all DIAObjects in the field.  This does not end up in the alerts.
+\item Compute forced photometry on all DIAObjects in the field.  This
+  does not end up in the alerts.
+\item Update the DIA Object forced photometry tables
 \end{itemize}
 
 \subsubsection{Prototype Implementation}
@@ -351,18 +439,25 @@ To directly serve the end-users, the Alert Generation Pipeline shall provide a b
 
 \subsection{Precovery Photometry Pipeline}
 
+\noindent
+{\bf Input Data:}\\
+\begin{itemize}
+\item Butler access to DIA images within finite time interval (default 
+  30 days) 
+\item Butler access to DIAobjects detected from the previous night 
+  with no associations 
+\end{itemize}
+{\bf Output Data}\\
+\begin{itemize}
+\item Updated and persisted forced photometry tables for all newly
+  detected DIAobjects
+\end{itemize}
+
 \subsubsection{Key Requirements}
 
 Within 24 hrs.
 
 \paragraph{Precovery of new DIAObjects}~
-
-\noindent
-{\bf Input Data?}\\
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
 
 \noindent
 {\bf Subtasks:}
@@ -465,4 +560,11 @@ The Moving Object Pipeline System (MOPS) has two responsibilities within LSST Da
 
 \subsubsection{Prototype Implementation}
 
-Prototype MOPS codes are available at \url{https://github.com/lsst/mops_daymops} and \url{https://github.com/lsst/mops_nightmops}. We expect it will be possible to transfer a significant fraction of the existing code into Construction. Current DayMOPS prototype already performs within the computational envelope envisioned for LSST Operations, though it does not yet reach the required completeness requirement.
+Prototype MOPS codes are available at
+\url{https://github.com/lsst/mops_daymops} and
+\url{https://github.com/lsst/mops_nightmops}. We expect it will be
+possible to transfer a significant fraction of the existing code into
+Construction. Current DayMOPS prototype already performs within the
+computational envelope envisioned for LSST Operations, though it does
+not yet reach the required completeness requirement.
+
