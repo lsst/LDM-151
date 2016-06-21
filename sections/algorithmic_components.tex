@@ -368,6 +368,37 @@ I didn't explicitly talk about composition of background models, but this takes 
 \subsection{Build Background Reference}
 \label{sec:acBuildBackgroundReference}
 AUTHOR: Simon
+\subsubsection{Patch Level}
+Background-matching each \texttt{CoaddTempExp} (CTE) to a reference exposure performs comparably to fitting
+the offsets to the N(N-1)/2 difference images, however the co-add quality will depend on the quality of the
+reference image.  Choosing a reference image on a per-patch basis is as simple as choosing the CTE that
+maximizes both coverage and the SNR of the sky background. Coverage is defined as the fraction of non-NaN
+pixels in the CTE. NaN pixels arise in CTEs because of gaps between the chips and edges of the visit focal
+planes.  The camera design specifications indicate a 90\% fill factor, and thus approximately 10\% of pixels
+will be NaN due to chip gaps.  The SNR of the background can be estimated from either the CTEs themselves,
+using the variance plane of pixels without the source detection bit mask flagged, or from calibration
+statistics such as the zero point (a proxy for transparency).  In the limiting case that all CTEs have the
+same coverage, finding the best reference image reduces to the problem of weighting epochs in co-addition.
+For example, the reference image that minimizes the variance in the co-add is the minimum variance CTE, and
+the reference image that maximizes SNR in coadd point source measurements is the CTE with the maximum
+$T_i/{\rm FWHM}^2_i \sigma^2_i$\footnote{to the first order. Don't want to start a fight here}, where $T_i$ is
+the transparency,  and $\sigma^2_i$ the average variance of the pre-scaled exposure.  By combining one of
+these statistics with coverage, we can construct an objective/cost function that relates the importance of
+coverage and sky-background, and can select a visit that minimizes that quantity objective function.
+
+\subsubsection{}
+Constructing reference images for tract-sized co-adds follows the same principle, but requires maximizing the
+SNR/coverage of a large mosaic constructed from multiple visits.  Algorithms for mosaicking partially
+overlapping images have been well established \citep[e.g.][]{Sick2013, Berriman2008}. By mosaicking visits,
+applying additive scalar or sloping offsets to calexps, we can generate a tract-sized reference image.
+Algorithms for selecting visits to construct these fall on a spectrum of computational expense. On the less
+expensive side is a greedy algorithm which starts with a ``best'' (as defined above) visit chosen at the
+center of the tract.  Visits can be chosen, scaled, and added one by one in the vicinity, moving outwards.  A
+another option is to choose a small set of visits that completely cover a tract without gaps, which can be
+cast as a constrained convex optimization problem\footnote{probably}, and mosaic them using standard
+mosaicking techniques.  Finally, the most expensive option would use all the visits to simultaneously tie the
+visits together using all overlaps while background matching.
+
 \begin{itemize}
 \item Given multiple overlapping visit images (already warped to a common coordinate system), synthesize a continuous single-epoch image that can be used as a reference for background matching.
 \end{itemize}
