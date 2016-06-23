@@ -358,7 +358,7 @@ A higher order background model can be computed per chip.  First, the low order 
 
 In the case of Alert Production, there will be no full focalplane model since we expect to process only a single chip in each thread.  In this case, we constrain the background with the available un-masked pixels without removing a global background first.  Note that image differencing is still possible even in the scenario where there are no unmasked pixels in the science image.  The background can be modeled as a part of the PSF matching process.  We will want to do background modeling and subtraction in Alert Production when possible because we will want to do calibrated photometry.  Even though these measurements are not persisted for science us, they will be very useful for debugging and QA.
 
-If there are so few un-masked pixels in the entire focalplane that even a low order global background is impossible to model, we will not compute a background model.  Instead, we will do crowded field photometry only \ref{????}
+If there are so few un-masked pixels in the entire focalplane that even a low order global background is impossible to model, background modeling may need to be iterated with a procedure that models and subtracts stars (for example, see the \hyperref[sec:drpBootstrapImChar]{BootstrapImChar pipeline in DRP}).
 
 \begin{note}[Crowded fields and composition]
 Requirements included working in crowded fields.  I think estimating a full focalplane model is the best we can do.  If there are no unmasked pixels in the entire FoV, I don't think there is much we can do.
@@ -653,7 +653,7 @@ subtracted images.
 
 The baseline approach for minimizing DCR induced dipoles in image
 differences is to selected coadded templates that are close in airmass
-\autoref[sec:templateSelect]. This will identify three airmass bins (XXX
+\autoref{sec:acRetrieveTemplate}. This will identify three airmass bins (XXX
 where is this defined) from which PSF matched coadds will be generated
 (ref).
 
