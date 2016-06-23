@@ -1,24 +1,95 @@
-\section{Level 1 Pipelines}
+\section{Alert Production}
 \label{sec:ap}
+
+
+
+Alert Production is run each night to product catalogs and images for sources that have varied or moved relative to a previous observation.  The data products produced by Alert production are given in  table~\ref{table:ap_data_products}.
+
+\begin{table}
+\small
+\begin{tabularx}{\textwidth}{ | l | l | X | }
+  \hline
+  {\bf Name} & {\bf Availability} & {\bf Description} \\
+  \hline
+  DIASource & Stored &
+  Measurements from difference imagine analysis of individual exposures. \\
+  \hline
+  DIAObject& Stored &
+  Aggregate quantities computing by associating spatially colocated DIASources. \\
+  \hline
+  DIAForcedSource & Stored &
+  Flux measurements on each difference image at the position of every DIAObject. \\
+  \hline
+  SSObject & Stored &
+  Solar system objects derived by associating DIASources and inferring their orbits. \\
+  \hline
+  CalExp & Stored &
+  Calibrated exposure images for each CCD/visit (sum of two snaps). \\
+  \hline
+  DiffExp & Stored &
+  Difference between CalExp and PSF-matched template coadd. \\
+  \hline
+\end{tabularx}
+\caption{Table of derived and persisted data products produced during a Alert Production.  A description of these data products can be found in the Data Products Definition Document (LSE-163).
+\label{table:ap_data_products}}
+\end{table}
+
+
+Alert Production is designed as five separate components: single frame
+processing, alert detection, alert generation, precovery photometry,
+and a moving objects pipeline. The first four of these components run
+as a linear pass through of the data. The moving objects pipeline is
+run independently of the rest of the alert production. The flow of
+information through this system is shown in figure~\ref{fig:nightly}.
 
 \begin{figure}[th]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{figures/Level_1_Processing_Flowchart.jpg}
-\caption{\label{fig:nightly} The nightly processing flowchart
-  describing the flow of images and data through single frame
-  processing, image differencing, alert generation and production}
+\caption{\label{fig:nightly} The alert production flow of data through
+  the processing pipelines (single frame processing, alert detection,
+  alert generation, precovery photometry) }
 \end{center}
 \end{figure}
 
 \subsection{Single Frame Processing Pipeline (\wbsSFM)}
 \label{sec:apSingleFrameProcessing}
 
-Single Frame Processing (SFM) Pipeline is responsible for reducing raw
-or camera corrected image data to \emph{calibrated exposures}, and the
-detection and measurement of \Sources (using the components
-functionally a part of the Object Characterization Pipeline).
+Single Frame Processing (SFM) Pipeline is responsible for reducing raw or camera corrected image data to \emph{calibrated exposures}, the detection and measurement of \Sources (using the components functionally a part of the Object Characterization Pipeline), the characterization of the point-spread-function (PSF), and the generation of an astrometric solution for an image.
 
-\subsubsection{Key Requirements}
+\subsubsection{Baseline Design}
+
+Single Frame Processing pipeline will be implemented as a flexible   framework where new processing steps can be added without modifying the stack code. It should be possible for this pipeline or a subset of this pipeline  to be run at the telescope facility during commissioning and operations.  
+
+\paragraph{Input Data: Raw}
+
+Amplifier images that the camera has corrected for crosstalk, overscan, linearity.  All images from a visit should be available to the task (including snaps). An approximate WCS is assumed to be available as metadata
+
+\paragraph{Input Data Product: Reference}
+
+A full-sky reference catalog of stars derived either from an external survey (e.g.\ Gaia) or from the Data Release Processing.
+
+Flatfield calibration images for all passbands and all CCDs appropriate for the time at which the observations were undertaken
+
+List of the positions and extents of sensor defects for all CCDs within the focal plane
+
+Metadata for all CCDs including electronic parameters (saturation limits, readnoise, electronic footprint)
+
+\paragraph{Output Data Product: CalExp}
+
+A calibrated exposure (CalExp).  CalExp is an \hyperref[sec:spImagesExposure]{Exposure} object. The CalExp will contain a PSF, WCS, PhotoCalib and Background. The pixel data will include the image, mask, and variance. 
+
+\paragraph{Output Data Product: Source}
+
+A catalog of Sources with measured features (as described in \ref{sec:ac}). 
+
+
+\paragraph{Output Data Product: Metadata}
+A parameterization of the PSF for the visit, the WCS for the visit,
+and associated metadata (e.g.\ photometric depth) must be made
+available to the telescope Observatory Control System (OCS). It is
+expected that these data will be persisted within a database that will
+be queried by the OCS.
+
 
 SFM pipeline functions include:
 \begin{itemize}
@@ -33,185 +104,86 @@ SFM pipeline functions include:
 \item Generation of metadata required by the OCS
 \end{itemize}
 
-Calibrated exposure produced by the SFM pipeline must possess all
-information necessary for measurement of source properties by
-single-epoch Object Characterization algorithms.
+Calibrated exposure produced by the SFM pipeline must possess all information necessary for measurement of source properties by single-epoch Object Characterization algorithms.
 
-It shall be possible to run this pipeline in two modes: a ``fast" mode
-needed in nightly operations for Level 1 data reductions where no
-source characterization is done beyond what's required for zero-point,
-PSF, sky, and WCS determination (image reduction); and a ``full" mode
-that will be run for Level 2 data reductions.  It should be possible
-for this pipeline or a subset of this pipeline to be run at the
-telescope facility during commissioning and operations.  \emph{AJC: is the level 2 a requirement}
+\paragraph{Actions in case of failure:}
+
+In the case camera data are not available due to a network outage that is longer than the data buffer at the summit the single frame processing will work on raw images (i.e.\ without the camera pixel corrections) and be run in a batch mode. 
 
 
-\subsubsection{Baseline Design}
-
-Single Frame Processing pipeline will be implemented as a flexible
-framework where different data can be easily treated differently, and
-new processing steps can be added without modifying the stack code.
-
-It will consist of three primary components:
-%
-\begin{itemize}
-\item A library of useful methods that wrap a small number of atomic operations (e.g., {\tt interpolateFromMask}, {\tt overscanCorrection}, {\tt biasCorrection}, etc.) % RHL things like overscanCorrection aren't atomic (or at least, they use afw::math and afw::cameraGeom primitives)
-\item A set of classes ({\tt Task}s) that perform higher level jobs
-    (e.g., {\tt AssembleCcdTask}, or {\tt FringeTask}), and a top level class to apply corrections to the input data in the proper order. This top level class can be overridden in the instrument specific {\tt obs\_*} packages, making the core SFM pipeline camera agnostic.
-\item A top-level Task to run the SFM pipeline.
-\end{itemize}
-
-In the paragraphs to follow, we describe the adopted baseline for key SFM algorithms. If not discussed explicitly, the algorithmic baseline for all other functionallity is assumed to be the same as that used by SDSS \emph{Photo} pipeline \cite{LuptonPhoto}.
 
 \paragraph{Instrumental Signature Removal:}~
+\label{sec:apISR}
+Instrumental Signature Removal characterizes, corrects, interpolates
+and flags the camera (or raw) images to generate a flat-fielded and corrected
+exposure.
 
-\noindent
-{\bf Input Data:}
+\paragraph{Pipeline Tasks}
 \begin{itemize}
-\item Camera corrected images (crosstalk, overscan, linearity)
-\item Sensor defect lists
-\item Metadata including electronic parameters (saturation limits,
-  readnoise, electronic footprint)
-\end{itemize}
-
-\noindent
-{\bf Output Data:}
-\begin{itemize}
-\item Calexp images
-\end{itemize}
-
-\noindent 
-{\bf Actions in case of failure:}\\
-In the case camera data are not available due to a network outage that
-is longer than the data buffer at the summit the ISR processing will
-work on raw images (i.e.\ without the camera corrections) and be run
-in a batch mode.
-
-\noindent 
-{\bf Alternative procedures:}\\
-
-\noindent
-{\bf Subtasks:}
-\begin{itemize}
-\item Mask defects and saturation
+\item Mask CCD defects based on the and saturation
 \item Assembly
 \item Full frame corrections: Dark, Flats (includes fringing)
 \item Pixel level corrections: Brighter fatter, static pixel size effects
-\item {\bf QUESTION is this run prior to pixel level corrections} Interpolation of defects and saturation
+\item Interpolation of defects and saturation
 \item \hyperref[sec:artifact]{CR rejection}
 \item Generate snap difference
 \item Snap combination
 \end{itemize}
 
 
-\paragraph{PSF determination and background determination:}~
+\paragraph{PSF and background determination:}~
+\label{sec:apPSFBackground}
 
-Iterative procedure to fit and remove background, identify sources to
-5$\sigma$, select bright sources (50$\sigma$), and fit a PSF
-model. Convergence criteria for the procedure is not defined but the
-default procedure assumes three iterations.
+Given exposures that have been processed through the Instrument Signature Removal, sources must be detected that will be used to determine the WCS and photometric calibration of the images. Detection and measurement of the properties of these calibration Sources requires knowlege of the PSF and background for the image which in turn requires knowledge of the sources on the image. An iterative procedure is, therefore, adopted to generate the Source catalog. 
 
-\noindent
-{\bf Input Data:}
-\begin{itemize}
-\item Access to ICexp images from ISR 
-\end{itemize}
-{\bf Output Data}
-\begin{itemize}
-\item IC images 
-\item IC source catalog 
-\end{itemize}
- {\bf Actions in case of failure}\\
-{\bf Alternative procedures}\\
-
-\noindent
-{\bf Subtasks:}
-
-
+\paragraph{Pipeline Tasks}
+The procedure for PSF and background estimation and the associated
+algorithmic components. Convergence criteria for the procedure is not
+defined but the default procedure assumes three iterations.
 \begin{itemize}
 \item \hyperref[sec:acBackgroundEstimation]{Background estimation}
-\item \hyperref[sec:acSourceDetection]{Source detection}
+\item \hyperref[sec:acSourceDetection]{Source detection} to the 5$\sigma$ limit of
 %\item Single CCD \hyperref[sec:acDeblending]{Deblend sources}
-\item Selection of PSF candidate stars based on signal-to-noise
-  (default 50 $\sigma$) and isolate sources
-\item Single CCD \hyperref[sec:acSingleCCDPSF]{PSF determination}
+\item Selection of PSF candidate stars based on a signal-to-noise threshold 
+  (default 50 $\sigma$) and isolated sources 
+\item Single CCD \hyperref[sec:acSingleCCDPSF]{PSF determination} given the selected bright sources
 %\item Single CCD \hyperref[sec:acModelSpatialPSF]{PSF spatial model}
 \end{itemize}
 
+
 \paragraph{Source measurement:}~
 \label{sec:apSourcemeasurement}
-\noindent
-{\bf Input Data:}\\
-\begin{itemize}
-\item Access to background subtracted ICexp images
-\item Access to sources detected from ICexp images
-\end{itemize}
-{\bf Output Data:}\\
-\begin{itemize}
-\item IC source catalog with measurements
-\end{itemize}
- {\bf Actions in case of failure}\\
-{\bf Alternative procedures}\\
 
-\noindent
-{\bf Subtasks:}
+For the Source catalog generated in \label{sec:apPSFBackground} measure the source properties using a subset of features measured in \label{sec:drpMeasureSources}. Source measurement if for all sources within the Source catalog and not just the bright subset used to calibrate the PSF. 
 
-Measurement on sources detected for the PSF estimation using a subset
-of parameters as required by the Alert Detection. Measurements are for
-all sources not just bright subset.
+\paragraph{Pipeline Tasks}
+We anticipate using the following plugin algorithms for \label{sec:drpMeasureSources}
 \begin{itemize}
-\item  Source measurement - \hyperref[sec:measurement]{Single visit
-    measurement} for detected sources
-\item  \hyperref[sec:apertureCorrection]{Aperture correction} for
-  detected sources
+\item \hyperref[sec:acCentroidAlgorithms]{Centroids}
+\item \hyperref[sec:acPixelFlags]{Pixel Flag Aggregation}
+\item \hyperref[sec:acAperturePhotometry]{Aperture Photometry} (but only for one or two radii) 
+\item \hyperref[sec:acPSFPhotometry]{PSF Photometry} 
+\item \hyperref[sec:acStaticPointSourceModels]{Static Point Source Models}
+\item  \hyperref[sec:apertureCorrection]{Aperture correction} for  detected sources
 \end{itemize}
 
 \paragraph{Photometric and Astrometric calibration:}~
+Photometric and astrometric calibration entails a ``semi-blind'' cross match of a reference catalog (derived either from the DRP Objects or from an external catalog), the generation of a WCS (on the scale of a CCD or visit), and the generation of a photometric zeropoint (on the scale of a CCD).
 
-\noindent
-{\bf Input Data:}\\
-\begin{itemize}
-\item Access to background subtracted ICexp images
-\item Access to sources detected from ICexp images
-\item Butler access to DRP's internal reference catalog 
-\end{itemize}
-\begin{itemize}
-\item  Calexp images (persisted)
-\item Calibrated source catalog
-\item OCS PSF, WCS, metadata (TBD) 
-\end{itemize}
- {\bf Actions in case of failure}\\
-
-\noindent
-{\bf Subtasks:}
-
+\paragraph{Pipeline Tasks}
 Photometric and astrometric calibration performed at the scale of a
 single sensor (extended to the scale of a visit depending on required fidelity)
 \begin{itemize}
-\item Sensor level \hyperref[sec:acSingleCCDReferenceMatching]{source
-    association} between the DRP reference catalog and sources
-  detected during PSF characterization
-\item CCD level \hyperref[sec:acSingleCCDPhotometricFit]{photometric solution}
-\item Remove known astrometric distortions 
-\item CCD level composed \hyperref[sec:acSingleCCDAstrometricFit]{astrometric
-    solution} to residuals
-\item Output information for OCS telemetry: WCS ACTION clarify OCS interactions
+\item CCD level \hyperref[sec:acSingleCCDReferenceMatching]{source
+    association} between the DRP reference catalog and Sources from the \ref{sec:apSourcemeasurement}
+\item Generation of a \hyperref[sec:acSingleCCDPhotometricFit]{photometric solution} at the level of a single CCD
+\item Decomposition of the astrometric components (e.g.\ optical distortions, sensor tree-rings) for a single CCD and generation of an \hyperref[sec:acSingleCCDAstrometricFit]{astrometric fit} at the level of a single CCD
+\item Persistence of the astrometric, PSF, and photometric solutions so that the OCS can incorporate it into their telemetry
 \end{itemize}
 
-{\bf Alternative procedures}\\
-Dependent on accuracy of single sensor photometric and astrometric calibrations
-\begin{itemize}
-\item Visit level \hyperref[sec:acSingleVisitPhotometricFit]{photometric solution}
-\item Visit level composed 
-  \hyperref[sec:acSingleVisitAstrometricFit]{astrometric solution} to 
-  residuals if required 
-\end{itemize}
-\noindent
+Given the number of stars available on a CCD or the complexity of the astrometric solutions for the LSST it may be necessary that the astrometric and photometric solutions must be performed at the level of a visit and not a CCD.  For these cases the operations will be \hyperref[sec:acSingleVisitReferenceMatching]{single visit matching},   \hyperref[sec:acSingleCCDPhotometricFit]{single visit photometric solutions}, \hyperref[sec:acSingleVisitAstrometricFit]{single visit astrometric fits}.
 
-
-\subsubsection{Prototype Implementation}
-
-The prototype codes are available in the following repositories: \url{https://github.com/lsst/ip_isr}, \url{https://github.com/lsst/meas_algorithms}, \url{https://github.com/lsst/meas_astrom}, \url{https://github.com/lsst-dm/legacy-meas_mosaic}, \url{https://github.com/lsst/pipe_tasks}.
+Astrometric and photometric performance within crowded fields will require that the order of the WCS should depend on the number of calibration Sources that are available.
 
 \clearpage
 
