@@ -319,31 +319,16 @@ will be derived from simulated data and visually classified sources.
 \item Prune the DIASource list based on classifier results
 \end{itemize}
 
-
-\paragraph{Ephemeris Calculation}~
-
-\noindent
-{\bf Input Data:}\\
-{\bf Output Data:}\\
-{\bf Actions in case of failure:}\\
-{\bf Alternative procedures:}\\
-
-\noindent
-{\bf Subtasks:}
-\begin{itemize}
-\item Calculate positions for all solar system objects that may overlap the current exposure.
-\end{itemize}
-
 \paragraph{Source Association}~
 
 {\bf Input Data:}\\
 \begin{itemize}
-\item Access to DIAObjects and that overlap spatially with CalExp images 
-\item Access to Objects that overlap spatially  with CalExp images 
-\item Access to SSObjects whose ephemerides overlap spatially  with CalExp images 
-\item Internal reference catalog for CalExp from DRP 
+\item Access to DIAObjects and that overlap spatially with CalExp images
+\item Access to Objects that overlap spatially  with CalExp images
+\item Access to SSObjects whose \hyperref[sec:acEphemerisCalculation]{ephemerides} overlap spatially with CalExp images
+\item Internal reference catalog for CalExp from DRP
 \item PSF \hyperref[sec:apSingleFrameProcessing]{measured} from the
-  science image.
+  science image
 \item Data structures for the real-bogus classifier
 \end{itemize}
 
@@ -381,18 +366,18 @@ The prototype code is available at \url{https://github.com/lsst/ip_diffim}. The 
 \subsubsection{Key Requirements}
 
 Alert Generation Pipeline shall take the newly discovered \DIASources and all associated metadata as described
-in the \DPDD, and generate alert packets in \VOEvent format. It will transmit these packets to VO Event
-Brokers, using standard IVOA protocols (eg., VOEvent Transport Protocol; VTP\@). End-users will primarily use these brokers to classify and filter events for subsets fitting their science goals.
-% RHL I thought that we were being careful to say we'll use whatever's the standard, e.g. VO?
+in the \DPDD, and deliver alert packets in \VOEvent format to a variety of endpoints via standard IVOA protocols (eg., VOEvent Transport Protocol; VTP\@).
 
-To directly serve the end-users, the Alert Generation Pipeline shall provide a basic, limited capacity, alert filtering service. This service will run at the LSST U.S. Archive Center (at NCSA). It will let astronomers create simple filters that limit what alerts are ultimately forwarded to them. These \emph{user defined filters} will be possible to specify using an SQL-like declarative language, or short snippets of (likely Python) code.
+To directly serve the end-users, the Alert Generation Pipeline shall provide a basic, limited capacity, alert filtering service. This service will run at the LSST U.S. Archive Center (at NCSA). It will let astronomers create simple filters that limit what alerts, and what fields from those alerts, are ultimately forwarded to them. These \emph{user defined filters} will be possible to specify using an SQL-like declarative language, or short snippets of (likely Python) code.
+
+Since there is a need to keep both the alert database and the brokers consistent, there is a big win if both the database and the brokers read from the same fault tolerant intermediate persistence format.  A redundant, cluster based, strongly ordered, message system like Kafka (http://kafka.apache.org) is a very attractive option as the intermediate persistence.  It is very similar in concept to persisting to some well known file format with the addition of reduntant storage, configurable expiration time of messages, and strict ordering so database catch-up is trivial.  It is also scalable.
 
 \subsubsection{Baseline Design}
 
 {\bf Input Data:}\\
 \begin{itemize}
-\item Access to DIAObjects that overlap spatially with CalExp images 
-\item Access to Template image that overlap spatially with CalExp images  
+\item Access to DIAObjects that overlap spatially with CalExp images
+\item Access to Template image that overlap spatially with CalExp images
 \end{itemize}
 
 
@@ -408,19 +393,30 @@ To directly serve the end-users, the Alert Generation Pipeline shall provide a b
 {\bf Subtasks:}
 \begin{itemize}
 \item Generate postage stamps for all DIASources: direct image and difference image
-\item Push alert records to alert database
+\item Push alert records to alert persistence
+\item Alert database ingestion client reads all new alerts and persists them permanently in the alert database
 \end{itemize}
 
-\paragraph{Alert Distribution}~
-
+\paragraph{Alert Distribution: To community brokers}
 \noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item Persist events within an event table (details TBD)
-\item Filter event records (for content as well as for events) to
-  generate VOEvents
-\item Push VOEvents to a messaging queue that persists for a finite
-  period (default length 30 days)
+\item For each visit read all new alert records from the alert persistence
+\item Package each message as a properly formatted VOEvent
+\item Bundle VOEvents using a pre-negotiated format
+\item Transmit bundled VOEvents to community broker endpoints
+\end{itemize}
+
+\paragraph{Alert Distribution: Minimal brokers}
+\noindent
+Each minimal broker will have some subset of users.  The following is for a single broker.
+{\bf Subtasks:}
+\begin{itemize}
+\item Read new alert records from the alert persistence in order
+\item Filter event records for relevance (WHERE)
+\item Filter event columns for content (SELECT)
+\item Package event as a valid VOEvent
+\item Publish the VOEvent to the appropriate endpoint (potentially another messaging queue so clients can access asynchronosly)
 \end{itemize}
 
 \paragraph{Forced Photometry on all DIAObjects}~
@@ -470,92 +466,37 @@ Within 24 hrs.
 
 \subsubsection{Key Requirements}
 
-The Moving Object Pipeline System (MOPS) has two responsibilities within LSST Data Management:
-
-\begin{itemize}
-    \item First, it is responsible for generating and managing the Solar System\footnote{Also sometimes referred to as `Moving Object'} data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% of all Solar System objects that meet the findability criteria as defined in the \OSS\@. The software components implementing this function are known as {\bf \em DayMOPS}.
-    \item The second responsibility of the MOPS is to predict future locations of moving objects in incoming images so that their sources may be associated with known objects; this will reduce the number of spurious transient detections and appropriately flag alerts to detections of known Solar System objects.  The software components implementing this function are known as {\bf \em NightMOPS}.
-\end{itemize}
+The Moving Object Pipeline is responsible for generating and managing the Solar System\footnote{Also sometimes referred to as `Moving Object'} data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% of all Solar System objects that meet the findability criteria as defined in the \OSS\@. 
 
 \subsubsection{Baseline Design}
-\paragraph{Generate Tracklets}~
-
-\noindent
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
-
-\noindent
-{\bf Subtasks:}
+{\bf Input Data}\\
 \begin{itemize}
-\item Make all tracklet pairs
-\item Merge multiple chained observation into single longer tracklets
-\item Purge any tracklets inconsistent with the merged tracklets
+\item 'Orphan' DIASources from the last night of observing.  This means DIASources that are not associated with a DIAObject.  DIASources associated with an SSObject in the night are still passed through the MOPS machinery
+\item DIAObject database
+\item SSObject database
+\item Exposure metadata database
 \end{itemize}
-
-\paragraph{Attribution and precovery}~
-
-\noindent
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
-
-\noindent
-{\bf Subtasks:}
+{\bf Output Data}\\
 \begin{itemize}
-\item Predict locations of known Solar System objects
-\item Match tracklet observation to predicted ephimerides taking into account velocity
-\item Update SSObjects
-\item Possibly iterate
+\item Updated SSObject databaase
+\item Updated DIASource database
 \end{itemize}
-
-\paragraph{Fit Orbits}~
-
-\noindent
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
-
-\noindent
-{\bf Subtasks:}
+{\bf Anscillary Products}\\
 \begin{itemize}
-\item Merge unassociated tracklets into tracks.
-\item Fit orbits to all tracks.
-\item Purge unphysical tracks.
-\item Update SSObjects
-\item Possibly iterate
+\item Tracklet database
+\item Track database
+\item Intermediate orbit prediction database
 \end{itemize}
+{\bf Actions in case of failure}\\
+{\bf Alternative procedures}\\
 
-\paragraph{Association and Precovery: New SSObjects}~
-
-\noindent
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
-
-\noindent
 {\bf Subtasks:}
 \begin{itemize}
-\item Do association and precovery just for SSObjects just found
-\item Update SSObjects
-\end{itemize}
-
-\paragraph{Merge Orbits}~
-
-\noindent
-{\bf Output Data?}\\
-{\bf Anscillary Products?}\\
-{\bf Actions in case of failure?}\\
-{\bf Alternative procedures?}\\
-
-\noindent
-{\bf Subtasks:}
-\begin{itemize}
-\item Merge orbits with high probability of being the same orbit into a single SSObject
+\item Feed all input orphan DIASources to \hyperref[sec:acMakeTracklets][makeTracklets].
+\item Run \hyperref[sec:acAttributionAndPrecovery]{attribution and precovery} on with just the tracklets and DIASources from the previous night.  This culls any tracklets or DIASources that obviously belong to an existing SSObject from the rest of the processing.
+\item Compute new \hyperref[sec:acOrbitFitting]{orbits} and \hyperref[sec:acOrbitMerging]{merge orbits}.
+\item Run \hyperref[sec:acAttributionAndPrecovery]{attribution and precovery} on with full survey of tracklets and DIASources but only running over new SSObjects.
+\item \hyperref[sec:acOrbitMerging]{Merge Orbits}.
 \end{itemize}
 
 \subsubsection{Prototype Implementation}

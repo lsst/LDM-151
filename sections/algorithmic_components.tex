@@ -1185,4 +1185,6 @@ Finding tracks is a tricky problem.  We will follow the approach presented in \c
 
 In order to validate candidate tracks, a quadratic fit to the orbit is attempted with higher order topocentric effects due to reflex motion of the Earth included.  These effects depend on the distance of the object from the Earth, so the range is fit for as part of the fitting process.  For tracks with sufficiently good $\chi^2$, the tracks are passed on to an orbit fitter.  As above, there are tools to fit for orbital parameters given a set of observations.  We will use these as our final orbit determination.
 
-Finally, all orbits will be compared.  If there are any orbits that are sufficiently close in parameter space, they will be merged into a single orbit and the SSObject database updated. 
+\subsection{Orbit Merging}
+\label{sec:acOrbitMerging}
+Bin all SSObjects of interest in orbital parameter space, by building a tree on the SSObject database.  If there are any orbits that are sufficiently close in parameter space, they will be merged into a single orbit and the SSObject database updated.
