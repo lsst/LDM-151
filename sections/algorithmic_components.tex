@@ -203,7 +203,7 @@ If preconvolution is used to construct difference images, but they are not subse
 \paragraph{Multi-Epoch Measurement:} Measure multiple direct images simultaneously by fitting the same \hyperref[sec:spWCS]{WCS}-transformed, \hyperref[sec:spPSF]{PSF}-convolved model to them.  Blended objects in Multi-Epoch Measurement will be handled by \emph{at least} fitting them simutaneously (\ref{sec:acSimultaneousFitting}), which may in turn require hybrid galaxy/star models (\ref{sec:acHybridModels}).  These models may then be used as templates for deblending and replace-with-noise (\ref{sec:acReplaceNeighborsWithNoise}) measurement if this improves the results.
 \label{sec:acMultiEpochMeasurement}
 
-Because the memory and I/O requirements for multi-epoch measurement of a single object or blend family are substantial, we will not provide a driver that accepts an \hyperref[sec:spTablesObject]{ObjectCatalog} and measures all objects within it; instead, the \hyperref{sec:drpMultiFit} pipeline will submit individual family-level jobs directly to the orchestration layer.  The multi-epoch measurement driver will thus just operate on one blend family at a time, and manage blending while executing its plugin algorithms.
+Because the memory and I/O requirements for multi-epoch measurement of a single object or blend family are substantial, we will not provide a driver that accepts an \hyperref[sec:spTablesObject]{ObjectCatalog} and measures all objects within it; instead, the \hyperref[sec:drpMultiFit] pipeline will submit individual family-level jobs directly to the orchestration layer.  The multi-epoch measurement driver will thus just operate on one blend family at a time, and manage blending while executing its plugin algorithms.
 
 Multi-epoch measurement for DRP only includes two plugin algorithms, so it is tempting to simply hard-code these into the driver itself, but this driver will also need to support new plugins in Level 3.
 
@@ -1036,27 +1036,16 @@ Modifications from the single sensor cross matching are:
 \begin{itemize}
 \item Given a model for the postions and orientations of the sensors
   on the focal plane sensor coordinates are transformed to focal plane
-  coordinates (XXX what algorithm)
+  coordinates 
 \item the focal plane coordinates are corrected for the optical
   distortion model to provide a Euclidean space
-\item 
-
-
-Work in 3D space?
-
-Use budavari algorithm?
-
-
-
-Want to match in focal plane coordinates, so also needs to transform reference catalog.
-\item Run prior to single-visit WCS fitting, with only telescope's best guess as a starting WCS.
 \end{itemize}
 
 
-focal plane coordinates - from sensor to focal plane and apply optical
-distortion model
+%focal plane coordinates - from sensor to focal plane and apply optical
+%distortion model
 
-run match in 3D distance space (using the budavari approach?)
+%run match in 3D distance space (using the budavari approach?)
 
 
 \subsubsection{Multiple Visits to Reference Catalog}
@@ -1149,7 +1138,7 @@ AUTHOR: Jim
 
 \subsection{Ephemeris Calculation}
 \label{sec:acEphemerisCalculation}
-Ephemeris calculation for the purpose of association in the nightly pipelines and for attribution and precovery in dayMOPS will require an indexing algorithm as well as anumerical integration phase. The JPL Horizons page reports $~700,000$ asteroid orbits.  This is far too many to run forward for every observation we will take.  Thus, we will need to predict which bodies are likely to cross an aperture on the sky.  
+Ephemeris calculation for the purpose of association in the nightly pipelines and for attribution and precovery in dayMOPS will require an indexing algorithm as well as a numerical integration phase. The JPL Horizons page reports $~700,000$ asteroid orbits.  This is far too many to run forward for every observation we will take.  Thus, we will need to predict which bodies are likely to cross an aperture on the sky.  
 
 There are tools that allow for orbit prediction.  As a baseline, we suggest using the OOrb (https://github.com/oorb/oorb).  Regardless of the tool we use in production, it will need the following features:
 \begin{itemize}
