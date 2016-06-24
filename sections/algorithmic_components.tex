@@ -3,30 +3,58 @@
 
 \subsection{Instrument Signature Removal}
 \label{sec:acISR}
-AUTHOR: Merlin
+AUTHOR: Merlin\\
 \begin{itemize}
-\item Mask defects and saturation
-\item Assembly
-\item Overscan
-\item Linearity
-\item Crosstalk
-\item Full frame corrections: Dark, Flats (includes fringing)
-\item Pixel level corrections: Brighter fatter, static pixel size effects
-\item Interpolation of defects and saturation
-\item CR rejection
-\item Generate snap difference
-\item Snap combination
+
+\item Assembly: per-amplifier treatment of each CCD flavor (as e2v and ITL sensors assembly differently). Per-CCD / per-raft assembly of CCDs onto focal plane. Application of \texttt{EDGE/SUSPECT} mask-bit to appropriate regions of CCDs (edges of both sensor flavors, and around the midline region of e2v sensors due to distortions from the anti-bloom implant).
+
+\item Mask defects and saturation: application of \hyperref[calibProducts:defectList]{master defect list}and \hyperref[calibProducts:saturationLevel]{master saturation levels} to set the \texttt{BAD/SAT} bit(s) in the maskplane.
+
+\item Overscan subtraction: per-amplifier subtraction of the overscan levels, as either a scalar, vector or array offset. After cropping out the first one or two overscan rows to avoid contamination from CTI, the median will be subtracted if using a scalar subtraction, and a row-wise median if using a vector subtraction. If array subtraction turns out to be necessary (unlikely, especially given the subtraction of a master bias frame), some thought should be given as to how to avoid introducing extra noise to the image.
+
+\item Linearity: apply linearity correction using the \hyperref[calibProducts:linearityCurve]{master linearity table}.
+
+\item Crosstalk: default action for AP is none, as crosstalk is initially corrected in the DAQ. However, in the event of network outages where the local buffer overflows and the corrected data is lost, crosstalk correction will need to be applied. The baseline design is that DRP will apply its own crosstalk correction to the raw data-stream from the DAQ. Both of these will use the \hyperref[calibProducts:crosstalk]{master crosstalk matrix}.
+
+\item Full frame corrections:
+	\subitem Bias: Subtract the \hyperref[calibProducts:bias]{master bias frame}.
+	\subitem Dark: Subtract an exposure length multiple of the \hyperref[calibProducts:dark]{master dark frame}.
+	\subitem Flats: Divide by the appropriate linear combination of  \hyperref[calibProducts:monoPhotoFlat]{master flat(s)}.
+	\subitem Fringe frames: The exact plan for this has yet to be fully established yet, but will likely involve composing a fringe frame from a combination of \hyperref[calibProducts:monoFlat]{monochromatic flats} to match the \hyperref[calypso:nightSkySpectrum]{night sky's spectrum} at the time of observation. This will also presumably be a point where AP and DRP differ, as the \hyperref[calypso:nightSkySpectrum]{night sky's spectrum} be not be available to AP as this would put a real-time constraint on the production of \secsymbol\ref{calypso:nightSkySpectrum}.
+
+\item Pixel level corrections:
+	\subitem The \bfeffect: Apply brighter fatter correction. \XXX{To do: need to add proper section about this somewhere as this is a non-trivial ISR algorithm.}
+	\subitem Static pixel size effects: tree rings, spider legs \etc. \XXX{To do: need to add proper section on these somewhere (here?) as this is another non-trivial ISR algorithm.}
+
+\item CTE correction: Just added this, but this is looking increasingly necessary. What is the current state of the art for this? RHL insists that this is trivial, but it seems to be a topic of research (at least for HST where CTE is very poor and changing). Is it true that for relatively unchanging CTE that correction is easy? And should this be lumped in with the ``pixel level corrections'' above? I am guessing not.
+
+\begin{note}
+	What is the current status of these in the stack? I believe there is currently a \bfeffect correction implemented - is this correct? Do we have a tree-ring / static pixel effect correction at this point? 
+\end{note}
+
+\item Interpolation over defects and saturation: interpolate over defects previously identified using the PSF, and set \texttt{INTERP} bit in the mask plane.
+
+\item Cosmic rays: identification of cosmic rays (see \secsymbol\ref{sec:acMorphologicalArtifactDetection}), interpolation over cosmic rays using PSF, and setting of \texttt{CR/INTERP} bit(s) in the mask plane.
+
+\item Generate snap difference: \rednote{is this really part of ISR?}
+
+\item Snap combination: \rednote{is this really part of ISR?}
+
+\begin{note}
+	Are we responsible for applying ISR to the wavefront sensors?
+\end{note}
 \end{itemize}
 
 \subsubsection{AP: just skip some steps?}
-AUTHOR: Simon
+AUTHOR: Merln\\
 \begin{itemize}
 \item Indicate steps to be done by camera
 \item call out other steps that are omitted/modified relative to the DRP version
 \end{itemize}
 
 \subsubsection{DRP: do all the steps}
-AUTHOR: Merlin
+AUTHOR: Merlin\\
+This section really is just \emph{do all the steps} from \secsymbol\ref{sec:acISR}. Presumably it would be better to arrange this differently. I suggest putting this section above the AP ISR section, putting everything from \secsymbol\ref{sec:acISR} in here \emph{instead}, thus making it the main definition of ISE, and then putting the AP ISR section afterwards, where all the skipped-steps/differences-from the DRP ISR are outlined. I will do this on the next iteration unless someone laid it out like this fo good reason.
 
 
 \subsection{Artifact Detection}
