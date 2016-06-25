@@ -241,20 +241,11 @@ The process for image differencing requires the following steps
 \begin{itemize}
 \item Creation or \hyperref[sec:acRetrieveTemplate]{retrieval} of a TemplateCoadd.
 \item Matching the astrometry and PSF of a CalExp to the TemplateCoadd and subtracting the template image from the CalExp. This will require accounting for the relative differences in image quality and noise between the template and CalExp.
+\item (optional) Dependent on the density of sources \hyperref[sec:acSingleFrameDeblending]{deblending} of difference images may be necessary
+\item Measurement of image difference sources (accounting for whether the CalExp image was preconvolved or not)
 \item Removal of spurious DIASources 
-
-
-\item \hyperref[sec:acWarping]{Warping or resampling} of the TemplateCoadd to match the WCS of the CalExp. It is possible that the an operation to astrometrically match the TemplateCoadd and CalExp using faint source will need to be undertaken dependent on the accuracy of the WCS.
-\item For CalExp images with an image quality that is better than the TemplateCoadd preconvolve the CalExp image with the PSF use a  \hyperref[sec:spKernels]{convolution kernel}. This reduces the significance of any deconvolution in the PSF matching.
-\item Match the CalExp and TemplateCoadd image and  \hyperref[sec:acImageSubtraction]{subtract} the images to generate a DIAImage
-\item \hyperref[sec:acDiffImDecorrelation]{Decorrelate} the DIAImage to reduced the correlations in the noise due to the convolution with the image differencing matching kernel. 
-\item \hyperref[sec:acSourceDetection]{Detect DIAsources} on the DIAImage. Convolution with a detection kernel will depend on whether the CalExp was preconvolved in step 3
-\item (optional) Dependent on the source density \hyperref[sec:acSingleFrameDeblending]{single frame deblending} will split \hyperref[sec:spFootprints]{Footprints} with multiple peaks into deblend families.
-\item \hyperref[sec:acDiffImMeasurement]{ Measure sources} on the DIAImage including \hyperref[sec:acDipoleModels]{dipole models}. The specific algorithms used for measurement of DIASources will depend on whether the CalExp image was preconvolved.
-\item \hyperref[sec:acSpuriousnessAlgorithms]{Spuriousness algorithms} also known as ``real-bogus'' may have to be applied at this time dependent on the number of false positives. DIASources classified as spurious at this stage may not be persisted (dependent on the density of the false positives)
-\item \hyperref[sec:acDIAObjectGeneration]{Source association} will be undertaken for all DIASources. Matching will be to DIAObjects, Objects, and the propagated positions of SSObjects. Positions for DIAObjects will be based on a a time windowed average of the DIASources that make up the DIAObject. A probabilistic association will need to account for one-to-many and many-to-one associations. It may be necessary to generate joint associations across all DIAObjects (and associated DIASources) in the local  vicinity of a DIASource to correct for mis-assignment from previous observations. All unassociated DIASources will instantiate a new DIAObject
-\item \hyperref[sec:acForcedMeasurement]{Forced measurement} will be run for all DIAObjects on the DIAImage
-
+\item Association of the DIASources with previously detected DIAObjects and SSObjects
+\item Forced measurement for all DIAObjects on the DIAImage
 \end{itemize}
 
 
@@ -283,7 +274,7 @@ Image differencing incorporates the matching of a CalExp to a TemplateCoadd (ast
 \item Match \hyperref[sec:apSourcemeasurement]{DRP} sources for the TemplateCoadd against sources from \hyperref[sec:apSingleFrameProcessing]{SFP} of the raw images 
 \item \hyperref[sec:acWarping]{Warp or resample} the TemplateCoadd to match the astrometry of the CalExp. It is possible that the an operation to astrometrically match the TemplateCoadd and CalExp using faint source will need to be undertaken dependent on the accuracy of the WCS.
 \item For CalExp images with an image quality that is better than the TemplateCoadd preconvolve the CalExp image with the PSF use a  \hyperref[sec:spKernels]{convolution kernel}. This reduces the significance of any deconvolution in the PSF matching.
-\item \hyperref[sec:acDiffImDecorrelation]{Match} the PSF of the CalExp and TemplateCoadd images and construct a spatial model for the matching kernel
+\item \hyperref[sec:acDiffImDecorrelation]{Match} the PSF of the CalExp and TemplateCoadd images and construct a spatial model for the matching kernel. This approach may include matching to a common PSF through \hyperref[sec:acPSFHomogenization]{homogenization} 
 \item Apply the matching kernel and \hyperref[sec:acImageSubtraction]{subtract} the images to generate a DIAImage
 \item \hyperref[sec:acDiffImDecorrelation]{Decorrelate} the DIAImage to reduced the correlations in the noise due to the convolution with the image differencing matching kernel. 
 \item \hyperref[sec:acSourceDetection]{Detect DIAsources} on the DIAImage. Convolution with a detection kernel will depend on whether the CalExp was preconvolved in step 3
