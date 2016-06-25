@@ -488,7 +488,7 @@ Full visit astrometric fitting will be done as a bootstrapping step toward highe
 Sources will be matched, again using a \cite{tabor04} like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for the Von Karman turbulence.
 
 \subsubsection{Joint Multi-Visit}
-\label{sec:acJointAstrometicFit}
+\label{sec:acJointAstrometricFit}
 In the case where there are multiple visits overlapping the same part of the sky, e.g. a patch, we can leverage multiple realizations to beat down the random contribution of the atmosphere to get a better estimate of the optical model and the atmospheric contribution per visit.
 
 The catalogs are stacked and matched using a multi-matching algorithm like OPTICS.  At this point, the measurements can be matched to an external catalog for the purposes of absolute astrometry.  With all measurementss in hand, a multi-component WCS is fit to all measurements at the same time on order to minimize the residual from the mean position for each object.
