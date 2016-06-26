@@ -393,7 +393,7 @@ As discussed in section~\ref{sec:drpStandardJointCal}, this pipeline may require
 \subsection{Coaddition and Difference Imaging}
 \label{sec:drp_coaddition_and_diffim}
 
-The next group of pipelines in a Data Release Production consist of image coaddition and image differencing, which we use to separate the static sky from the dynamic sky in terms of both astrophysical quantities and observational quantities.  This group also includes an iteration between pipelines that combine images and pipelines that subtract the combined images from each exposure.  At each differencing step, we better characterize the features that are unique to a single epoch (whether artifacts, background features, or astrophysical sources); we use these characterizations to ensure the next round of coadds include only features that are common to all epochs.
+The next group of pipelines in a Data Release Production consists of image coaddition and image differencing, which we use to separate the static sky from the dynamic sky in terms of both astrophysical quantities and observational quantities.  This group also includes an iteration between pipelines that combine images and pipelines that subtract the combined images from each exposure.  At each differencing step, we better characterize the features that are unique to a single epoch (whether artifacts, background features, or astrophysical sources); we use these characterizations to ensure the next round of coadds include only features that are common to all epochs.
 
 \begin{figure}
 \centering
@@ -485,7 +485,7 @@ If we are using decorrelated coadds (option \textbf{A}), the output is equivalen
 \end{itemize}
 As with other convolution-and-warping pipelines, it is possible we will instead develop a single algorithmic component to perform both operations.  These operations must include full propogation of uncertainty.
 
-If we are not using decorrelated coadds (\textbf{B1} or \textbf{C1}), the output is equivalent to the MatchedWarp data product, and the algorithm is the same as the \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} pipeline that produces.  We cannot reuse existing MatchedWarps simply because we need to utilize updated CalExps.
+If we are not using decorrelated coadds (\textbf{B1} or \textbf{C1}), the output is equivalent to the MatchedWarp data product, and the algorithm is the same as the \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} pipeline.  We cannot reuse existing MatchedWarps simply because we need to utilize updated CalExps.
 
 If we are inferring templates (\textbf{B2} or \textbf{C2}), this pipeline is only responsible for resampling, producing an output equivalent to the DirectWarp data product produced by the \hyperref[sec:drpWarpRemaining]{WarpRemaining} pipeline.  This work is delegated to the \hyperref[sec:acWarping]{Image Warping} algorithmic component.
 
@@ -531,8 +531,8 @@ Like \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, Updat
 This pipeline is responsible for the full suite of resampled images used to build coadds in \hyperref[sec:drpCoaddRemaining]{CoaddRemaining}, after all CalExp components have been finalized.  It produces some combination of the following data products, depending on the scenario(s) described at the beginning of Section~\ref{sec:drp_coaddition_and_diffim}:
 \begin{description}
 \item[LikelihoodWarp] CalExp images are correlated with their own PSF, then resampled, via the \hyperref[sec:spKernels]{Convolution Kernels} software primitive and the \hyperref[sec:acWarping]{Image Warping} algorithmic component.  LikelihoodWarp is computed in all scenarios, but in option \textbf{C} it may not need to propogate uncertainty beyond the variance, as the resulting coadd will be used only for detection.
-\item[MatchedWarp] As in \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch}, CalExp images are resampled then matched to a common PSF, using \hyperref[sec:acWarping]{Image Warping} and \hyperref[sec:acPSFHomogenization]{PSF Homogenization}.  MatchWarp is only produced in option \textbf{C}.
-\item[DirectWarp] CalExp images are simply resampled, with no further processing of the PSF, using \hyperref[sec:acWarping]{Image Warping}.  MatchWarp is only produced in option \textbf{C}.
+\item[MatchedWarp] As in \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch}, CalExp images are resampled then matched to a common PSF, using \hyperref[sec:acWarping]{Image Warping} and \hyperref[sec:acPSFHomogenization]{PSF Homogenization}.  MatchWarped is only produced in option \textbf{C}.
+\item[DirectWarp] CalExp images are simply resampled, with no further processing of the PSF, using \hyperref[sec:acWarping]{Image Warping}.  DirectWarp is only produced in option \textbf{C}.
 \end{description}
 
 Given that all of these steps involve resampling the image, it would be desirable to do the resampling once up front, and then proceed with the PSF processing.  While this is mathematically possible for all of these cases, it would signficantly complicate the PSF correlation step required for building LikelihoodWarps.
@@ -623,7 +623,7 @@ The output of the MeasureCoadds pipeline is an update to the Object table, which
 
 The two overlap resolution pipelines are together responsible for finalizing the definitions of Objects by merging redundant processing done in tract and patch overlap regions.  In most cases, object definitions in the overlap region will be the same, making the problem trivial, and even when the definitions are different we can frequently resolve the problem using purely geometrical arguments.  However, some difficult cases will remain, mostly relating to blend families that are defined differently on either side.
 
-We currently assume that overlap resolution actually drops Object rows when it merges them; this will avoid redundant processing in the performance critical \hyperref[sec:drpMultiFit]{MultiFit} pipeline.  A slower but perhaps safer alternative would be to simply flag redundant Objects.  This would also allow tract overlap resolution to be moved after the \hyperref[sec:drpMultiFit]{MultiFit} and \hyperref[sec:drpForcedPhotometry]{ForcedPhotometry} pipelines, which would simplify large-scale parallelization and data flow by moving the first operation requiring more than one tract (\hyperref[sec:drpResolveTractOverlaps]{ResolveTractOverlaps} until after all image processing is complete.
+We currently assume that overlap resolution actually drops Object rows when it merges them; this will avoid redundant processing in the performance critical \hyperref[sec:drpMultiFit]{MultiFit} pipeline.  A slower but perhaps safer alternative would be to simply flag redundant Objects.  This would also allow tract overlap resolution to be moved after the \hyperref[sec:drpMultiFit]{MultiFit} and \hyperref[sec:drpForcedPhotometry]{ForcedPhotometry} pipelines, which would simplify large-scale parallelization and data flow by moving the first operation requiring more than one tract (\hyperref[sec:drpResolveTractOverlaps]{ResolveTractOverlaps}) until after all image processing is complete.
 
 \subsubsection{ResolvePatchOverlaps}
 \label{sec:drpResolvePatchOverlaps}
