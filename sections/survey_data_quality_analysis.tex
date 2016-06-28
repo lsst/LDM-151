@@ -269,13 +269,13 @@ If the SDQA system determines that data (whether science or calibration) is defe
 
 A simple example of this is that a calibration is bad, and it needs to be marked as such so that it is not used in further DRP processing (similar to how if a data frame is bad and the compute time should not be wasted processing it further for AP)
 
-A more complex implementation is that a data product previously thought to be good is on further processing or new tests determined to be bad. In this case will be combined with provenance information to mark \em{all} data polluted with the bad frame as bad, and provide sufficient information to the workflow system to allow it to trigger the necessary reprocessing with that data excluded.
+A more complex implementation is that a data product previously thought to be good is on further processing or new tests determined to be bad. In this case will be combined with provenance information to mark \emph{all} data polluted with the bad frame as bad, and provide sufficient information to the workflow system to allow it to trigger the necessary reprocessing with that data excluded.
 
 These are implemented in a manner that is agnostic as to the implementation of the Workflow (e.g., they are values in a database table or API methods that different workflow systems can utilize).
 
 In order to support the interface to the provenance system it would be useful to have some provenance analysis tools, that will allow an operator to query specifically what data went into a particular data product or used a specific data product. These would be very useful to QA but will be provided by the Data Access Services WBS (02C.06).
 
-\em{[@KT - who deals wih the bad data system?]}
+\emph{[@KT - who deals wih the bad data system?]}
 
 \paragraph{Output Interface to Science Pipelines}
 \label{sec:qaOutputInterfaceSciencePipelines}
@@ -340,5 +340,5 @@ While it may be a matter of debate as to how accurate construction-era simulatio
 
 \paragraph{Reference Truth}
 
-\em{[Someone like @Z should sign off on this]} Comm Cam may allow us to early on develop a small library of representative ``reference fields'' (eg at different galactic latitudes or ecliptic planes) to provide a minimal standard dataset against which competing algorithmic approaches can be compared (this is similar to the approach taken in Construction with percursor datasets). There would be made available outside the project too alloweing groups working on alternative algoritms and/or implementations to compare their results with the ``factory'' reductions. Finally, the possibility exists that these reference fields could be unencumbered by proprietary periods so that scientific groups without data rights (and perhaps not even interested in LSST per se) could also utilise them for algorithmic and/or software development.
+\emph{[Someone like @Z should sign off on this]} Comm Cam may allow us to early on develop a small library of representative ``reference fields'' (eg at different galactic latitudes or ecliptic planes) to provide a minimal standard dataset against which competing algorithmic approaches can be compared (this is similar to the approach taken in Construction with percursor datasets). There would be made available outside the project too alloweing groups working on alternative algoritms and/or implementations to compare their results with the ``factory'' reductions. Finally, the possibility exists that these reference fields could be unencumbered by proprietary periods so that scientific groups without data rights (and perhaps not even interested in LSST per se) could also utilise them for algorithmic and/or software development.
 
