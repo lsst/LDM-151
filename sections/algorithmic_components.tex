@@ -46,7 +46,8 @@ In the case of cosmic rays, this implies a very sharp edge.  A natural choice is
 -1 & 4 & -1 \\
 0 & -1 & 0 \end{array} \right)
 \end{align}
-If just used on the native image, this filter would attenuate the signal from CRs that effect multiple adjacent pixels.  So, the image is subsampled by some factor $f_s$.  The before downsampling to the native resolution, the negative pixel values are clamped to zero.  The resultant image in native pixelization will be referred to as $L^+$.
+If just used on the native image, this filter would attenuate the signal from CRs that effect multiple
+adjacent pixels.  So, the image is subsampled by some factor $f_s$.  Before downsampling to the native resolution, the negative pixel values are clamped to zero.  The resultant image in native pixelization will be referred to as $L^+$.
 
 We construct a SNR image by dividing the Laplacian image by the noise in the image and adjusting by the subsampling factor.
 \[
@@ -57,21 +58,28 @@ This CR detection image can be cleaned further by removing extended sources usin
 \[
 S^\prime = (S \ast M_5)
 \]
-If the PSF is well sampled, this SNR image can be used to detect the CRs by simply drawing a threshold in SNR.  If the PSF is undersampled, the author uses the assumption that undersampled point sources are more symmetric than CRs.  By constructing a "fine-structure" image, one can plase a minimum contrast between the Laplacian image and the fine structure image that further improves differentiation between CRs and point sources.
+If the PSF is well sampled, this SNR image can be used to detect the CRs by simply drawing a threshold in SNR.
+If the PSF is undersampled, the author uses the assumption that undersampled point sources are more symmetric
+than CRs.  By constructing a "fine-structure" image, one can place a minimum contrast between the Laplacian image and the fine structure image that further improves differentiation between CRs and point sources.
 \[
 F = (M_3 \ast I) - [(M_3 \ast I) \ast M_7]
 \]
 
-So the final CR selection criteria are: $S^\prime > \sigma_{lim}$ and $L^+/F > F_{lim}$.  The tuning parameters are: $f_s$ the subsampling rate, $\sigma_{lim}$ the SNR of the CRs in the detection image, $f_{lim}$ the minimum contrast relative to the "fine-structure" image.
+So the final CR selection criteria are: $S^\prime > \sigma_{lim}$ and $L^+/F > F_{lim}$.  The tuning
+parameters are: $f_s$ the subsampling rate, $\sigma_{lim}$ the SNR of the CRs in the detection image,
+$f_{lim}$ the minimum contrast relative to the "fine-structure" image. Assuming reasonable values for optical
+images, we will define a set of default values.
 
 \begin{note}[Add to SFM section]
 We can use something like L.A.COSMIC (or CRBLASTER) but if it is too slow, we can fall back to the SDSS algorithm which does a similar thing, but does no convolutions.
 We should also consider why we do not use a Canny algorithm instead.
 \end{note}
 \paragraph{Optical ghosts}
-We will have a set of optical ghost models.  Some of these will be models of stationary ghosts (e.g. pupil ghost). Others will be a set of ghosts produced by point sources as a function of source position and brightness. The latter will likely be modeled using tools like ZEMAX or measured using projectors.
+We will have a set of optical ghost models.  Some of these will be models of stationary ghosts (e.g. pupil
+ghost). Others will be a set of ghosts produced by point sources as a function of source position and
+brightness. The structure of the stationary ghosts can be measured using stacked, dithered star fields.  The latter will likely be modeled using raytracing tools or measured using projectors.
 
-The stationary ghosts will need to be fit for since they will depend on the total light through the pupil rather than on the brightness of a given source and we do not expect to have the data necessary to compute the total flux over the focalplane in a single thread in the alert production processing.  Using the fit to stationary models $S$ and the predictions of the single source ghosts, $P$, we will constructy a ghost image
+The stationary ghosts will need to be fit for since they will depend on the total light through the pupil rather than on the brightness of a given source and we do not expect to have the data necessary to compute the total flux over the focalplane in a single thread in the alert production processing.  Using the fit to stationary models $S$ and the predictions of the single source ghosts, $P$, we will construct a ghost image
 \[
 I_g = \Sigma_i S_i + \sigma_j P_{j}
 \]
@@ -79,6 +87,12 @@ where $i$ runs over the stationary ghost models and $j$ runs over the sources co
 \[
 I^\prime = I - I_g
 \]
+
+\begin{note}[Point source ghosting]
+It may not be possible to do point source ghost correction in alert production.  We will know the model of the
+point source ghosts, but we will not know the location of the bright sources in other chips.  Since point
+source ghosts can appear at significant separations, this may be a source of spurious detections.
+\end{note}
 
 \begin{note}[dependence on PSF]
 The CR rejection algorithm does not depend on the PSF of the image.  The single source ghosts may be a function of the PSF, but not very strongly I don't think.
@@ -90,11 +104,19 @@ Satellite trails, out of focus airplanes, and meteors all cause long linear feat
 
 This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.  
 
-An algorithm that takes care of both of these issues is presented in \cite{borncamp_lim16}.  We will use this as our baseline.  First the image is rescaled to bring out faint features.  Next an edge detectionalgorithm is run on the image.  The reference implementation uses a Canny algorithm \citep{canny86}.  This algorithm produces a set of edges that can then be mined for linear features.  They use a probababalistic Hough Transforms \citep{galambos99} to cut down on computational costs.  The probabalistic version limits the number of pixels that vote.  This results in a list of line segments.  The segments are binned in angle and any sement that is outside some tolorance of the mode is culled.  This cleaned set of segments is fed to the masking algorithm.
+An algorithm that takes care of both of these issues is presented in \cite{borncamp_lim16}.  We will use this
+as our baseline.  First the image is rescaled to maximize the contrast of faint linear features.  Next an edge detection algorithm is run on the image.  The reference implementation uses a Canny algorithm \citep{canny86}.  This algorithm produces a set of edges that can then be mined for linear features.  They use a probababalistic Hough Transforms \citep{galambos99} to cut down on computational costs.  The probabalistic version limits the number of pixels that vote.  This results in a list of line segments.  The segments are binned in angle and any sement that is outside some tolorance of the mode is culled.  This cleaned set of segments is fed to the masking algorithm.
 
 The masking algorithm traverses each line segment found in the previous step by selecting a subregion around the segment and flattening the subregion.  A weighted mean of the subregion is computed and any pixels above some threshold are considered part of the trail and masked.  The subregion is moved along the segment until the end is reached.  This is repeated for every segment.
 
-One of the assumptions of the algorithm is that the trail crosses the whole image.  I don't think we want to make that assumption.  I also don't know why they run a Canny algorithm first and then do a Hough Transform.  I guess it does the same sort of regularization that Steve tried to do with his moments.
+\begin{note}[Outstanding questions]
+\begin{itemize}
+\item Is the rescaling to improve linear feature contrast necessary?
+\item Can we relax the requirement that the trail spans the image?
+\item Is the Canny algorithm step actually necessary, i.e. can we run a Hough directly on the detected pixels?
+\item Can we use the fact that we have access to aircraft transponders to remove some plane trails?
+\end{itemize}
+\end{note}
 
 \begin{note}[Bickerton writeup]
 Note that there is a writeup by Steve Bickerton on a different way to modify the Hough Transform to find satelite trails and it has been tried on HSC, but the paper is not complete.  Thus, I didn't use it as the baseline here.  The writeup is linked from DM-5872.
@@ -102,13 +124,15 @@ Note that there is a writeup by Steve Bickerton on a different way to modify the
 
 \subsubsection{Snap Subtraction}
 \label{sec:acSnapSubtraction}
-\paragraph{Improvements by using multiple snaps}
+\paragraph{Improvements by using multiple snaps}~\\
 {\bf Cosmic Rays}
 We will need to still run some sort of topological identifier like the one outlined above.  This is because there will be real transients and we still only want to pick out the sharp features as CRs.  It will help to have less crowding, so we should do CR rejection on the snap difference if we have it.
 
+\noindent
 {\bf Ghosts}
 Snap differences will not help with ghosting as the ghosts should difference almost perfectly.
 
+\noindent
 {\bf Linear features}
 Snap differences will provide significant leverage for masking linear features.  Since each segment will appear in at most one snap we can mask based on the pixels marked as detected in the difference images that are part of the trail.  This will help in crowded regions.  This technique will require running some sort of trail detection algorithm, but the requirements will be less stringent since the image will be so much less crowded.
 
@@ -316,11 +340,13 @@ Add references to specific AP pipelines that will use forced measurement.
 
 Arising primarily due to slight astrometric alignment or PSF matching errors between the two images, or effects such as differential chromatic aberration, flux “dipoles” are a common artifact often observed in image differences. These dipoles will lead to false detections of transients unless correctly identified and eliminated. Importantly, dipoles will also be observed in image differences in which a source as moved less than the width of the PSF. Such objects must be correctly identified and measured as dipoles in order to obtain accurate fluxes and positions of these objects. 
 
-Putative dipoles in image differences are identified as a positive and negative source whose footprints overlap by at least one pixel. These overlapping footprints are merged, and only the sources containing one and only one positive and negative merged footprint are passed to the dipole modeling task. There is a documented degeneracy (\url{http://dmtn-007.lsst.io}) between dipole separation and flux, such that dipoles with closely-separated lobes of high flux are statistically indistinguishable from ones with low flux and wider separations. We remove this degeneracy by using the {\em pre-subtracted images} (i.e., the warped, PSF-matched template image and the pre-convolved science image) to constrain the lobe positions (specifically, to constrain the centroid of the positive lobe in the science image and of the negative lobe in the template image). This is done by first fitting and subtracting a second-order 2-D polynomial to the background within a subimage surrounding each lobe footprint in the pre-subtracted images to remove any flux from background galaxies (we assume that this gradient, if it exists, is identical in both pre-subtracted images). Then, a dipole model is fit simultaneously to the background-subtracted pre-subtracted images and the image difference. 
+Putative dipoles in image differences are identified as a positive and negative source whose footprints overlap by at least one pixel. These overlapping footprints are merged, and only the sources containing one and only one positive and negative merged footprint are passed to the dipole modeling task. There is a documented degeneracy (\url{http://dmtn-007.lsst.io}) between dipole separation and flux, such that dipoles with closely-separated lobes of high flux are statistically indistinguishable from ones with low flux and wider separations. We remove this degeneracy by using the {\em pre-subtraction images} (i.e., the warped, PSF-matched template image and the pre-convolved science image) to constrain the lobe positions (specifically, to constrain the centroid of the positive lobe in the science image and of the negative lobe in the template image). This is done by first fitting and subtracting a second-order 2-D polynomial to the background within a subimage surrounding each lobe footprint in the pre-subtraction images to remove any flux from background galaxies (we assume that this gradient, if it exists, is identical in both pre-subtraction images). Then, a dipole model is fit simultaneously to the background-subtracted pre-subtraction images and the image difference. 
 
 The dipole model consists of positive and negative instances of the PSF in the difference image at the dipole's location. The six dipole model parameters (positive and negative lobe centroids and fluxes) are estimated using non-linear weighted least-squares minimization (we currently use the Levenberg-Marquardt minimization algorithm). The resulting reduced $\chi^2$ and signal-to-noise estimates provide a measure by which the source(s) may be classified as a dipole. 
 
-We have tested the described dipole measurement algorithm on simulated dipoles with a variety of fluxes, separations, background gradients, and signal-to-noise. Including the pre-subtracted image data clearly improves the accuracy of the measured fluxes and centroids. We have yet to thoroughly assess the dipole measurement algorithm performance on crowded stellar fields. Such crowded fields may confuse the parameter estimates (both centroids and/or fluxes) when using the pre-subtracted images to constrain the fitting procedure, and in such situations, we may have to adjust the prior constraint which they impose. 
+We have tested the described dipole measurement algorithm on simulated dipoles with a variety of fluxes, separations, background gradients, and signal-to-noise. Including the pre-subtraction image data clearly improves the accuracy of the measured fluxes and centroids. We have yet to thoroughly assess the dipole measurement algorithm performance on crowded stellar fields. Such crowded fields may confuse the parameter estimates (both centroids and/or fluxes) when using the pre-subtraction images to constrain the fitting procedure, and in such situations, we may have to adjust the prior constraint which they impose.
+
+Note that deblending dipole sources is a complicated process and we do not intend on implementing such an algorithm.  As with all fitting algorithms, speed may be a concern.  We will optimize the dipole measurement for speed.
 
 \paragraph{Spuriousness}
 \label{sec:acSpuriousnessAlgorithms}
@@ -352,11 +378,11 @@ In many areas we will need to represent spatial models.  This will include model
 \subsection{Background Estimation}
 \label{sec:acBackgroundEstimation}
 
-Background estimation will be done on the largest scale feasible first.  In the case of Alert Production, this may be on the size of a chip.  In DRP, we expect this to be on a full focalplane.  An initial low order estimate will be made on a large scale.  Each chip will be divided into subregions.  For each subregion, the median of the non-masked pixels will be computed.  All values for all chips will be fit by an appropriate function (see \S \ref{sec:acSpatialModels}).  This will provide a low order background estimation in focal plance coordinates.  Note that this can only be done if the instrument signature removal is very high fidelity.  Any sharp discontinuity could cause problems with fitting a smooth function.
+Background estimation will be done on the largest scale feasible first.  In the case of Alert Production, this may be on the size of a chip.  In DRP, we expect this to be on a full focalplane.  An initial low order estimate will be made on a large scale.  Each chip will be divided into subregions.  For each subregion, a robust average of the non-masked pixels will be computed.  All values for all chips will be fit by an appropriate function (see \S \ref{sec:acSpatialModels}).  This will provide a low order background estimation in focal plance coordinates.  Note that this can only be done if the instrument signature removal is very high fidelity.  Any sharp discontinuity could cause problems with fitting a smooth function.
 
 A higher order background model can be computed per chip.  First, the low order background is subtracted from the image.  The non-masked pixels will again be binned on a finer grid avoiding bright objects.  The median in each bin is fit by an appropriate function.  In practice, this process will likely be iterative.
 
-In the case of Alert Production, there will be no full focalplane model since we expect to process only a single chip in each thread.  In this case, we constrain the background with the available un-masked pixels without removing a global background first.  Note that image differencing is still possible even in the scenario where there are no unmasked pixels in the science image.  The background can be modeled as a part of the PSF matching process.  We will want to do background modeling and subtraction in Alert Production when possible because we will want to do calibrated photometry.  Even though these measurements are not persisted for science us, they will be very useful for debugging and QA.
+In the case of Alert Production, there will be no full focalplane model since we expect to process only a single chip in each thread.  In this case, we constrain the background with the available un-masked pixels without removing a global background first.  Note that image differencing is still possible even in the scenario where there are no unmasked pixels in the science image.  The background can be modeled as a part of the PSF matching process.  We will want to do background modeling and subtraction in Alert Production when possible because we will want to do calibrated photometry.  Even though these measurements are not persisted for science use, they will be very useful for debugging and QA.
 
 If there are so few un-masked pixels in the entire focalplane that even a low order global background is impossible to model, we will not compute a background model.  Instead, we will do crowded field photometry only \ref{????}
 
@@ -369,20 +395,24 @@ I didn't explicitly talk about composition of background models, but this takes 
 \label{sec:acBuildBackgroundReference}
 AUTHOR: Simon
 \subsubsection{Patch Level}
-Background-matching each \texttt{CoaddTempExp} (CTE) to a reference exposure performs comparably to fitting
+Background-matching each \texttt{CoaddTempExp} to a reference exposure performs comparably to fitting
 the offsets to the N(N-1)/2 difference images, however the co-add quality will depend on the quality of the
-reference image.  Choosing a reference image on a per-patch basis is as simple as choosing the CTE that
-maximizes both coverage and the SNR of the sky background. Coverage is defined as the fraction of non-NaN
-pixels in the CTE. NaN pixels arise in CTEs because of gaps between the chips and edges of the visit focal
+reference image.  Choosing a reference image on a per-patch basis is as simple as choosing the \texttt{CoaddTempExp} that
+maximizes coverage and is the highest weighted component in the chosen weighting scheme: e.g. minimum variance, optimum point source SNR. 
+
+Coverage is defined as the fraction of non-NaN
+pixels in the \texttt{CoaddTempExp}. NaN pixels arise in \texttt{CoaddTempExp}s because of gaps between the chips and edges of the visit focal
 planes.  The camera design specifications indicate a 90\% fill factor, and thus approximately 10\% of pixels
-will be NaN due to chip gaps.  The SNR of the background can be estimated from either the CTEs themselves,
+will be NaN due to chip gaps.  The SNR of the background can be estimated from either the \texttt{CoaddTempExp}s themselves,
 using the variance plane of pixels without the source detection bit mask flagged, or from calibration
-statistics such as the zero point (a proxy for transparency).  In the limiting case that all CTEs have the
+statistics such as the zero point (a proxy for transparency).  In the limiting case that all \texttt{CoaddTempExp}s have the
 same coverage, finding the best reference image reduces to the problem of weighting epochs in co-addition.
-For example, the reference image that minimizes the variance in the co-add is the minimum variance CTE, and
-the reference image that maximizes SNR in coadd point source measurements is the CTE with the maximum
-$T_i/{\rm FWHM}^2_i \sigma^2_i$\footnote{to the first order. Don't want to start a fight here}, where $T_i$ is
-the transparency,  and $\sigma^2_i$ the average variance of the pre-scaled exposure.  By combining one of
+
+For example, the reference image that minimizes the variance in the co-add is the minimum variance \texttt{CoaddTempExp}, and
+the reference image that maximizes SNR in coadd point source measurements is the \texttt{CoaddTempExp} with the maximum
+$T^2_i/{\rm FWHM}^2_i \sigma^2_i$, where $T_i$ is
+the normalization factor necessary to put the input \texttt{CoaddTempExp}s on the same photometric system (a proxy for the atmospheric transparency),
+and $\sigma^2_i$ the average variance of the pre-scaled exposure.  By combining one of
 these statistics with coverage, we can construct an objective/cost function that relates the importance of
 coverage and sky-background, and can select a visit that minimizes that quantity objective function.
 
@@ -393,8 +423,8 @@ overlapping images have been well established \citep[e.g.][]{Sick2013, Berriman2
 applying additive scalar or sloping offsets to calexps, we can generate a tract-sized reference image.
 Algorithms for selecting visits to construct these fall on a spectrum of computational expense. On the less
 expensive side is a greedy algorithm which starts with a ``best'' (as defined above) visit chosen at the
-center of the tract.  Visits can be chosen, scaled, and added one by one in the vicinity, moving outwards.  A
-another option is to choose a small set of visits that completely cover a tract without gaps, which can be
+center of the tract.  Visits can be chosen, scaled, and added one by one in the vicinity, moving outwards.
+Another option is to choose a small set of visits that completely cover a tract without gaps, which can b
 cast as a constrained convex optimization problem\footnote{probably}, and mosaic them using standard
 mosaicking techniques.  Finally, the most expensive option would use all the visits to simultaneously tie the
 visits together using all overlaps while background matching.
@@ -422,7 +452,7 @@ where $\Psi_n$ is the $n^{th}$ basis function, and $c_n$ is the coefficient for 
 The order of the spatial model cannot excede number of PSF exemplars in the frame.  If there is only a single PSF candidate star, we will assume the PSF is constant across the CCD.  In the case of no PSF candidate stars, we will assume a double Gaussian PSF with width set by observation metadata: e.g. FWHM from the guiding system.
 
 \begin{note}[Do we need something more complex?]
-We can get arbitrarily complex, but I don't thinkn we need a more complex system in the baseline until we show this won't work.
+We can get arbitrarily complex, but I don't thinkn we need a more complex system in the baseline until we show this won't work.  Some have considered using Gaussian process regression for this, but I don't know that anyone has formalized that.
 \end{note}
 
 \subsection{Wavefront Sensor PSF Estimation}
@@ -468,14 +498,13 @@ AUTHOR: Jim
 
 \subsection{Astrometric Fitting}
 \label{sec:acAstrometricFitting}
-AUTHOR: Simon
 \subsubsection{Single CCD}
 \label{sec:acSingleCCDAstrometricFit}
 Used by AP, probably (RHL worries we might need full-visit)
 
-AP will need to do reasonably good astrometeric calibration on single frames in order to do the relative warping between the template and science images.  We will use the internal reference catalog used in DRP as the reference catalog.  This will be based on astrometry from an external source and will be extended using high quality measurements on coadds from DRP.
+AP will need to do reasonably good astrometeric calibration on single frames in order to do the relative warping between the template and science images.  We have seen that the kernel matching algorithm can take out bulk astrometric errors up to a significan fraction of a pixel.  However, we would like to avoid making the kernel matching deal with astrometric errors.  Astrometric errors between the science and template coordinate systems should be less than 15mas.  We will use the internal reference catalog used in DRP as the reference catalog.  This will be based on astrometry from an external source and will be extended using high quality measurements on coadds from DRP.
 
-We will use a matching algorithm like that outlined in \cite{tabur04}.  Once we match, a 2D polynomial solution will be fit to minimize the residual.
+We can project the per-chip coordinates into a flat (Gnomonic) projection in the focalplane.  This will take out the bulk of the optical distortion.  Next, we will use a matching algorithm like that outlined in \cite{tabur04}.  Once we match, a 2D polynomial solution will be fit to minimize the residual.
 
 \begin{note}[Dependency]
 This introduces a dependency on DRP's internal reference catalog not capture elsewhere.
@@ -491,7 +520,7 @@ Sources will be matched, again using a \cite{tabor04} like algorithm.  Once the 
 \label{sec:acJointAstrometicFit}
 In the case where there are multiple visits overlapping the same part of the sky, e.g. a patch, we can leverage multiple realizations to beat down the random contribution of the atmosphere to get a better estimate of the optical model and the atmospheric contribution per visit.
 
-The catalogs are stacked and matched using a multi-matching algorithm like OPTICS.  At this point, the measurements can be matched to an external catalog for the purposes of absolute astrometry.  With all measurementss in hand, a multi-component WCS is fit to all measurements at the same time on order to minimize the residual from the mean position for each object.
+The catalogs are stacked and matched using a multi-matching algorithm like OPTICS.  At this point, the measurements can be matched to an external catalog for the purposes of absolute astrometry.  With all measurements in hand, a multi-component WCS is fit to all measurements at the same time on order to minimize the residual from the mean position for each object.
 
 \subsection{Photometric Fitting}
 \label{sec:acPhotometricFitting}
@@ -528,7 +557,7 @@ m_{ij} = m_i + z_j
 \end{equation}
 where $m_{ij}$ is an observed magnitude of star with true magnitude $m_i$ on observation $j$.  While it is possible to include more terms (say, fit out flat-fielding errors at the same time), more terms makes it much harder to solve in parallel.  Additional terms also make it easy to make the problem degenerate and it can slow the ubercal algorithm down rapidly. Naively, solving Equation~\ref{eq:uber} would involve simply computing the psudo-inverse of the sparse $m_{ij}$ matrix. Unfortunately, the inverse of a large sparse matrix is a large dense matrix.  Thus one must use iterative solvers such as the LSQR algorithm (a conjugate gradient-type solver) to find the best-fitting values of $m_i$ and $z_j$.  
 
-This method leaves a "floating zeropoint" in the solution (if you add X to all the $m_i$'s, and -X to all the $z_j$'s the solution is the same).  If one solves regions of the sky independently, then the floating zeropoints of each region (say a HEALpixel) need to be matched:
+This method leaves a ``floating zeropoint" in the solution (if you add X to all the $m_i$'s, and -X to all the $z_j$'s the solution is the same).  If one solves regions of the sky independently, then the floating zeropoints of each region (say a HEALpixel) need to be matched:
 \begin{equation}
 p_{ij} = p_i + HP_j
 \end{equation}
@@ -545,7 +574,7 @@ After solving for all the magnitudes, and merging all the patch zeropoints, ther
 \label{sec:acRetrieveTemplate}
 In difference imaging a major contributor to the quality of the difference image is the choice of template.  We expect that the DRP template generation algorithm will be quite complex.  It will potentially involve synthesizing multiple monochromatic templates that will be used to model the effects of DCR.
 
-Ideally, the retrieval will be to select the correct bounding box from the correct master template for the current observation.  If not, we expect the template generation algorithm will provide an algorithm to interpret the templates.
+Ideally, the retrieval will be to select the correct bounding box from the correct master template for the current observation.  In the simplest implementation, we would build reference templates on a grid of hour angle and positions.  If we need a more complicated algorithm for generating reference templates, we expect the template generation algorithm will provide an algorithm to interpret the templates.
 
 \subsection{PSF Matching}
 \label{sec:acPSFMatching}
@@ -570,7 +599,7 @@ a_{i}  & = & M^{-1}_{ij} b_{j}. \nonumber
 \end{eqnarray}
 %
 \noindent
-$\sigma^2(x,y)$ is the per--pixel variance stored in the {\tt   variance} plane of each LSST {\tt exposure}. To generate a spatially varying model for the kernel, we further decompose the relative weights of the basis coefficients $a_i$ into spatially-varying low-order polynomials, i.e. $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$. We also allow for a spatially-varying differential background between the two images $b(x,y)$ that may be fit for using a low--order polynomial \citep{Alard98,Alard00}. The image difference is then $D(x,y) = S(x,y) - T(x,y) \otimes \kappa(u,v;x,y) - b(x,y)$. 
+$\sigma^2(x,y)$ is the per--pixel variance stored in the {\tt   variance} plane of each LSST {\tt exposure}. To generate a spatially varying model for the kernel, we further decompose the relative weights of the basis coefficients $a_i$ into spatially-varying low-order polynomials, i.e. $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$. We also allow for a spatially-varying differential background between the two images $b(x,y)$ that may be fit for using a low--order polynomial \citep{Alard98,Alard00}. The image difference is then $D(x,y) = S(x,y) - T(x,y) \otimes \kappa(u,v;x,y) - b(x,y)$.  There are many choices of baisis functions, e.g. regularized delta functions.  However, the basic algoirthm remains unchanged. 
 
 The basis functions $\kappa_i(u,v)$ are a degree of freedom in this problem. Following \citep{Alard98}, we use a set of $\rm nGauss = 3$ Gaussians, each with a different width $\sigma_i$, and each modified by a Laguerre polynomial to a given order (see below). Following more recent studies studies \citep[e.g.][]{Israel07}, we parameterize these different Gaussian widths via a single ratio $\beta$, such that $\sigma_{i+1} = \beta \times \sigma_{i}$ with $\beta = 2.0$. (We note that all constants are defined by {\tt Config} variables and may be adjusted on a per-use basis). We set the overall scale for the $\sigma$ by noting that, under the assumption that the PSFs of the images are Gaussian ($\sigma_S$ for the science image and $\sigma_T$ for the template image), the $\sigma_{\kappa}$ of the matching kernel should be simply $\sigma_{\kappa}^2 = \sigma_S^2 - \sigma_T^2$. We use this canonical width for the central Gaussian in the basis sequences (i.e., $\sigma_{i=2} \equiv \sigma_{\kappa}$ when using three Gaussians bases). Each of the three default kernel basis functions are modified by Laguerre polynomials up to order $\rm degGauss = [4, 2,   2]$, respectively. This results in a total number of (non-spatially varying) bases of $\sum_i^{\rm nGauss} ({\rm degGauss}_i+1)\times({\rm   degGauss}_i+2)/2$, or 27 given the aforementioned defaults. 
 
