@@ -98,7 +98,7 @@
 %\newcommand{\calypsoData}[1]{(calypsoProducts: \ref{calypso:#1})}
 \newcommand{\cameraTeam}{\textbf{Camera Team deliverable}\\}
 \newcommand{\TBD}{\textit{T.B.D.}\xspace}
-\newcommand{\XXX}[1]{\textbf{XXX #1}\xspace}
+\newcommand{\XXX}[1]{{{\color{red}\textbf{XXX #1}\xspace}}}
 \makeatletter
 \newcommand{\myLabel}[2]{\def\@currentlabel{#2}\label{#1}}
 \makeatother
@@ -107,12 +107,13 @@
 \newcommand{\rednote}[1]{{\color{red} (#1)}}
 
 \newcommand{\alg}{\\ \textbullet\xspace Algorithmic component: }
-\newcommand{\fefiftyfive}{$^{55}$Fe}
+\newcommand{\fefiftyfive}{$^{55}$Fe\xspace}
 \newcommand{\bfeffect}{``brighter-fatter effect"}
 \newcommand{\auxtelescope}{auxiliary/Calpyso/calibration telescope\xspace}
 \newcommand{\secsymbol}{§}
 \newcommand{\xxx}{{\color{red} xxx}\xspace}
 \newcommand{\dragons}{ {\color{blue} \textbf{\textit{Here be dragons...}}}}
+\newcommand{\mysubitem}{\subitem \textendash\xspace}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -208,23 +209,32 @@ Data Management Applications Design \\
 \section{Glossary}
 
 \begin{description}
+\item[ADU] Analogue Digital Unit, also commonly called DN, the unit of measure of an analogue-to-digital-converter.
+\item[AP] Alert Production
 \item[API] Applications Programming Interface  
 \item[CBP] Collimated Beam Projector
 \item[CCOB] Camera Calibration Optical Bench
+\item[CPP] Calibration Products Pipeline
+\item[CR] Cosmic Ray, strictly speaking, a cosmic ray \emph{muon}, but in the context of ISR, used to collectively refer to any tracks caused by subatomic particles or nuclear interactions.
 \item[CTE] Charge Transfer Efficiency
+\item[CTI] Charge Transfer Inefficiency; $1 - \textrm{CTE}$
 \item[DAC] Data Access Center
 \item[DAQ] Data Acquisition
 \item[DMS] Data Management System
 \item[DR] Data Release.
+\item[DRP] Data Release Production
 \item[EPO] Education and Public Outreach
 \item[Footprint] The set of pixels that contains flux from an object. Footprints of multiple objects may have pixels in common.
 \item[FRS] Functional Requirements Specification
+\item[ISR] Instrument Signature Removal
 \item[MOPS] Moving Object Pipeline System
 \item[OCS] Observatory Control System
 \item[Production] A coordinated set of pipelines
 \item[PFS] Prime Focus Spectrograph. An instrument under development for the Subaru Telescope.
 \item[PSF] Point Spread Function
+\item[PTC] Photon Transfer Curve, method for measuring the gain of a CCD from the variance in a flat-field image.
 \item[QE] Quantum Efficiency
+\item[REB] Readout Electronics Board, the unit of electronics used to readout three CCDs, \ie one third of a raft.
 \item[RGB] Red-Green-Blue image, suitable for color display.
 \item[SDS] Science Array DAQ Subsystem.  The system on the mountain which reads
 out the data from the camera, buffers it as necessary, and supplies it
@@ -232,12 +242,15 @@ to data clients, including the DMS.
 \item[SDQA] Science Data Quality Assessment.
 \item[SNR] Signal-to-Noise Ratio
 \item[SQL] Structured Query Language, the common language for querying relational databases.
+\item[T\&S] Telescope and Site team
 \item[TBD] To Be Determined
+\item[TCS] Telescope Control System
 \item[Visit] A pair of exposures of the same area of the sky taken in immediate
 succession.  A Visit for LSST consists of a 15 second exposure, a 2
 second readout time, and a second 15 second exposure.
 \item[VO] Virtual Observatory
 \item[VOEvent] A VO standard for disseminating information about transient events.
+\item [WBS] Work Breakdown Structure
 \item[WCS] World Coordinate System.  A bidirectional mapping between pixel- and sky-coordinates.
 \end{description}
 
