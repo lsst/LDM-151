@@ -414,7 +414,7 @@ The baseline ordering of these steps is thus \{1,2,3,4,5\}, but \{1,2,4,3,4,5\} 
 
 This pipeline group is responsible for producing the following final data products:
 \begin{description}
-\item[CalExp.\{Image,Background,Mask\}]  See above.
+\item[CalExp]  See above.
 \item[DIAExp] A CCD-level \hyperref[sec:spImagesExposure]{Exposure} that is the difference between the CalExp and a template coadd, in the coordinate system of the CalExp.  It may have the same PSF as the CalExp (if traditional PSF matching is used) or its ownn PSF model (if the difference image is decorrelated after matching).
 \item[DIASource] A \hyperref[sec:spTablesSource]{SourceCatalog} containing sources detected and measured on the DIAExp images.
 \item[ConstantPSFCoadd] A coadd data product (\hyperref[sec:spImagesExposure]{Exposure} or subclass thereof) with a constant, predefined PSF.
@@ -428,16 +428,16 @@ This pipeline group is responsible for producing the following final data produc
 
 The nature of these coadd data products depends critically on whether we are able to develop efficient algorithms for optimal coaddition, and whether these coadds are suitable for difference imaging.  These algorithms are mathematically well-defined but computationally difficult; see \href{http://dmtn-015.lsst.io/en/latest/}{DMTN-15} for more information.  We will refer to the coadds produced by these algorithms as ``decorrelated coadds''; a variant with constant PSF (``constant-PSF partially decorrelated coadd'') is also possible.  This choice is also mixed with the question of how we will correct for differential chromatic refraction in difference imaging; some algorithms for DCR correction involve templates that are the result of inference on input exposures rather than coaddition.  The alternative strategies for using decorrelated coadds yield five main scenarios:
 \begin{description}
-  \item[A] We use decorrelated coadds for all final coadd products.  DeepCoadd and ShortPeriodCoadd will be standard decorrelated coadds with a spatially-varying PSF, and ConstantPSFCoadd and TemplateCoadd will be constant-PSF partially-decorrelated coadds.  The BestSeeingCoadd data product will be dropped, as it will be redundant with DeepCoadd.  This will make coadds more expensive and complex to build, and require more algorithm development for coaddition, but will improve coadd-based measurements and make it easier to warm-start multi-epoch measurements.  Difference imaging may be easier, and more visits may be usable as inputs to templates due to softened or eliminated seeing cut.
-  \item[B] We use decorrelated coadds for all coadds but TemplateCoadd.  Measurement is still improved, and the additional computational cost of coaddition is limited to a single pipeline that is not run iteratively.  Difference imaging may be harder, and the number of visits eligible for inclusion in templates may be reduced.  In this scenario, we still have two options for building templates:
+  \item[A\label{item:drpA}] We use decorrelated coadds for all final coadd products.  DeepCoadd and ShortPeriodCoadd will be standard decorrelated coadds with a spatially-varying PSF, and ConstantPSFCoadd and TemplateCoadd will be constant-PSF partially-decorrelated coadds.  The BestSeeingCoadd data product will be dropped, as it will be redundant with DeepCoadd.  This will make coadds more expensive and complex to build, and require more algorithm development for coaddition, but will improve coadd-based measurements and make it easier to warm-start multi-epoch measurements.  Difference imaging may be easier, and more visits may be usable as inputs to templates due to softened or eliminated seeing cut.
+  \item[B\label{item:drpB}] We use decorrelated coadds for all coadds but TemplateCoadd.  Measurement is still improved, and the additional computational cost of coaddition is limited to a single pipeline that is not run iteratively.  Difference imaging may be harder, and the number of visits eligible for inclusion in templates may be reduced.  In this scenario, we still have two options for building templates:
   \begin{description}
-    \item[B1] Templates will be built as PSF-matched coadds, or a product of PSF-matched coadds.
-    \item[B2] Templates are the result of inference on resampled exposures with no PSF-matching.
+    \item[B1\label{item:drpB1}] Templates will be built as PSF-matched coadds, or a product of PSF-matched coadds.
+    \item[B2\label{item:drpB2}] Templates are the result of inference on resampled exposures with no PSF-matching.
   \end{description}
-  \item[C] We do not use decorrelated coadds at all.  DeepCoadd, BestSeeingCoadd, and ShortPeriodCoadd will be direct coadds, and ConstantPSFCoadd will be a PSF-matched coadd.  Coaddition will be simpler and faster, but downstream algorithms may require more sophistication, coadd measurements may be lower quality, and multi-epoch measurements may be more difficult to optimize.  Here we again have the same two options for templates as option \textbf{B}:
+  \item[C\label{item:drpC}] We do not use decorrelated coadds at all.  DeepCoadd, BestSeeingCoadd, and ShortPeriodCoadd will be direct coadds, and ConstantPSFCoadd will be a PSF-matched coadd.  Coaddition will be simpler and faster, but downstream algorithms may require more sophistication, coadd measurements may be lower quality, and multi-epoch measurements may be more difficult to optimize.  Here we again have the same two options for templates as option \ref{item:drpB}:
   \begin{description}
-    \item[C1] Templates will be built as PSF-matched coadds, or a product of PSF-matched coadds.
-    \item[C2] Templates are the result of inference on resampled exposures with no PSF-matching.
+    \item[C1\label{item:drpC1}] Templates will be built as PSF-matched coadds, or a product of PSF-matched coadds.
+    \item[C2\label{item:drpC2}] Templates are the result of inference on resampled exposures with no PSF-matching.
   \end{description}
 \end{description}
 It is also possible to combine multiple scenarios across different bands.  In particular, we may not need special templates to handle DCR in most bands, so we may select a simpler approach in those bands.  The final selection between these options will require experiments on LSST data or precursor data with similar DCR and seeing, though decorrelated coaddition algorithms and some approaches to DCR correction may be ruled out earlier if preliminary algorithm development does not go well.
@@ -475,18 +475,18 @@ The outputs of BackgroundMarchAndReject are updated Background and Mask componen
 \subsubsection{WarpTemplates}
 \label{sec:drpWarpTemplates}
 
-This pipeline is responsible for generating the resampled visit-level images (TemplateWarp) used to build template coadds for difference imaging.  The algorithmic content of this pipeline and the nature of its outputs depends on whether we are using decorrelated coadds (option \textbf{A}) at the beginning of \ref{sec:drp_coaddition_and_diffim}), PSF-matched coadds (\textbf{B1} or \textbf{C1}), or inferring templates (\textbf{B2} or \textbf{C2}).
+This pipeline is responsible for generating the resampled visit-level images (TemplateWarp) used to build template coadds for difference imaging.  The algorithmic content of this pipeline and the nature of its outputs depends on whether we are using decorrelated coadds (option \ref{item:drpA} at the beginning of \ref{sec:drp_coaddition_and_diffim}), PSF-matched coadds (\ref{item:drpB1} or \ref{item:drpC1}), or inferring templates (\ref{item:drpB2} or \ref{item:drpC2}).
 
-If we are using decorrelated coadds (option \textbf{A}), the output is equivalent to the LikelihoodWarp data product produced by the \hyperref[sec:drpWarpRemaining]{WarpRemaining} pipeline (aside from differences due to the state of the input CalExps), and the algorithm to produce it the same:
+If we are using decorrelated coadds (option \ref{item:drpA}), the output is equivalent to the LikelihoodWarp data product produced by the \hyperref[sec:drpWarpRemaining]{WarpRemaining} pipeline (aside from differences due to the state of the input CalExps), and the algorithm to produce it the same:
 \begin{itemize}
 \item We correlate the image with its own PSF by delegating to the \hyperref[sec:spKernels]{Convolution Kernels} software primitive.
 \item We resample the image by delegating to the \hyperref[sec:acWarping]{Image Warping} algorithmic component.
 \end{itemize}
 Here we should strongly consider developing a single algorithmic component to perform both operations.  These operations must include full propogation of uncertainty.
 
-If we are not using decorrelated coadds (\textbf{B1} or \textbf{C1}), the output is equivalent to the MatchedWarp data product, and the algorithm is the same as the \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} pipeline.  We cannot reuse existing MatchedWarps simply because we need to utilize updated CalExps.
+If we are not using decorrelated coadds (\ref{item:drpB1} or \ref{item:drpC1}), the output is equivalent to the MatchedWarp data product, and the algorithm is the same as the \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} pipeline.  We cannot reuse existing MatchedWarps simply because we need to utilize updated CalExps.
 
-If we are inferring templates (\textbf{B2} or \textbf{C2}), this pipeline is only responsible for resampling, producing an output equivalent to the DirectWarp data product produced by the \hyperref[sec:drpWarpRemaining]{WarpRemaining} pipeline.  This work is delegated to the \hyperref[sec:acWarping]{Image Warping} algorithmic component.
+If we are inferring templates (\ref{item:drpB2} or \ref{item:drpC2}), this pipeline is only responsible for resampling, producing an output equivalent to the DirectWarp data product produced by the \hyperref[sec:drpWarpRemaining]{WarpRemaining} pipeline.  This work is delegated to the \hyperref[sec:acWarping]{Image Warping} algorithmic component.
 
 \subsubsection{CoaddTemplates}
 \label{sec:drpCoaddTemplates}
@@ -529,9 +529,9 @@ Like \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, Updat
 
 This pipeline is responsible for the full suite of resampled images used to build coadds in \hyperref[sec:drpCoaddRemaining]{CoaddRemaining}, after all CalExp components have been finalized.  It produces some combination of the following data products, depending on the scenario(s) described at the beginning of Section~\ref{sec:drp_coaddition_and_diffim}:
 \begin{description}
-\item[LikelihoodWarp] CalExp images are correlated with their own PSF, then resampled, via the \hyperref[sec:spKernels]{Convolution Kernels} software primitive and the \hyperref[sec:acWarping]{Image Warping} algorithmic component.  LikelihoodWarp is computed in all scenarios, but in option \textbf{C} it may not need to propagate uncertainty beyond the variance, as the resulting coadd will be used only for detection.
-\item[MatchedWarp] As in \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch}, CalExp images are resampled then matched to a common PSF, using \hyperref[sec:acWarping]{Image Warping} and \hyperref[sec:acPSFHomogenization]{PSF Homogenization}.  MatchWarped is only produced in option \textbf{C}.
-\item[DirectWarp] CalExp images are simply resampled, with no further processing of the PSF, using \hyperref[sec:acWarping]{Image Warping}.  DirectWarp is only produced in option \textbf{C}.
+\item[LikelihoodWarp] CalExp images are correlated with their own PSF, then resampled, via the \hyperref[sec:spKernels]{Convolution Kernels} software primitive and the \hyperref[sec:acWarping]{Image Warping} algorithmic component.  LikelihoodWarp is computed in all scenarios, but in option \ref{item:drpC} it may not need to propagate uncertainty beyond the variance, as the resulting coadd will be used only for detection.
+\item[MatchedWarp] As in \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch}, CalExp images are resampled then matched to a common PSF, using \hyperref[sec:acWarping]{Image Warping} and \hyperref[sec:acPSFHomogenization]{PSF Homogenization}.  MatchWarped is only produced in option \ref{item:drpC}.
+\item[DirectWarp] CalExp images are simply resampled, with no further processing of the PSF, using \hyperref[sec:acWarping]{Image Warping}.  DirectWarp is only produced in option \ref{item:drpC}.
 \end{description}
 
 Given that all of these steps involve resampling the image, it would be desirable for computational reasons to do the resampling once up front, and then proceed with the PSF processing.  While this is mathematically possible for all of these cases, it would significantly complicate the PSF correlation step required for building LikelihoodWarps.
