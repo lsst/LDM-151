@@ -160,7 +160,6 @@ AUTHOR: Jim
 \item Detect above-threshold regions and peaks in direct or difference images.
 \item Needs to work on preconvolved and unconvolved images.
 \item May need multi-pass variants: detect bright objects first, then faint; detect with approximate PSF, then improved.
-\item Need to work on wavefront sensors (with out-of-focus PSFs)
 \end{itemize}
 
 \subsection{Deblending}
@@ -182,7 +181,6 @@ Will be especially challenging in crowded fields, but it needs to work in that r
 \begin{itemize}
 \item Generate HeavyFootprint deblends using only a single image.
 \item May need to be able to work with approximate/guess PSF, even in crowded fields, if we need to deblend before PSF estimation in DRP.
-\item May need to work on wavefront sensors (with out-of-focus PSFs)
 \end{itemize}
 
 \subsubsection{Multi-Coadd Deblending}
@@ -202,13 +200,13 @@ AUTHOR: Jim
 \label{fig:measurement-matrix}}
 \end{figure}
 
-\subsubsection{Variants}
+\subsubsection{Drivers}
 Measurement is run in several contexts, but always consists of running an ordered list of algorithm plugins on either individual objects or families thereof.  Each context corresponds to different variant of the measurement driver code, and has a different set of plugin algorithms and approaches to measuring blended objects.
 
 \paragraph{Single Frame Measurement:} Measure a direct single-visit CCD image, assuming deblend information already exists and can be used to replace neighbors with noise (see \ref{sec:acReplaceNeighborsWithNoise}).
 \label{sec:acSingleFrameMeasurement}
 
-Single Frame Measurement is run in both \hyperref[sec:apSingleFrameProcessing]{AP's Single Frame Processing pipeline}) and DRP's \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}, \hyperref[sec:drpRefineImChar]{RefineImChar}, and \hyperref[sec:drpFinalImChar]{FinalImChar}.  It must be capable of running on wavefront sensor images, though this may require different plugin algorithms.
+Single Frame Measurement is run in both \hyperref[sec:apSingleFrameProcessing]{AP's Single Frame Processing pipeline}) and DRP's \hyperref[sec:drpBootstrapImChar]{BootstrapImChar}, \hyperref[sec:drpRefineImChar]{RefineImChar}, and \hyperref[sec:drpFinalImChar]{FinalImChar}.
 
 The driver for Single Frame Measurement is passed an input/output \hyperref[sec:spTablesSource]{SourceCatalog} and an \hyperref[sec:spImagesExposure]{Exposure} to measure.  Plugins take an input/output \hyperref[sec:spTablesSource]{SourceRecord} and an \hyperref[sec:spImagesExposure]{Exposure} containing only the object to be measured.
 
@@ -220,7 +218,7 @@ The driver for Multi-Coadd Measurement is passed an input/output \hyperref[sec:s
 \paragraph{Difference Image Measurement:} Measure a difference image, potentially using the associated direct image as well.  Difference image measurement is run in AP's \hyperref[sec:apAlertDetection]{Alert Detection} pipeline and DRP's \hyperref[sec:drpDiffIm]{DiffIm} pipeline.
 \label{sec:acDiffImMeasurement}
 
-The signatures of difference image measurement's drivers and algorithms are at least somewhat TBD; they will take at least a difference image \hyperref[sec:spImagesExposure]{Exposures} and a \hyperref[sec:spTablesSource]{SourceCatalog/SourceRecord}, but some plugins such as dipole measurement may require access to a direct image as well.  Because difference imaging dramatically reduces blending, difference image measurement may require any approach to blended measurement (though any use of the associated direct image would require deblending).
+The signatures of difference image measurement's drivers and algorithms are at least somewhat TBD; they will take at least a difference image \hyperref[sec:spImagesExposure]{Exposure} and a \hyperref[sec:spTablesSource]{SourceCatalog/SourceRecord}, but some plugins such as dipole measurement may require access to a direct image as well.  Because difference imaging dramatically reduces blending, difference image measurement may not require any approach to blended measurement (though any use of the associated direct image would require deblending).
 
 If preconvolution is used to construct difference images, but they are not subsequently decorrelated, the algorithms run in difference image measurement cannot be implemented in the same way as those run in other measurement variants, and algorithms that cannot be expressed as a PSF-convolved model fit (such as second-moment shapes and all aperture fluxes) either cannot be implemented or require local decorrelation.
 
@@ -236,9 +234,9 @@ Multi-epoch measurement will also be responsible for actually performing forced 
 \paragraph{Forced Measurement:} Measure photometry on an image using positions and shapes from an existing catalog.
 \label{sec:acForcedMeasurement}
 
-In the baseline plan, we assume that forced measurement will only be run on difference images; while forced photometry on direct images will also be performed in DRP, this will be done by multi-epoch measurement.
+In the baseline plan, we assume that forced measurement will only be run on difference images; while forced photometry on direct images will also be performed in DRP, this will be done in the course of multi-epoch measurement.
 
-Because difference imaging reducing blending substantially, forced measurement may not require any special handling of blends.  If it does, simultaneous fitting (with point-source models) should be sufficient.
+Because difference imaging reduces blending substantially, forced measurement may not require any special handling of blends.  If it does, simultaneous fitting (with point-source models) should be sufficient.
 
 The driver for Forced Measurement is passed an input/output \hyperref[sec:spTablesSource]{SourceCatalog}, an additional input \hyperref[sec:spTablesReference]{ReferenceCatalog}, and an \hyperref[sec:spImagesExposure]{Exposure} to measure.  Plugins take an input/output \hyperref[sec:spTablesSource]{SourceRecord}, an input \hyperref[sec:spTablesReference]{ReferenceRecord} and an \hyperref[sec:spImagesExposure]{Exposure}.  If simultaneous fitting is needed to measure blends, plugins will instead receive subsets of the catalogs passed to the driver instead of individual records.
 
@@ -256,7 +254,6 @@ Add references to specific AP pipelines that will use forced measurement.
 \item should be equivalent to PSF model fit for stars
 \item use larger weight function (TBD) for extended objects
 \item need variant that doesn't require a PSF model (or can work with a poor guess) to run before PSF estimation.
-\item need to have a version (possibly the main version) that works on wavefront sensors
 \end{itemize}
 
 \paragraph{Pixel Flag Aggregation}
@@ -268,10 +265,9 @@ Add references to specific AP pipelines that will use forced measurement.
 \paragraph{Second-Moment Shapes}
 \label{sec:acShapeAlgorithms}
 \begin{itemize}
-\item probably adaptive elliptical Gaussian weights, with fall back to unweightd, PSF-weighted, or some fixed Gaussian
+\item probably adaptive elliptical Gaussian weights, with fall back to unweighted, PSF-weighted, or some fixed Gaussian
 \item add regularization for unresolved objects - avoid crazy ellipticities for objects much smaller than PSF
 \item Should also compute moments of PSF model.
-\item Need to have a version (possibly the main version) that works on wavefront sensors to characterize the donut-like out-of-focus sources.
 \end{itemize}
 
 \paragraph{Aperture Photometry}
@@ -281,11 +277,12 @@ Add references to specific AP pipelines that will use forced measurement.
 \item Aperture fluxes are computed by summing the total flux within an elliptical region defined on the image.
 \item Aperture fluxes are computed at a series of logarithmically spaced aperture sizes. Per the \DPDD{}, the total number of apertures will vary depending on the size of the source.
 \item When computing fluxes for small apertures---for configurable values of ``small''--we use $\mathrm{sinc}$ interpolation \cite{Bickerton13}. For large apertures, we use a naive summation of pixel values.
-\item May need to change ellipticity as a function of aperture radius.
+\item Needs to be more clever about measuring bright, saturated stars - maybe measure each annulus in sectors, as in SDSS.  Can then use differences between sectors to measure uncertainties, but care is required when aperture ellipticitiy doens't match source ellipticity.
+\item May need to change ellipticity as a function of aperture radius (tricky to determine any kind of ellipticity robustly).
 \item If run before PSF estimation, will need a variant that does not rely on the PSF model to choose aperture size/ellipticity.
 \end{itemize}
 
-\paragraph{Static Point Source Models}
+\paragraph{Static Point Source Photometry}
 \label{sec:acStaticPointSourceModels}
 \begin{itemize}
 \item Fit PSF model for flux only (hold center fixed at centroid or reference value)
@@ -302,8 +299,9 @@ Add references to specific AP pipelines that will use forced measurement.
 \paragraph{Petrosian Photometry}
 \label{sec:acPetrosianPhotometry}
 \begin{itemize}
-\item Compute Petrosian radius.  Harder than it seems due to need for improvements to splines? (ask RHL)
-\item Compute flux in elliptical aperture at Petrosian radius.
+\item Compute Petrosian radius.
+\item Requires taut splines and more robust measurement of standard elliptical aperture suite.
+\item Compute flux in elliptical aperture at multiple Petrosian radius.
 \end{itemize}
 
 \paragraph{Galaxy Models}
@@ -387,9 +385,14 @@ In the case of Alert Production, there will be no full focalplane model since we
 If there are so few un-masked pixels in the entire focalplane that even a low order global background is impossible to model, background modeling may need to be iterated with a procedure that models and subtracts stars (for example, see the \hyperref[sec:drpBootstrapImChar]{BootstrapImChar pipeline in DRP}).
 
 \begin{note}[Crowded fields and composition]
-Requirements included working in crowded fields.  I think estimating a full focalplane model is the best we can do.  If there are no unmasked pixels in the entire FoV, I don't think there is much we can do.
+Requirements include working in crowded fields.  I think estimating a full focalplane model is the best we can do.  If there are no unmasked pixels in the entire FoV, I don't think there is much we can do.
 I didn't explicitly talk about composition of background models, but this takes that into account by allowing a global model to be subtracted from the single chip image before a higher order model is fit.
 \end{note}
+
+\subsection{Matched Background Estimation}
+\label{sec:acMatchedBackgroundEstimation}
+
+A variant of \hyperref[sec:acBackgroundEstimation]{Background Estimation} for use on difference images produced in \hyperref[sec:drpBackgroundMatchAndReject]{Background Matching}.  This will be able to operate on full visit scales with much less concern for oversubtracting bright objects, which may allow it to use qualitatively different algorithms.  It may also be able to use models specifically designed to subtract specific ghosts or stray light patterns.
 
 \subsection{Build Background Reference}
 \label{sec:acBuildBackgroundReference}
@@ -463,36 +466,27 @@ AUTHOR: Jim
 \item Model can have very few degrees of freedom (very simple optical model + elliptical Moffat/Double-Gaussian?)
 \item Only needs to be good enough to bootstrap PSF model well enough to bootstrap processing of science images (but it needs to work in crowded fields, too).
 \item Being able to go to brighter magnitudes may be important in crowded fields because the shape of the luminosity function may make it easier to find stars with (relatively) significant neighbors.
+\item Assumed to be at least mostly contributed by Systems Engineering.
 \end{itemize}
 
 \subsubsection{Full Visit PSF Estimation}
 \label{sec:acFullVisitPSF}
 AUTHOR: Jim
 \begin{itemize}
-\item Decompose PSF into optical + atmosphere.
-\item May also use wavefront sensors.
+\item Decompose PSF into optical + atmosphere (and maybe sensor).
 \item Constrain model with stars, telemetry, and wavefront data.
 \item Wavelength-dependent.
-\item Used in RefineImChar in DRP.
-\item Must include some approach to dealing with wings of bright stars.
+\item Used in *ImChar in DRP.
+\item Must include some approach to dealing with wings of bright stars (not trivial)
 \end{itemize}
-
-\subsection{Model Spatial Variation of PSF}
-\subsubsection{Within a CCD}
-\label{sec:acModelSpatialPSF}
-
-\begin{itemize}
-\item Estimate PSF at discrete locations using a set of basis functions
-\item Fit interpolation functions to fit coefficients to enable interpolation
-\end{itemize}
-\subsubsection{Over a focal plane -- Do we need this?}
 
 \subsection{Aperture Correction}
 \label{sec:acApCorr}
 AUTHOR: Jim
 \begin{itemize}
 \item Measure curves of growth from bright stars (visit-level, at least in DRP)
-\item Correct various flux measurements to infinite (CCD-level)
+\item Correct various flux measurements to infinite (CCD-level).  Stellar measurements are easy, galaxies are hard (impossible to do formally correctly?).
+\item Probably want sequence of apertures to agree asymptotically?
 \item Propagate uncertainty in aperture correction to corrected fluxes; covariance is tricky.
 \end{itemize}
 
@@ -522,6 +516,8 @@ In the case where there are multiple visits overlapping the same part of the sky
 
 The catalogs are stacked and matched using a multi-matching algorithm like OPTICS.  At this point, the measurements can be matched to an external catalog for the purposes of absolute astrometry.  With all measurements in hand, a multi-component WCS is fit to all measurements at the same time on order to minimize the residual from the mean position for each object.
 
+Joint astrometric fitting must be able to work both with and without an external reference catalog (while only producing relative results in the latter case, of course).
+
 \subsection{Photometric Fitting}
 \label{sec:acPhotometricFitting}
 \subsubsection{Single CCD (for AP)}
@@ -533,9 +529,9 @@ The catalogs are stacked and matched using a multi-matching algorithm like OPTIC
 \subsubsection{Single Visit}
 \label{sec:acSingleVisitPhotometricFit}
 \begin{itemize}
-\item Fit zeropoint (and some small spatial variation?) to all CCDs simultaneously after matching to reference catalog.
+\item Fit zeropoint (and some spatial variation for clouds) to all CCDs simultaneously after matching to reference catalog.
 \item Need for chromatic dependence unclear; probably driven by AP.
-\item Might be possible to use a "nightly zeropoint" if calibration fields are taken (e.g., during twilight)
+\item Might be possible to use a ``nightly zeropoint'' if calibration fields are taken (e.g., during twilight)
 \end{itemize}
 
 
@@ -543,7 +539,7 @@ The catalogs are stacked and matched using a multi-matching algorithm like OPTIC
 \subsubsection{Joint Multi-Visit}
 \label{sec:acJointPhotometricFit}
 
-For DRP, all the observations can be combined in the so-called ubercal procedure to generate the best possible measurement of the relative flux of each source. 
+For DRP, all the observations can be combined in the so-called ubercal procedure to generate the best possible measurement of the relative flux of each source.
 
 \begin{itemize}
 \item Derive SEDs for calibration stars from colors and reference catalog classifications.
@@ -568,7 +564,7 @@ After solving for all the magnitudes, and merging all the patch zeropoints, ther
 
 %It occurs to me that the ubercal problem can be pretty well described with a latex drawing and writing out the matrix that goes with it.  I can work on that if you want.
 
-
+Joint photometric fitting must be able to work both with and without an external reference catalog (while only producing relative results in the latter case, of course).
 
 \subsection{Retrieve Diffim Template for a Visit}
 \label{sec:acRetrieveTemplate}
