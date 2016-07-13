@@ -9,14 +9,30 @@
 \usepackage{graphicx}
 \usepackage{tabularx}
 \usepackage{longtable}
-\usepackage[]{hyperref}
+\usepackage[linkcolor=blue,colorlinks=true]{hyperref}
 \usepackage{comment}
 \usepackage{xspace}
 \usepackage[usenames]{xcolor}
 \usepackage{datetime}
 \usepackage{microtype}
 \usepackage{listings}
+\usepackage{nameref}
 
+% For referencing {description} environment labels,
+% as used in DRP pipeline section.  Taken from
+% http://tex.stackexchange.com/questions/1230/reference-name-of-description-list-item-in-latex
+\makeatletter
+\let\orgdescriptionlabel\descriptionlabel
+\renewcommand*{\descriptionlabel}[1]{%
+  \let\orglabel\label
+  \let\label\@gobble
+  \phantomsection
+  \edef\@currentlabel{#1}%
+  %\edef\@currentlabelname{#1}%
+  \let\label\orglabel
+  \orgdescriptionlabel{#1}%
+}
+\makeatother
 
 \newcommand{\vstretch}[1]{\vspace*{\stretch{#1}}}
 \newcommand{\code}[1]{\texttt{#1}}
