@@ -512,3 +512,33 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item Must support coaddition of PSF models.
 \item May need know its uncertainty, and be able to sample PSF realizations form this.
 \end{itemize}
+
+\subsection{warping}
+\label{sec:spWarp}
+
+We need functions to warp regularly gridded data to a new grid in an arbitrary coordinate system with flux conservation.
+
+\subsection{Fourier Transforms}
+\label{sec:spFourier}
+
+We will need to calculate discrete Fourier transforms on images in both directions.
+
+\subsection{Tools}
+\label{sec:spTools}
+
+{\bf KSK:} When going through the algorithmic components, I noticed many tools we will need.  By tools, I really just mean a well known algorithm that we can apply as a black box to data for a particular purpose. It's possible this should go someplace else.  I'm open to suggestions.
+
+\begin{itemize}
+\item Periodogram -- This will likely also require some sort of data type to hold the periodogram
+\item Hough transform and Canny algorithm -- We may need one or both of these.  We may also need variants on the standard implementation.
+\item Source selectors -- We need classes that know how to apply cuts to a catalog (or potentially do detection) and return the resulting catalog.
+\item Matrix inversion/decomposition -- this is related to linear least squares, but I'm not sure that covers this as we may want sparse matrix functionality
+\item Data discovery -- Simply ask questions like: "What data are at this location in this repository"
+\item Reference catalog representation
+\item Basis set decomposition
+\item Visualization -- Image display (with responsive stretch and scaling), scatter plot, etc.
+\item orbit propagation
+\item orbit prediction
+\item orbit fitting
+\item tree structures -- maybe just having a KD-tree we can use in C++ and Python will be enough
+\end{itemize}
