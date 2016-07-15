@@ -166,7 +166,7 @@ Includes components:
 
 Other notes:
 \begin{itemize}
-\item Want to support constant mask and unvertainty, probably via single-pixel images with zero strides.
+\item Want to support constant mask and uncertainty, probably via single-pixel images with zero strides.
 \item Want NumPy-like view of all three planes.  Probably a new object that implements array interface without inheriting from numpy.ndarray.
 \item Also all requirements of simple images.
 \end{itemize}
@@ -176,7 +176,7 @@ Other notes:
 
 Includes components:
 \begin{description}
-\item[MaskedImage] Image, mask, unvertainty.
+\item[MaskedImage] Image, mask, uncertainty.
 \item[Background] An object describing the background model that was subtracted from the image; the original unsubtracted image can be obtained by adding an image of this model to the Exposure's image plane.  Backgrounds are more complex than merely an image or even an interpolated binned image; background estimation will proceed in several stages, and these stages (which may happen in different coordinate systems) must be combined to form the full background model.
 \item[PSF] A model of the PSF; see \hyperref[sec:spPSF]{PSF}.  This includes a model for aperture corrections.
 \item[WCS] The astrometric solution that related the image's pixel coordinate system to coordinates on the sky; see \hyperref[sec:spWCS]{WCS}.
@@ -270,6 +270,7 @@ All classes need round-trip internal persistence and FITS, ASCII, SQL import/exp
 
 \begin{itemize}
 \item Need basic SQL-WHERE-like query support, at least in Python.
+\item A concrete use case is in for use as source selectors for e.g. PSF candidates.
 \item Could maybe delegate this to Pandas and/or Astropy, use NumPy expressions.
 \item May need to support string expressions (supplied as configuration parameters, for instance).
 \item Actually being able to write SQL could be very nice.  In-memory sqlite back-end?  Some other third-party SQL parser, with our own (numpy-compatible) storage backend?
@@ -523,6 +524,10 @@ We need functions to warp regularly gridded data to a new grid in an arbitrary c
 
 We will need to calculate discrete Fourier transforms on images in both directions.
 
+\subsection{Tree Structures}
+\label{sec:spTrees}
+Maybe just having a KD-tree we can use in C++ and Python will be enough, however we likely will ndeed a C++ accessible version since there are already at least two C++ implementations currently in the stack.
+
 \subsection{Tools}
 \label{sec:spTools}
 
@@ -531,14 +536,10 @@ We will need to calculate discrete Fourier transforms on images in both directio
 \begin{itemize}
 \item Periodogram -- This will likely also require some sort of data type to hold the periodogram
 \item Hough transform and Canny algorithm -- We may need one or both of these.  We may also need variants on the standard implementation.
-\item Source selectors -- We need classes that know how to apply cuts to a catalog (or potentially do detection) and return the resulting catalog.
-\item Matrix inversion/decomposition -- this is related to linear least squares, but I'm not sure that covers this as we may want sparse matrix functionality
-\item Data discovery -- Simply ask questions like: "What data are at this location in this repository"
-\item Reference catalog representation
-\item Basis set decomposition
-\item Visualization -- Image display (with responsive stretch and scaling), scatter plot, etc.
+\item General linear algebra framework including on sparse matrices.
+\item Data discovery -- Simply ask questions like: "What data are at this location in this repository" {\bf this is likely a middleware requirement}
+\item Reference catalog on disk representation for fast localization {\bf this is also most likely a middleware requirement}
 \item orbit propagation
 \item orbit prediction
 \item orbit fitting
-\item tree structures -- maybe just having a KD-tree we can use in C++ and Python will be enough
 \end{itemize}
