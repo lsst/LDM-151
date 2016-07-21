@@ -9,13 +9,13 @@ The work performed in this WBS serves two complementary roles:
 
 \begin{itemize}
   \item{It will enable the production of calibration data products as required by the Level 2 Photometric Calibration Plan (\NewPCP{}) and other planning documents \cite{Lupton15}\footnote{Resolving contradictions between these documents is out of scope here.}. This includes both characterization of the sensitivity of the LSST system (optics, filters and detector) and the transmissivity of the atmosphere.}
-  \item{It will characterize of detector anomalies in such a way that they can be corrected either by the instrument signature removal routines in the Single Frame Processing Pipeline (\wbsSFM) or, if appropriate, elsewhere in the system;}
+  \item{It will characterize of detector anomalies in such a way that they can be corrected either by the ISR routines in the Single Frame Processing Pipeline (\wbsSFM) or, if appropriate, elsewhere in the system;}
   \item{It will manage and provide a catalog of optical ghosts and glints to other parts of the system upon demand.}
 \end{itemize}
 
 \subsubsection{Baseline Design}
 
-\paragraph{Instrumental sensitivity}
+\paragraph{Instrumental Sensitivity}
 
 We expect laboratory measurements of the filter profiles. We further baseline the development of a procedure for measuring the filter response at 1\,nm resolution using the approach described in \cite{Lupton15}.
 
@@ -31,7 +31,7 @@ We baseline the following procedure for creating flat fields:
 
 This WBS is responsible for the development of the data analysis algorithms and software required and the ultimate delivery of the flat fields. Development and commissioning of the CBP itself, together with any other infrastructure required to perform the above procedure, lies outwith Data Management (see 04C.08 \emph{Calibration System}).
 
-\paragraph{Atmospheric transmissivity}
+\paragraph{Atmospheric Transmissivity}
 
 Measurements from the auxiliary instrumentation---to include the 1.2\,m ``Calypso'' telescope, a bore-sight mounted radiometer and satellite-based measurement of atmospheric parameters such as pressure and ozone---will be used to determine the atmospheric absorption along the line of sight to standard stars. The atmospheric transmission will be decomposed into a set of basis functions and interpolated in space in time to any position in the LSST focal plane.
 
@@ -41,7 +41,7 @@ This WBS will construct the atmospheric model, which may be based either on \tex
 
 This WBS will define and develop the routine for fitting the atmospheric model to each exposure from the calibration telescope and providing estimates of the atmospheric transmission at any point in the focal plane upon request.
 
-\paragraph{Detector effects}
+\paragraph{Detector Effects}
 
 An initial cross-talk correction matrix will be determined by laboratory measurements on the Camera Calibration Optical Bench (CCOB). However, to account for possibile instabilities, this WBS will develop an on-telescope method. We baseline this as being based on measurement with the CBP, but we note the alternative approach based on cosmic rays adopted by HSC \cite{Furusawa14}.
 
@@ -75,7 +75,7 @@ Laboratory work required to understand these effects is outwith the scope of thi
   \item{Handle CTE, including when interpolating over bleed trails.}
 \end{itemize}
 
-\paragraph{Ghost catalog}
+\paragraph{Ghost Catalog}
 
 The Calibration Products Pipeline must provide a catalog of optical ghosts and glints which is available for use in other parts of the system. Detailed characterization of ghosts in the LSST system will only be possible when the system is operational. Our baseline design therefore calls for this system to be prototyped using data from precursor instrumentation; we note that ghosts in e.g. HSC are well known and more significant than are expected in LSST.
 
