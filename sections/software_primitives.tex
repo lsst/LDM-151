@@ -13,7 +13,7 @@
 \item All classes have counterpart Spherical classes related to them by WCS transforms.
 \end{itemize}
 
-\subsubsection{Points}
+\subsubsection{Points: UW}
 \label{sec:spCartesianPoints}
 
 \begin{itemize}
@@ -26,7 +26,7 @@
 \item Probably needs augmented version with coordinate system.
 \end{itemize}
 
-\subsubsection{Arrays of Points}
+\subsubsection{Arrays of Points: UW}
 \label{sec:spCartesianPointArrays}
 
 \begin{itemize}
@@ -36,7 +36,7 @@
 \item Should look into what Astropy does here.
 \end{itemize}
 
-\subsubsection{Boxes}
+\subsubsection{Boxes: UW}
 \label{sec:spCartesianBoxes}
 
 \begin{itemize}
@@ -46,7 +46,7 @@
 \item Spherical counterpart is actually \hyperref[sec:spSphericalPolygons]{Spherical Polygon}.
 \end{itemize}
 
-\subsubsection{Polygons}
+\subsubsection{Polygons: UW}
 \label{sec:spCartesianPolygons}
 
 \begin{itemize}
@@ -56,7 +56,7 @@
 \item Needs to support efficient topological operation and predicates with other Polygons, Points, and Boxes (probably not Ellipses).
 \end{itemize}
 
-\subsubsection{Ellipses}
+\subsubsection{Ellipses: Princeton}
 \label{sec:spCartesianEllipses}
 
 \begin{itemize}
@@ -71,7 +71,7 @@
 \end{itemize}
 
 
-\subsubsection{Spherical Geometry}
+\subsection{Spherical Geometry}
 \label{sec:spSphericalGeometry}
 
 The spherical geometry library is a dependency of the database as well as applications, it includes fundamental types that are logically present in database tables (as groups of fields), and some geometry classes are important for spatial indexing.
@@ -84,7 +84,7 @@ The spherical geometry library is a dependency of the database as well as applic
 \item All classes need to be persistable.  Some need to be persistable to individual records (via e.g. FunctorKeys)
 \end{itemize}
 
-\subsubsection{Points}
+\subsubsection{Points: UW}
 \label{sec:spSphericalPoints}
 
 \begin{itemize}
@@ -95,12 +95,12 @@ The spherical geometry library is a dependency of the database as well as applic
 \item Probably needs augmented version with coordinate system.
 \end{itemize}
 
-\subsubsection{Arrays of Points}
+\subsubsection{Arrays of Points: UW}
 \label{sec:spSphericalPointArrays}
 
 Same requirements as \hyperref[sec:spCartesianPointArrays]{Cartesian Arrays of Points}.
 
-\subsubsection{Boxes}
+\subsubsection{Boxes: UW}
 \label{sec:spSphericalBoxes}
 
 \begin{itemize}
@@ -109,7 +109,7 @@ Same requirements as \hyperref[sec:spCartesianPointArrays]{Cartesian Arrays of P
 \item Needs special handling for poles?
 \end{itemize}
 
-\subsubsection{Polygons}
+\subsubsection{Polygons: UW}
 \label{sec:spSphericalPolygons}
 
 \begin{itemize}
@@ -118,7 +118,7 @@ Same requirements as \hyperref[sec:spCartesianPointArrays]{Cartesian Arrays of P
 \item May need to support rasterization to some spherical pixelization scheme (e.g. HTM), but those requirements are probably driven more by database.
 \end{itemize}
 
-\subsubsection{Ellipses}
+\subsubsection{Ellipses: Princeton}
 \label{sec:spSphericalEllipses}
 
 \begin{itemize}
@@ -129,7 +129,7 @@ Same requirements as \hyperref[sec:spCartesianPointArrays]{Cartesian Arrays of P
 \subsection{Images}
 \label{sec:spImages}
 
-\subsubsection{Simple Images}
+\subsubsection{Simple Images: Princeton}
 \label{sec:spImagesSimple}
 
 \begin{itemize}
@@ -140,7 +140,7 @@ Same requirements as \hyperref[sec:spCartesianPointArrays]{Cartesian Arrays of P
 \item Needs FITS import/export in addition to some round-trip internal representation.  May need FITS roundtrip.
 \end{itemize}
 
-\subsubsection{Masks}
+\subsubsection{Masks: Princeton}
 \label{sec:spImagesMasks}
 
 \begin{itemize}
@@ -154,7 +154,7 @@ Same requirements as \hyperref[sec:spCartesianPointArrays]{Cartesian Arrays of P
 \item Also all requirements of simple images.
 \end{itemize}
 
-\subsubsection{MaskedImages}
+\subsubsection{MaskedImages: Princeton}
 \label{sec:spImagesMaskedImages}
 
 Includes components:
@@ -171,7 +171,7 @@ Other notes:
 \item Also all requirements of simple images.
 \end{itemize}
 
-\subsubsection{Exposure}
+\subsubsection{Exposure: Princeton?}
 \label{sec:spImagesExposure}
 
 Includes components:
@@ -196,7 +196,7 @@ Other notes:
 \end{itemize}
 
 
-\subsection{Multi-Type Associative Containers}
+\subsection{Multi-Type Associative Containers: UW?}
 \label{sec:spAssociativeContainers}
 
 \begin{itemize}
@@ -205,7 +205,7 @@ Other notes:
 \item Need a variant that can be used to round-trip FITS headers.
 \end{itemize}
 
-\subsection{Tables}
+\subsection{Tables: Princeton}
 \label{sec:spTables}
 
 All classes need round-trip internal persistence and FITS, ASCII, SQL import/export.
@@ -239,7 +239,7 @@ All classes need round-trip internal persistence and FITS, ASCII, SQL import/exp
 \item Want to be able to store all non-image \hyperref[sec:spImagesExposure]{Exposure} components in a single record.
 \end{itemize}
 
-\subsubsection{AmpInfo}
+\subsubsection{AmpInfo: UW}
 \label{sec:spTablesAmpInfo}
 
 \begin{itemize}
@@ -284,7 +284,7 @@ AUTHOR: MWV
 \end{itemize}
 
 
-\subsection{Footprints}
+\subsection{Footprints: Princeton}
 \label{sec:spFootprints}
 
 All classes need to be persistable (usually as components of larger data structures such as tables or masks).
@@ -352,7 +352,7 @@ All classes need to be persistable (usually as components of larger data structu
 \item Should decompose into operations that just find above-threshold regions (as PixelRegions), operations that just find Peaks within PixelRegions, and a higher-level operation to do both, returning a FootprintSet.
 \end{itemize}
 
-\subsection{Basic Statistics}
+\subsection{Basic Statistics: Princeton}
 \label{sec:spStatistics}
 
 
@@ -364,7 +364,7 @@ All classes need to be persistable (usually as components of larger data structu
 \end{itemize}
 
 
-\subsection{Chromaticity Utilities}
+\subsection{Chromaticity Utilities: UW?}
 \label{sec:spChromaticity}
 
 All classes need to be persistable (usually as components of larger data structures such as tables or camera descriptions).
@@ -398,7 +398,7 @@ All classes need to be persistable (usually as components of larger data structu
 \item Unclear (to jbosch) whether we'll use these at all in LSST production pipelines, but definitely needed for work with precursor data.
 \end{itemize}
 
-\subsection{PhotoCalib}
+\subsection{PhotoCalib: Princeton?}
 \label{sec:spPhotoCalib}
 
 Needs to be persistable (usually as components of larger data structures such as \hyperref[sec:spImagesExposure]{Exposure}).
@@ -413,7 +413,7 @@ Needs to be persistable (usually as components of larger data structures such as
 \end{itemize}
 
 
-\subsection{Convolution Kernels}
+\subsection{Convolution Kernels: Princeton}
 \label{sec:spKernels}
 
 Probably needs to be persistable, but only to ease persistence of higher-level objects that may be built on top of them.
@@ -427,7 +427,7 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item Needs to support approximation on different spatial scales (smoothly varying kernels need not be fully evaluated at every pixel).
 \end{itemize}
 
-\subsection{Coordinate Transformations}
+\subsection{Coordinate Transformations: UW}
 \label{sec:spWCS}
 
 \begin{itemize}
@@ -442,7 +442,7 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \end{itemize}
 
 
-\subsection{Numerical Integration}
+\subsection{Numerical Integration: Princeton}
 \label{sec:spIntegration}
 
 \begin{itemize}
@@ -452,7 +452,7 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \end{itemize}
 
 
-\subsection{Random Number Generation}
+\subsection{Random Number Generation: Princeton}
 \label{sec:spRandomNumbers}
 
 \begin{itemize}
@@ -460,7 +460,7 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item Need to design carefully with parallelization primitives to ensure  deterministic results when running in parallel.
 \end{itemize}
 
-\subsection{Interpolation and Approximation of 2-D Fields}
+\subsection{Interpolation and Approximation of 2-D Fields: UW?}
 \label{sec:spInterpApprox}
 
 \begin{itemize}
@@ -468,7 +468,7 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item Used for at least backgrounds and aperture corrections, maybe PSF modeling, WCS, other things.
 \end{itemize}
 
-\subsection{Common Functions and Source Profiles}
+\subsection{Common Functions and Source Profiles: UW}
 \label{sec:spFunctions}
 
 \begin{itemize}
@@ -476,7 +476,7 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item Maybe delegate to GalSim (would probably require contributing required features to GalSim)?
 \end{itemize}
 
-\subsection{Camera Descriptions}
+\subsection{Camera Descriptions: UW}
 \label{sec:spCameraDescriptions}
 
 \begin{itemize}
@@ -486,7 +486,7 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item Throughput descriptions built on top of \hyperref[sec:spChromaticity]{Chromaticity Utilities}
 \end{itemize}
 
-\subsection{Numerical Optimization}
+\subsection{Numerical Optimization: Princeton}
 \label{sec:spOptimization}
 
 \begin{itemize}
@@ -495,7 +495,7 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item Could invest a lot of effort early in this and do it well; this would retire risk elsewhere.  Or we can do this as-needed and probably spend less effort overall, but may find ourself blocked at inconvenient times by lack of hard-to-implement features.
 \end{itemize}
 
-\subsection{Monte Carlo Sampling}
+\subsection{Monte Carlo Sampling: Princeton}
 \label{sec:spMonte Carlo}
 
 \begin{itemize}
@@ -503,7 +503,7 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item Need adaptive importance sampling from mixture distributions and MCMC chains.
 \end{itemize}
 
-\subsection{Point-Spread Functions}
+\subsection{Point-Spread Functions: UW}
 \label{sec:spPSF}
 
 \begin{itemize}
@@ -514,21 +514,21 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item May need know its uncertainty, and be able to sample PSF realizations form this.
 \end{itemize}
 
-\subsection{warping}
+\subsection{warping: Princeton}
 \label{sec:spWarp}
 
 We need functions to warp regularly gridded data to a new grid in an arbitrary coordinate system with flux conservation.
 
-\subsection{Fourier Transforms}
+\subsection{Fourier Transforms: UW}
 \label{sec:spFourier}
 
 We will need to calculate discrete Fourier transforms on images in both directions.
 
-\subsection{Tree Structures}
+\subsection{Tree Structures: UW}
 \label{sec:spTrees}
 Maybe just having a KD-tree we can use in C++ and Python will be enough, however we likely will ndeed a C++ accessible version since there are already at least two C++ implementations currently in the stack.
 
-\subsection{Tools}
+\subsection{Tools: Both}
 \label{sec:spTools}
 
 {\bf KSK:} When going through the algorithmic components, I noticed many tools we will need.  By tools, I really just mean a well known algorithm that we can apply as a black box to data for a particular purpose. It's possible this should go someplace else.  I'm open to suggestions.

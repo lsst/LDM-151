@@ -1,12 +1,12 @@
 \section{Algorithmic Components}
 \label{sec:algorithmic-components}
 
-\subsection{Reference Catalog Construction}
+\subsection{Reference Catalog Construction: Princeton}
 \label{sec:acReferenceCats}
 
 We will need reference catalogs of various types for all sorts of calibration, characterization and modeling efforts.  We need to write down the process by which we construct these catalogs in DRP.
 
-\subsection{Instrument Signature Removal}
+\subsection{Instrument Signature Removal: UW}
 \label{sec:acISR}
 AUTHOR: Merlin
 \begin{itemize}
@@ -23,21 +23,21 @@ AUTHOR: Merlin
 \item Snap combination
 \end{itemize}
 
-\subsubsection{AP: just skip some steps?}
+\subsubsection{AP: UW}
 AUTHOR: Simon
 \begin{itemize}
 \item Indicate steps to be done by camera
 \item call out other steps that are omitted/modified relative to the DRP version
 \end{itemize}
 
-\subsubsection{DRP: do all the steps}
+\subsubsection{DRP: Princeton}
 AUTHOR: Merlin
 
 
 \subsection{Artifact Detection}
 \label{sec:artifact}
 
-\subsubsection{Single-Exposure Morphology}
+\subsubsection{Single-Exposure Morphology: UW}
 \label{sec:acMorphologicalArtifactDetection}
 \paragraph{Cosmic Ray Identification}
 Cosmic rays will be identified using a Laplacian edge detection algorithm \citep{dokkum01}.  Laplacian edge detection involves convolving the image (I) with a smoothing function (f) tuned to the size of the expected edge width.
@@ -103,7 +103,7 @@ source ghosts can appear at significant separations, this may be a source of spu
 The CR rejection algorithm does not depend on the PSF of the image.  The single source ghosts may be a function of the PSF, but not very strongly I don't think.
 \end{note}
 
-\subsubsection{Single-Exposure Aggregation}
+\subsubsection{Single-Exposure Aggregation: UW}
 \paragraph{Linear feature detection and removal}
 Satellite trails, out of focus airplanes, and meteors all cause long linear features in astronomical images.  The Hough Transform \citep{citation_needed} is a common tool used in computer vison applications to detect linear features.  Linear features are parameterized by $r$, the perpendicular distance to the line from the origin and $\theta$, the the angle of $r$ with the x-axis.  The $(r, \theta)$ space is binned and each pixel in the image adds its flux to all the bins consistent with that pixel location.  For bright linear features, the bin at the true location of the feature will fill up because more than one bright pixel is contributing to that location in parameter space.  After all pixels have been polled, the highest bins correspond to the linear features in the image.
 
@@ -127,7 +127,7 @@ The masking algorithm traverses each line segment found in the previous step by 
 Note that there is a writeup by Steve Bickerton on a different way to modify the Hough Transform to find satelite trails and it has been tried on HSC, but the paper is not complete.  Thus, I didn't use it as the baseline here.  The writeup is linked from DM-5872.
 \end{note}
 
-\subsubsection{Snap Subtraction}
+\subsubsection{Snap Subtraction: UW}
 \label{sec:acSnapSubtraction}
 \paragraph{Improvements by using multiple snaps}~\\
 {\bf Cosmic Rays}
@@ -141,7 +141,7 @@ Snap differences will not help with ghosting as the ghosts should difference alm
 {\bf Linear features}
 Snap differences will provide significant leverage for masking linear features.  Since each segment will appear in at most one snap we can mask based on the pixels marked as detected in the difference images that are part of the trail.  This will help in crowded regions.  This technique will require running some sort of trail detection algorithm, but the requirements will be less stringent since the image will be so much less crowded.
 
-\subsubsection{Warped Image Comparison}
+\subsubsection{Warped Image Comparison: Princeton?}
 \label{sec:acWarpedImageArtifactDetection}
 AUTHOR: Jim
 \begin{itemize}
@@ -149,7 +149,7 @@ AUTHOR: Jim
 \item Find transient astronomical sources we don't want to include in coadds.
 \end{itemize}
 
-\subsection{Artifact Interpolation}
+\subsection{Artifact Interpolation: Princeton?}
 \label{sec:acArtifactInterpolation}
 AUTHOR: Jim
 \begin{itemize}
@@ -158,7 +158,7 @@ AUTHOR: Jim
 \item Uses PSF model as interpolant.
 \end{itemize}
 
-\subsection{Source Detection}
+\subsection{Source Detection: Princeton}
 \label{sec:acSourceDetection}
 AUTHOR: Jim
 \begin{itemize}
@@ -181,20 +181,20 @@ For templates, try:
 
 Will be especially challenging in crowded fields, but it needs to work in that regime as well.
 
-\subsubsection{Single Frame Deblending}
+\subsubsection{Single Frame Deblending: Princeton}
 \label{sec:acSingleFrameDeblending}
 \begin{itemize}
 \item Generate HeavyFootprint deblends using only a single image.
 \item May need to be able to work with approximate/guess PSF, even in crowded fields, if we need to deblend before PSF estimation in DRP.
 \end{itemize}
 
-\subsubsection{Multi-Coadd Deblending}
+\subsubsection{Multi-Coadd Deblending: Princeton}
 \label{sec:acMultiCoaddDeblending}
 \begin{itemize}
 \item Generate consistent HeavyFootprint deblends from coadds over multiple bands and possibly epoch ranges.
 \end{itemize}
 
-\subsection{Measurement}
+\subsection{Measurement: Princeton}
 \label{sec:acMeasurement}
 AUTHOR: Jim
 
@@ -205,7 +205,7 @@ AUTHOR: Jim
 \label{fig:measurement-matrix}}
 \end{figure}
 
-\subsubsection{Drivers}
+\subsubsection{Drivers: Princeton}
 Measurement is run in several contexts, but always consists of running an ordered list of algorithm plugins on either individual objects or families thereof.  Each context corresponds to different variant of the measurement driver code, and has a different set of plugin algorithms and approaches to measuring blended objects.
 
 \paragraph{Single Frame Measurement:} Measure a direct single-visit CCD image, assuming deblend information already exists and can be used to replace neighbors with noise (see \ref{sec:acReplaceNeighborsWithNoise}).
@@ -251,7 +251,7 @@ Forced measurement is used by the DRP \hyperref[sec:drpForcedPhotometry]{ForcedP
 Add references to specific AP pipelines that will use forced measurement.
 \end{note}
 
-\subsubsection{Algorithms}
+\subsubsection{Algorithms: Princeton}
 
 \paragraph{Centroids}
 \label{sec:acCentroidAlgorithms}
@@ -359,7 +359,7 @@ Note that deblending dipole sources is a complicated process and we do not inten
 \item May be augmented by spuriouness measures that aren't purely per-source.
 \end{itemize}
 
-\subsubsection{Blended Measurement}
+\subsubsection{Blended Measurement: UW}
 \label{sec:acBlendedMeasurement}
 \begin{itemize}
 \item Integrate text from blended-measurement doc here.
@@ -378,7 +378,7 @@ Note that deblending dipole sources is a complicated process and we do not inten
 \label{sec:acSpatialModels}
 In many areas we will need to represent spatial models.  This will include models fit to sparse and non-uniformly sampled data.  We will support fitting Chebyshev polynomials and splines.  We will also support regression techniques like Gaussian Processes.
 
-\subsection{Background Estimation}
+\subsection{Background Estimation: UW?}
 \label{sec:acBackgroundEstimation}
 
 Background estimation will be done on the largest scale feasible first.  In the case of Alert Production, this may be on the size of a chip.  In DRP, we expect this to be on a full focalplane.  An initial low order estimate will be made on a large scale.  Each chip will be divided into subregions.  For each subregion, a robust average of the non-masked pixels will be computed.  All values for all chips will be fit by an appropriate function (see \S \ref{sec:acSpatialModels}).  This will provide a low order background estimation in focal plance coordinates.  Note that this can only be done if the instrument signature removal is very high fidelity.  Any sharp discontinuity could cause problems with fitting a smooth function.
@@ -394,7 +394,7 @@ Requirements include working in crowded fields.  I think estimating a full focal
 I didn't explicitly talk about composition of background models, but this takes that into account by allowing a global model to be subtracted from the single chip image before a higher order model is fit.
 \end{note}
 
-\subsection{Matched Background Estimation}
+\subsection{Matched Background Estimation: Princeton?}
 \label{sec:acMatchedBackgroundEstimation}
 
 A variant of \hyperref[sec:acBackgroundEstimation]{Background Estimation} for use on difference images produced in \hyperref[sec:drpBackgroundMatchAndReject]{Background Matching}.  This will be able to operate on full visit scales with much less concern for oversubtracting bright objects, which may allow it to use qualitatively different algorithms.  It may also be able to use models specifically designed to subtract specific ghosts or stray light patterns.
@@ -402,7 +402,7 @@ A variant of \hyperref[sec:acBackgroundEstimation]{Background Estimation} for us
 \subsection{Build Background Reference}
 \label{sec:acBuildBackgroundReference}
 AUTHOR: Simon
-\subsubsection{Patch Level}
+\subsubsection{Patch Level: Princeton}
 Background-matching each \texttt{CoaddTempExp} to a reference exposure performs comparably to fitting
 the offsets to the N(N-1)/2 difference images, however the co-add quality will depend on the quality of the
 reference image.  Choosing a reference image on a per-patch basis is as simple as choosing the \texttt{CoaddTempExp} that
@@ -424,7 +424,7 @@ and $\sigma^2_i$ the average variance of the pre-scaled exposure.  By combining 
 these statistics with coverage, we can construct an objective/cost function that relates the importance of
 coverage and sky-background, and can select a visit that minimizes that quantity objective function.
 
-\subsubsection{}
+\subsubsection{Tract Level: Princeton}
 Constructing reference images for tract-sized co-adds follows the same principle, but requires maximizing the
 SNR/coverage of a large mosaic constructed from multiple visits.  Algorithms for mosaicking partially
 overlapping images have been well established \citep[e.g.][]{Sick2013, Berriman2008}. By mosaicking visits,
@@ -441,10 +441,10 @@ visits together using all overlaps while background matching.
 \item Given multiple overlapping visit images (already warped to a common coordinate system), synthesize a continuous single-epoch image that can be used as a reference for background matching.
 \end{itemize}
 
-\subsection{PSF Estimation}
+\subsection{PSF Estimation -- Not sure how to divide this up.}
 \label{sec:acPSFEstimation}
 
-\subsubsection{Single CCD PSF Estimation}
+\subsubsection{Single CCD PSF Estimation: UW}
 \label{sec:acSingleCCDPSF}
 
 Single CCD PSF estimation needs to be run in both Alert Production and in in Data Release Processing.  In Alert Production it will be the final PSF model for both direct and difference image measurement.  In Data Release Processing, it will be used as an initial bootstrapping step to start off image characterization.  We do not intend to include chromatic effects in the PSF at the single CCD estimation phase.
@@ -463,7 +463,7 @@ The order of the spatial model cannot excede number of PSF exemplars in the fram
 We can get arbitrarily complex, but I don't thinkn we need a more complex system in the baseline until we show this won't work.  Some have considered using Gaussian process regression for this, but I don't know that anyone has formalized that.
 \end{note}
 
-\subsection{Wavefront Sensor PSF Estimation}
+\subsection{Wavefront Sensor PSF Estimation: UW}
 \label{sec:acWavefrontSensorPSF}
 AUTHOR: Jim
 \begin{itemize}
@@ -474,7 +474,7 @@ AUTHOR: Jim
 \item Assumed to be at least mostly contributed by Systems Engineering.
 \end{itemize}
 
-\subsubsection{Full Visit PSF Estimation}
+\subsubsection{Full Visit PSF Estimation: Princeton}
 \label{sec:acFullVisitPSF}
 AUTHOR: Jim
 \begin{itemize}
@@ -485,7 +485,7 @@ AUTHOR: Jim
 \item Must include some approach to dealing with wings of bright stars (not trivial)
 \end{itemize}
 
-\subsection{Aperture Correction}
+\subsection{Aperture Correction: Princeton}
 \label{sec:acApCorr}
 AUTHOR: Jim
 \begin{itemize}
@@ -497,7 +497,7 @@ AUTHOR: Jim
 
 \subsection{Astrometric Fitting}
 \label{sec:acAstrometricFitting}
-\subsubsection{Single CCD}
+\subsubsection{Single CCD: UW}
 \label{sec:acSingleCCDAstrometricFit}
 Used by AP, probably (RHL worries we might need full-visit)
 
@@ -509,13 +509,13 @@ We can project the per-chip coordinates into a flat (Gnomonic) projection in the
 This introduces a dependency on DRP's internal reference catalog not capture elsewhere.
 \end{note}
 
-\subsubsection{Single Visit}
+\subsubsection{Single Visit: UW}
 \label{sec:acSingleVisitAstrometricFit}
 Full visit astrometric fitting will be done as a bootstrapping step toward higher quality calibration in DRP.  All measurements in the visit will be projected to a tangent plane, taking into account all knowledge of the sensor arrangement and optics.  The reference catalog (likely the DRP reference catalog) will be projected to the same tangent plane.
 
 Sources will be matched, again using a \cite{tabor04} like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for the Von Karman turbulence.
 
-\subsubsection{Joint Multi-Visit}
+\subsubsection{Joint Multi-Visit: UW}
 \label{sec:acJointAstrometricFit}
 In the case where there are multiple visits overlapping the same part of the sky, e.g. a patch, we can leverage multiple realizations to beat down the random contribution of the atmosphere to get a better estimate of the optical model and the atmospheric contribution per visit.
 
@@ -525,13 +525,13 @@ Joint astrometric fitting must be able to work both with and without an external
 
 \subsection{Photometric Fitting}
 \label{sec:acPhotometricFitting}
-\subsubsection{Single CCD (for AP)}
+\subsubsection{Single CCD (for AP): UW}
 \label{sec:acSingleCCDPhotometricFit}
 \begin{itemize}
 \item Match to photometric calibration reference catalog
 \item Calculate single zeropoint using available color terms
 \end{itemize}
-\subsubsection{Single Visit}
+\subsubsection{Single Visit: UW}
 \label{sec:acSingleVisitPhotometricFit}
 \begin{itemize}
 \item Fit zeropoint (and some spatial variation for clouds) to all CCDs simultaneously after matching to reference catalog.
@@ -541,7 +541,7 @@ Joint astrometric fitting must be able to work both with and without an external
 
 
 
-\subsubsection{Joint Multi-Visit}
+\subsubsection{Joint Multi-Visit: UW?}
 \label{sec:acJointPhotometricFit}
 
 For DRP, all the observations can be combined in the so-called ubercal procedure to generate the best possible measurement of the relative flux of each source.
@@ -571,7 +571,7 @@ After solving for all the magnitudes, and merging all the patch zeropoints, ther
 
 Joint photometric fitting must be able to work both with and without an external reference catalog (while only producing relative results in the latter case, of course).
 
-\subsection{Retrieve Diffim Template for a Visit}
+\subsection{Retrieve Diffim Template for a Visit: UW}
 \label{sec:acRetrieveTemplate}
 In difference imaging a major contributor to the quality of the difference image is the choice of template.  We expect that the DRP template generation algorithm will be quite complex.  It will potentially involve synthesizing multiple monochromatic templates that will be used to model the effects of DCR.
 
@@ -582,7 +582,7 @@ Ideally, the retrieval will be to select the correct bounding box from the corre
 
 The essence of image subtraction is to astrometrically register the science image $S(x,y)$ and template image $T(x,y)$, and then match their point spread functions (PSFs) of so that they may be subtracted pixel by pixel. The PSFs are the time--averaged transfer functions of a point source through the Earth's atmosphere, telescope optics, and into the silicon of the detector before being read out. We assume that the science image can be modeled as a convolution of the template image by a PSF--matching kernel $\kappa(u,v;x,y)$, i.e., $S = \kappa \otimes T$. (Indices $u,v$ indicate that the kernel itself is a 2--dimensional function, which varies as a function of position $x,y$ in the image; during convolution and correlation there is an implicit summation over $u,v$.) Then the difference image, upon which new or variable sources are detected, is given by $D = S - (\kappa \otimes T)$. 
 
-\subsubsection{Image Subtraction}
+\subsubsection{Image Subtraction: UW}
 \label{sec:acImageSubtraction}
 \begin{itemize}
 \item Match template image to science image, as in Alert Production and DRP Difference Image processing.
@@ -608,7 +608,7 @@ A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for
 
 Detection on the difference image occurs through correlation of $D(x,y)$ with the science image's PSF, yielding optimally filtered detection image $D'(x,y) = D(x,y) \circ PSF_S(u,v;x,y)$ where $\circ$ denotes correlation (currently the DM stack uses convolution instead of correlation). The values of the pixels in $D'(x,y)$ provide a maximum likelihood estimate of there being a point source at that position. Detection occurs by simply finding pixels that are more than $N \times \sigma$ above the square root of the per--pixel variance. Alternatively, the science image may be {\em pre-convolved} with a kernel similar to its PSF, in which case the resulting difference image $D(x,y)$ is already filtered for detection. This latter option has the additional advantage that it help us avoid requiring {em deconvolution} of the template image, in cases when the template has a wider PSF than the science image. 
 
-\subsubsection{PSF Homogenization for Coaddition}
+\subsubsection{PSF Homogenization for Coaddition: Princeton}
 \label{sec:acPSFHomogenization}
 \begin{itemize}
 \item Match science image to predetermined analytic PSF, as in PSF-matched coaddition.
@@ -619,7 +619,7 @@ In PSF-matched coaddition, input images are convolved by a kernel that matches t
 \subsection{Image Warping}
 \label{sec:acWarping}
 AUTHOR: Jim
-\subsubsection{Oversampled Images}
+\subsubsection{Oversampled Images: UW}
 \label{sec:acOversampledWarping}
 
 Oversampled images are warped to a new \hyperref[sec:spWCS]{WCS} and resampled using a two dimensional Lancsoz kernel of configurable order. The baselined default order is 3.
@@ -642,18 +642,18 @@ Since chromaticity is accounted for in the \hyperref[sec:spPSF]{PSF} rather than
 The above describes the current warping implementation in afw. We should identify deficiencies with the current implementation to establish resource requirements.
 \end{note}
 
-\subsubsection{Undersampled Images}
+\subsubsection{Undersampled Images: UW?}
 \label{sec:acUndersampledWarping}
 \begin{itemize}
 \item Can use PSF model as interpolant if we also want to convolve with PSF (as in likelihood coadds).  Otherwise impossible?
 \end{itemize}
-\subsubsection{Irregularly-Sampled Images}
+\subsubsection{Irregularly-Sampled Images: UW?}
 \label{sec:acFixPixelAreaVariations}
 \begin{itemize}
 \item Approximate procedure for fixing small-scale distortions in pixel grid.
 \end{itemize}
 
-\subsection{Image Coaddition}
+\subsection{Image Coaddition: Princeton}
 \label{sec:acCoaddition}
 AUTHOR: Jim
 \begin{itemize}
@@ -666,7 +666,7 @@ AUTHOR: Jim
 \item Also needs to support combining snaps
 \end{itemize}
 
-\subsection{DCR-Corrected Template Generation}
+\subsection{DCR-Corrected Template Generation: UW}
 \label{sec:acDCRTemplates}
 %AUTHOR: Simon
 
@@ -791,7 +791,7 @@ For each approach the number of wavelength bins that $I(x)$ can be decomposed in
 
 \subsection{Image Decorrelation}
 \label{sec:acImageDecorrelation}
-\subsubsection{Difference Image Decorrelation}
+\subsubsection{Difference Image Decorrelation: UW}
 \label{sec:acDiffImDecorrelation}
 
 In situations where the signal-to-noise in the template image is not insignificant (e.g., when the template is constructed by co-addition of a small number of exposures), the resulting image difference will contain autocorrelated noise arising from the convolution of the template with the PSF matching kernel prior to subtraction. This will result in inaccurate estimates of thresholds for {\tt diaSource} detection if the (potentially spatially-varying) covariances in the image difference are not properly accounted for.
@@ -814,7 +814,7 @@ We are investigating this approach and have shown that, for idealized situations
 
 Issues arising from complications often seen in real-world data such as spatially-varying PSFs and/or poorly-evaluated matching kernels, spatially variable backgrounds and/or noise, and possibly non-Gaussian or heteroschedastic noise need to be further evaluated. Such tests are currently underway on simulated and real data. These tests could highlight the advantages of the method proposed here over the proposal of \cite{Zackay16}, including: no requirement for accurate measurement of the PSFs of the science or template images, and thus the ability to to account for errors in astrometric alignment and to directly model spatially varying differential PSFs.
 
-\subsubsection{Coadd Decorrelation}
+\subsubsection{Coadd Decorrelation: Princeton}
 \label{sec:acCoaddDecorrelation}
 AUTHOR: Jim
 \begin{itemize}
@@ -822,7 +822,7 @@ AUTHOR: Jim
 \item Need to test with small-scale research before committing to this approach.
 \end{itemize}
 
-\subsection{Star/Galaxy Classification}
+\subsection{Star/Galaxy Classification: Princeton?}
 \label{sec:acClassification}
 AUTHOR: Jim
 \subsubsection{Single Frame S/G}
@@ -841,7 +841,7 @@ AUTHOR: Jim
 \item Best classification derived from multifit and possibly variability.
 \end{itemize}
 
-\subsection{Variability Characterization}
+\subsection{Variability Characterization: UW}
 \label{sec:acVariabilityCharacterization}
 
 Following the \DPDD{}, lightcurve variability is characterized by providing a series of numeric summary `features' derived from the lightcurve. The DPDD baselines an approach based on Richards et al. \cite{Richards11}, with the caveat that ongoing work in time domain astronomy may change the definition, but not the number or type, of features being provided.
@@ -941,7 +941,7 @@ QSO similarity metrics, as defined by Butler \& Bloom \cite{Butler11}:
 \item{$\chi_{\mathrm{False}}^2 / \nu$.}
 \end{itemize}
 
-\subsection{Proper Motion and Parallax from DIASources}
+\subsection{Proper Motion and Parallax from DIASources: UW}
 \label{sec:acStellarMotionFitting}
 Every time we observe another apparition of a DIAObject, we have an opportunity to update/improve the proper motion and pararllax models.  The DIASources are associated with the current best model from the DIAObject.  The proper motion and parallax are then refit using the new observation.
 
@@ -973,7 +973,7 @@ variable SEDs.
 
 Algorithmic components in this section will typically (but perhaps not always) delegate to the \hyperref[sec:spTablesNWayMatching]{N-Way Matching} software primitives, which provide spatial indexing and data structures for simple spatial matches.
 
-\subsubsection{Single CCD to Reference Catalog, Semi-Blind}
+\subsubsection{Single CCD to Reference Catalog, Semi-Blind: UW}
 \label{sec:acSingleCCDReferenceMatching}
 
 Given a set of sources detected on a single sensor, and a
@@ -1021,7 +1021,7 @@ For the case of no WCS for the sensor or a significant error in the
 WCS ($> 3$ arcsec) a blind matching will be undertaken using the
 algorithms in astrometry.net (ref)
 
-\subsubsection{Single Visit to Reference Catalog, Semi-Blind}
+\subsubsection{Single Visit to Reference Catalog, Semi-Blind: UW}
 \label{sec:acSingleVisitReferenceMatching}
 
 For single visit cross-matching matches all sources within a focal
@@ -1044,14 +1044,14 @@ Modifications from the single sensor cross matching are:
 %run match in 3D distance space (using the budavari approach?)
 
 
-\subsubsection{Multiple Visits to Reference Catalog}
+\subsubsection{Multiple Visits to Reference Catalog: Princeton}
 \label{sec:acJointCalMatching}
 AUTHOR: Jim
 \begin{itemize}
 \item Match sources from multiple visits to a single reference catalog, assuming good WCS solutions.
 \end{itemize}
 
-\subsubsection{DIAObject Generation}
+\subsubsection{DIAObject Generation: UW}
 \label{sec:acDIAObjectGeneration}
 
 Assuming that all DIAObject positions been propagated to the MJD of
@@ -1100,7 +1100,7 @@ will be derived from simulations.
 An extension to Bayes Factor association that accounts for unknown
 proper motions is also possible \citep{???}
 
-\subsubsection{Object Generation}
+\subsubsection{Object Generation: Princeton}
 \label{sec:acObjectGeneration}
 AUTHOR: Jim
 \begin{itemize}
@@ -1108,14 +1108,14 @@ AUTHOR: Jim
 \item Also merge in DIASources or (if already self-associated) DIAObjects.
 \end{itemize}
 
-\subsubsection{Blended Overlap Resolution}
+\subsubsection{Blended Overlap Resolution: Princeton}
 \label{sec:acBlendedOverlapResolution}
 AUTHOR: Jim
 \begin{itemize}
 \item Given two or more overlapping blend families (with associated measurements), merge them by selecting the ``best'' measurement for each child object.
 \end{itemize}
 
-\subsection{Raw Measurement Calibration}
+\subsection{Raw Measurement Calibration: Princeton}
 \label{sec:acRawMeasurementCalibration}
 
 AUTHOR: Jim
@@ -1125,7 +1125,7 @@ AUTHOR: Jim
 \end{itemize}
 
 
-\subsection{Ephemeris Calculation}
+\subsection{Ephemeris Calculation: UW}
 \label{sec:acEphemerisCalculation}
 Ephemeris calculation for the purpose of association in the nightly pipelines and for attribution and precovery in dayMOPS will require an indexing algorithm as well as a numerical integration phase. The JPL Horizons page reports $~700,000$ asteroid orbits.  This is far too many to run forward for every observation we will take.  Thus, we will need to predict which bodies are likely to cross an aperture on the sky.  
 
@@ -1139,7 +1139,7 @@ In order to make spatial lookup of the orbits of interest fast, we will checkpoi
 
 During nightly processing ephemeris prediction will be carried out on the objects that may intersect the visit in question.  For spatial filtering, all objects will be assumed to move linearly over half the night.  The on-sky visit aperture with an appropriate buffer to account for the maximum acceleration of a solar system object over \~4 hours will determine which objects potentially fall in the exposure.  For those few thousand objects, precise ephimerides will be calculated for the purpose of association.
 
-\subsection{Make Tracklets}
+\subsection{Make Tracklets: UW}
 \label{sec:acMakeTracklets}
 Tracklets are the building blocks of orbits.  The process of linking observations is to pair up all observations that are within some distance of each other given a maximum on sky velocity.  For any source, tracklets can be found by looking in circular apertures in subsequent visits with the radius of the circular aperture growing with time by $v_{max}dt$ for $v_{max}$ in appropriate units.  In practice we will follow \cite{kubica05} and build KD-trees on detections from each visit.  KD-trees allow fast range searches.  Linking up tracklets simply involves a series of range searches on available visits.
 
@@ -1147,7 +1147,7 @@ The number of tracklets goes up as $O(n^2)$ where $n$ is the number of images co
 
 When tracklets are collapsed, we gain more information about the collasped tracklet since we have multiple observations of it.  This allows some tracklets to be dismissed ds spurious linkages.  Any observation that deviates from the linear fit to the collapsed tracklet by a threshold amount will be discarded as spurious.
 
-\subsection{Attribution and precovery}
+\subsection{Attribution and precovery: UW}
 \label{sec:acAttributionAndPrecovery}
 Precovery is the process of adding 'orphan' DIASources, those that do not belong to a SSObject or DIAObject, to a SSObject.  Any time an SSObjects orbital parameters change significanly, it's possible that DIASources not associated previously could now match.  The process is to calculate ephemerides backward in time from the earliest observation as far as is possible given the uncertainty in the orbit.  These ephemerides are compared to the orphan DIASources.  If a match is found, a new orbit is fit and if the new orbit is a better fit than the old one, the SSObject is updated with the new fit.
 
@@ -1155,7 +1155,7 @@ Attribution is the process of adding tracklets to known SSObjects.  For a given 
 
 Since both attribution and precovery involve updating the SSObject, this process is recursive.  The cadence of the recursion will be daily.  Since we run attribution and precovery at least once during every run of the moving object pipeline, there is little need to recurse on shorter timescales.
 
-\subsection{Orbit Fitting}
+\subsection{Orbit Fitting: UW}
 \label{sec:acOrbitFitting}
 Given a database of tracklets not associated with any SSobject, we will look for tracks that match physical orbits.
 
@@ -1163,6 +1163,6 @@ Finding tracks is a tricky problem.  We will follow the approach presented in \c
 
 In order to validate candidate tracks, a quadratic fit to the orbit is attempted with higher order topocentric effects due to reflex motion of the Earth included.  These effects depend on the distance of the object from the Earth, so the range is fit for as part of the fitting process.  For tracks with sufficiently good $\chi^2$, the tracks are passed on to an orbit fitter.  As above, there are tools to fit for orbital parameters given a set of observations.  We will use these as our final orbit determination.
 
-\subsection{Orbit Merging}
+\subsection{Orbit Merging: UW}
 \label{sec:acOrbitMerging}
 Bin all SSObjects of interest in orbital parameter space, by building a tree on the SSObject database.  If there are any orbits that are sufficiently close in parameter space, they will be merged into a single orbit and the SSObject database updated.
