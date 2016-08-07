@@ -15,7 +15,7 @@ Alert Production is run each night to product catalogs and images for sources th
   Measurements from difference image analysis of individual exposures. \\
   \hline
   DIAObject& Stored &
-  Aggregate quantities computing by associating spatially colocated DIASources. \\
+  Aggregate quantities computed by associating spatially colocated DIASources. \\
   \hline
   DIAForcedSource & Stored &
   Flux measurements on each difference image at the position of every DIAObject. \\
@@ -24,97 +24,75 @@ Alert Production is run each night to product catalogs and images for sources th
   Solar system objects derived by associating DIASources and inferring their orbits. \\
   \hline
   CalExp & Stored &
-  Calibrated exposure images for each CCD/visit (sum of two snaps). \\
+  Calibrated exposure images for each CCD/visit (sum of two snaps) and associated metadata (e.g.\ WCS and estimated background). \\
   \hline
   DiffExp & Stored &
   Difference between CalExp and PSF-matched template coadd. \\
   \hline
 \end{tabularx}
-\caption{Table of derived and persisted data products produced during a Alert Production.  A description of these data products can be found in the Data Products Definition Document (LSE-163).
+\caption{Table of derived and persisted data products produced during  Alert Production.  A description of these data products can be found in the Data Products Definition Document (LSE-163).
 \label{table:ap_data_products}}
 \end{table}
 
 
-Alert Production is designed as five separate components: single frame
-processing, alert detection, alert generation, precovery photometry,
-and a moving objects pipeline. The first four of these components run
-as a linear pass through of the data. The moving objects pipeline is
-run independently of the rest of the alert production. The flow of
-information through this system is shown in figure~\ref{fig:nightly}.
+Alert Production is designed as five separate components: single frame processing, alert detection, alert generation, precovery photometry, and a moving objects pipeline. The first four of these components run as a linear pass through of the data. The moving objects pipeline is run independently of the rest of the alert production. The flow of information through this system is shown in figure~\ref{fig:nightly}.
 
 \begin{figure}[th]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{figures/Level_1_Processing_Flowchart.jpg}
-\caption{\label{fig:nightly} The alert production flow of data through
-  the processing pipelines (single frame processing, alert detection,
-  alert generation, precovery photometry) }
+\caption{\label{fig:nightly} The alert production flow of data through the processing pipelines (single frame processing, alert detection,  alert generation, precovery photometry) }
 \end{center}
 \end{figure}
 
-In this document we do not address the question of estimating the selection function for the alert generation through the injection of simulated sources. Such a process could be undertaken in a parallel processing string that starts from the generation of the CalExp images though, given the available computational resources, this would likely only be able to sample the selection function over a subset
+In this document we do not address the question of estimating the selection function for the alert generation through the injection of simulated sources. Such a process could be undertaken in a parallel processing string that starts from the generation of the CalExp images. Given the available computational resources  this would likely only be able to sample the selection function over a subset of the data.
 
 \subsection{Single Frame Processing Pipeline (\wbsSFM)}
 \label{sec:apSingleFrameProcessing}
 
-Single Frame Processing (SFM) Pipeline is responsible for reducing raw or camera corrected image data to\emph{calibrated exposures}, the detection and measurement of \Sources (using the components functionally a part of the Object Characterization Pipeline), the characterization of the point-spread-function (PSF), and the generation of an astrometric solution for an image.
+Single Frame Processing (SFM) Pipeline is responsible for reducing raw or camera corrected image data to\emph{calibrated exposures}, the detection and measurement of \Sources (using the components functionally  part of the Object Characterization Pipeline), the characterization of the point-spread-function (PSF), and the generation of an astrometric solution for an image.
 
-Single Frame Processing pipeline will be implemented as a flexible   framework where new processing steps can be added without modifying the stack code. It should be possible for this pipeline or a subset of this pipeline  to be run at the telescope facility during commissioning and operations.  
+Single Frame Processing pipeline will be implemented as a flexible framework where new processing steps can be added without modifying the stack code. It should be possible for this pipeline or a subset of this pipeline to be run at the telescope facility during commissioning and operations.  
 
-
-SFM pipeline functions include:
-\begin{itemize}
-\item Assembly of per-amplifier images to an image of the entire CCD;
-\item Instrumental Signature Removal;
-\item Cosmic ray rejection and snap combining;
-\item Per-CCD determination of zeropoint and aperture corrections;
-\item Per-CCD PSF determination;
-\item Per-CCD WCS determination and astrometric registration of images;
-\item Per-CCD sky background determination;
-\item Source detection and measurement on single frame images
-\item Generation of metadata required by the OCS
-\end{itemize}
+%SFM pipeline functions include:
+%\begin{itemize}
+%\item Assembly of per-amplifier images to an image of the entire CCD;
+%\item Instrumental Signature Removal;
+%\item Cosmic ray rejection and snap combining;
+%\item Per-CCD determination of zeropoint and aperture corrections;
+%\item Per-CCD PSF determination;
+%\item Per-CCD WCS determination and astrometric registration of images;
+%\item Per-CCD sky background determination;
+%\item Source detection and measurement on single frame images
+%\item Generation of metadata required by the OCS
+%\end{itemize}
 
 Calibrated exposure produced by the SFM pipeline must possess all information necessary for measurement of source properties by single-epoch Object Characterization algorithms.
 
-\noindent{\bf Actions in case of failure:}
-
-In the case camera data are not available due to a network outage that is longer than the data buffer at the summit the single frame processing will work on raw images (i.e.\ without the camera pixel corrections) and be run in a batch mode. 
+\noindent{\bf Actions in case of failure:} In the case camera data are not available due to a network outage that is longer than the data buffer at the summit the single frame processing will work on raw images (i.e.\ without the camera pixel corrections) and be run in a batch mode. For this case crosstalk (ref) and bias subtraction will be included within the ISR stage.
 
 \subsubsection{Input Data}
 
-\paragraph*{Input Data: Raw Images}
+\paragraph*{Raw Camera Images:} Amplifier images that have been corrected for crosstalk and bias by the camera software All images from a visit should be available to the task (including snaps). An approximate WCS is assumed to be available as metadata with an absolute pointing uncertainty (for a full focal plane) of 2 arcseconds (OSS-REQ-0298) and the field rotation known to an accuracy of 32 arcseconds (LTS-206).
+\begin{note}
+question into Andy R about Camera operations
+\end{note}
 
-Amplifier images that the camera has corrected for crosstalk, overscan, linearity.  All images from a visit should be available to the task (including snaps). An approximate WCS is assumed to be available as metadata
 
-\paragraph*{Input Data Product: Reference Catalog}
+\paragraph*{Reference Catalog:} A full-sky astrometric and photometric reference catalog of stars derived either from an external survey (e.g.\ Gaia) or from the Data Release Processing. Given the current GAIA data release timeline the reference catalog is expected to have an astrometric uncertainty of $<0.5$ milliarcseconds and a photometric uncertainty of $<$20 millimag (for a $V=19$ G2V star). The expected release of these calibration catalogs in 2018 and will be derived from the GAIA spectrophotometric observations of non-variable sources.
 
-A full-sky reference catalog of stars derived either from an external survey (e.g.\ Gaia) or from the Data Release Processing.
+\paragraph*{Calibration Images:} Flatfield calibration images for all passbands and all CCDs appropriate for the time at which the observations were undertaken. No corrections will be made in the flatfields for non-uniform pixel sizes - the flatfields will correct to a common  surface brightness. Fringe frame calibration images scaled to an expected amplitude expected for the sky conditions.
+\begin{note} What assumptions will we make about SEDs for the flats. Are we assuming we know the sky SED for fringe frames \end{note}
 
-Flatfield calibration images for all passbands and all CCDs appropriate for the time at which the observations were undertaken
-
-List of the positions and extents of sensor defects for all CCDs within the focal plane
-
-Metadata for all CCDs including electronic parameters (saturation limits, readnoise, electronic footprint)
+\paragraph*{Image Metadata:} List of the positions and extents of sensor defects for all CCDs within the focal plane; electronic parameters for all CCDs (saturation limits, readnoise parameters, electronic and physical footprint for the sensors, linearity functions, brighter-fatter model, and parameterized models for component WCS (e.g.\ optical distortion model) as needed.
 
 \subsubsection{Output Data}
 
-\paragraph*{Output Data Product: CalExp Images}
+\paragraph*{CalExp Images:} A calibrated exposure (CalExp) is an \hyperref[sec:spImagesExposure]{Exposure} object. The CalExp will contain a a representation of the PSF, the WCS (possibly at an optical component level), a photometric calibration object (PhotoCalib),  and a model for the  background. The pixel data will include the image, mask pixels, and a per-pixel variance estimate. For the alert production it is not expected that a model for the per-pixel covariance will be persisted but this will be revisited given the performance of the adopted image subtraction and anomaly characterization procedures (ref).
+\begin{note} Covariance per pixel? \end{note}
 
-A calibrated exposure (CalExp).  CalExp is an \hyperref[sec:spImagesExposure]{Exposure} object. The CalExp will contain a PSF, WCS, PhotoCalib and Background. The pixel data will include the image, mask, and variance. 
+\paragraph*{Source Catalogs:} A catalog of Sources with measured features (as described in \ref{sec:apSourcemeasurement}). 
 
-\paragraph*{Output Data Product: Source Catalogs}
-
-A catalog of Sources with measured features (as described in \ref{sec:ac}). 
-
-
-\paragraph*{Output Data Product: Metadata Catalogs}
-A parameterization of the PSF for the visit, the WCS for the visit,
-and associated metadata (e.g.\ photometric depth) must be made
-available to the telescope Observatory Control System (OCS). It is
-expected that these data will be persisted within a database that will
-be queried by the OCS.
-
-
+\paragraph*{Derived Metadata} A parameterization of the PSF, WCS, photometric zeropoint, and depth for each CCD in a visit. These data will be made available to the telescope Observatory Control System (OCS) to assess the success of each observation. It is expected that these data will be persisted within a database that will be queried by the OCS.
 
 
 \subsubsection{Instrumental Signature Removal:}~
