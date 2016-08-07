@@ -12,7 +12,7 @@ Alert Production is run each night to product catalogs and images for sources th
   {\bf Name} & {\bf Availability} & {\bf Description} \\
   \hline
   DIASource & Stored &
-  Measurements from difference imagine analysis of individual exposures. \\
+  Measurements from difference image analysis of individual exposures. \\
   \hline
   DIAObject& Stored &
   Aggregate quantities computing by associating spatially colocated DIASources. \\
@@ -56,39 +56,9 @@ In this document we do not address the question of estimating the selection func
 \subsection{Single Frame Processing Pipeline (\wbsSFM)}
 \label{sec:apSingleFrameProcessing}
 
-Single Frame Processing (SFM) Pipeline is responsible for reducing raw or camera corrected image data to \emph{calibrated exposures}, the detection and measurement of \Sources (using the components functionally a part of the Object Characterization Pipeline), the characterization of the point-spread-function (PSF), and the generation of an astrometric solution for an image.
+Single Frame Processing (SFM) Pipeline is responsible for reducing raw or camera corrected image data to\emph{calibrated exposures}, the detection and measurement of \Sources (using the components functionally a part of the Object Characterization Pipeline), the characterization of the point-spread-function (PSF), and the generation of an astrometric solution for an image.
 
 Single Frame Processing pipeline will be implemented as a flexible   framework where new processing steps can be added without modifying the stack code. It should be possible for this pipeline or a subset of this pipeline  to be run at the telescope facility during commissioning and operations.  
-
-\paragraph{Input Data: Raw}
-
-Amplifier images that the camera has corrected for crosstalk, overscan, linearity.  All images from a visit should be available to the task (including snaps). An approximate WCS is assumed to be available as metadata
-
-\paragraph{Input Data Product: Reference}
-
-A full-sky reference catalog of stars derived either from an external survey (e.g.\ Gaia) or from the Data Release Processing.
-
-Flatfield calibration images for all passbands and all CCDs appropriate for the time at which the observations were undertaken
-
-List of the positions and extents of sensor defects for all CCDs within the focal plane
-
-Metadata for all CCDs including electronic parameters (saturation limits, readnoise, electronic footprint)
-
-\paragraph{Output Data Product: CalExp}
-
-A calibrated exposure (CalExp).  CalExp is an \hyperref[sec:spImagesExposure]{Exposure} object. The CalExp will contain a PSF, WCS, PhotoCalib and Background. The pixel data will include the image, mask, and variance. 
-
-\paragraph{Output Data Product: Source}
-
-A catalog of Sources with measured features (as described in \ref{sec:ac}). 
-
-
-\paragraph{Output Data Product: Metadata}
-A parameterization of the PSF for the visit, the WCS for the visit,
-and associated metadata (e.g.\ photometric depth) must be made
-available to the telescope Observatory Control System (OCS). It is
-expected that these data will be persisted within a database that will
-be queried by the OCS.
 
 
 SFM pipeline functions include:
@@ -106,13 +76,48 @@ SFM pipeline functions include:
 
 Calibrated exposure produced by the SFM pipeline must possess all information necessary for measurement of source properties by single-epoch Object Characterization algorithms.
 
-\paragraph{Actions in case of failure:}
+\noindent{\bf Actions in case of failure:}
 
 In the case camera data are not available due to a network outage that is longer than the data buffer at the summit the single frame processing will work on raw images (i.e.\ without the camera pixel corrections) and be run in a batch mode. 
 
+\subsubsection{Input Data}
+
+\paragraph*{Input Data: Raw Images}
+
+Amplifier images that the camera has corrected for crosstalk, overscan, linearity.  All images from a visit should be available to the task (including snaps). An approximate WCS is assumed to be available as metadata
+
+\paragraph*{Input Data Product: Reference Catalog}
+
+A full-sky reference catalog of stars derived either from an external survey (e.g.\ Gaia) or from the Data Release Processing.
+
+Flatfield calibration images for all passbands and all CCDs appropriate for the time at which the observations were undertaken
+
+List of the positions and extents of sensor defects for all CCDs within the focal plane
+
+Metadata for all CCDs including electronic parameters (saturation limits, readnoise, electronic footprint)
+
+\subsubsection{Output Data}
+
+\paragraph*{Output Data Product: CalExp Images}
+
+A calibrated exposure (CalExp).  CalExp is an \hyperref[sec:spImagesExposure]{Exposure} object. The CalExp will contain a PSF, WCS, PhotoCalib and Background. The pixel data will include the image, mask, and variance. 
+
+\paragraph*{Output Data Product: Source Catalogs}
+
+A catalog of Sources with measured features (as described in \ref{sec:ac}). 
 
 
-\paragraph{Instrumental Signature Removal:}~
+\paragraph*{Output Data Product: Metadata Catalogs}
+A parameterization of the PSF for the visit, the WCS for the visit,
+and associated metadata (e.g.\ photometric depth) must be made
+available to the telescope Observatory Control System (OCS). It is
+expected that these data will be persisted within a database that will
+be queried by the OCS.
+
+
+
+
+\subsubsection{Instrumental Signature Removal:}~
 \label{sec:apISR}
 Instrumental Signature Removal characterizes, corrects, interpolates
 and flags the camera (or raw) images to generate a flat-fielded and corrected
@@ -131,7 +136,7 @@ exposure.
 \end{itemize}
 
 
-\paragraph{PSF and background determination:}~
+\subsubsection{PSF and background determination:}~
 \label{sec:apPSFBackground}
 
 Given exposures that have been processed through the Instrument Signature Removal, sources must be detected that will be used to determine the WCS and photometric calibration of the images. Detection and measurement of the properties of these calibration Sources requires knowlege of the PSF and background for the image which in turn requires knowledge of the sources on the image. An iterative procedure is, therefore, adopted to generate the Source catalog. 
@@ -151,7 +156,7 @@ defined but the default procedure assumes three iterations.
 \end{itemize}
 
 
-\paragraph{Source measurement:}~
+\subsubsection{Source measurement:}~
 \label{sec:apSourcemeasurement}
 
 For the Source catalog generated in \ref{sec:apPSFBackground} measure the source properties using a subset of features described in \ref{sec:acMeasurement}. Source measurement if for all sources within the Source catalog and not just the bright subset used to calibrate the PSF. 
@@ -167,7 +172,7 @@ We anticipate using the following plugin algorithms for \ref{sec:acMeasurement}
 \item  \hyperref[sec:apertureCorrection]{Aperture correction} for  detected sources
 \end{itemize}
 
-\paragraph{Photometric and Astrometric calibration:}~
+\subsubsection{Photometric and Astrometric calibration:}~
 Photometric and astrometric calibration entails a ``semi-blind'' cross match of a reference catalog (derived either from the DRP Objects or from an external catalog), the generation of a WCS (on the scale of a CCD or visit), and the generation of a photometric zeropoint (on the scale of a CCD).
 
 \paragraph{Pipeline Tasks}
@@ -192,6 +197,23 @@ Alert Detection identifies variable, moving, and transient sources within a cali
 
 Alert Detection pipeline shall difference, and detect and characterize sources in the time required to achieve the 60 second design goal for nightly processing (current timing allocation: 24 seconds). The algorithms employed by the pipeline shall result in purity and completeness of the sample as required by the \DMSR\@. Image differencing shall perform as well in crowded as in uncrowded fields. 
 
+For all DIAObjects forced photometry will be undertaken given a time windowed estimate of the DIAObject position.
+
+
+The process for image differencing requires the following steps
+\begin{itemize}
+\item Creation or \hyperref[sec:acRetrieveTemplate]{retrieval} of a TemplateCoadd.
+\item Matching the astrometry and PSF of a CalExp to the TemplateCoadd and subtracting the template image from the CalExp. This will require accounting for the relative differences in image quality and noise between the template and CalExp.
+\item (optional) Dependent on the density of sources \hyperref[sec:acSingleFrameDeblending]{deblending} of difference images may be necessary
+\item Measurement of image difference sources (accounting for whether the CalExp image was preconvolved or not)
+\item Removal of spurious DIASources 
+\item Association of the DIASources with previously detected DIAObjects and SSObjects
+\item Forced measurement for all DIAObjects on the DIAImage
+\end{itemize}
+
+
+
+\subsubsection{Input Data}
 
 \paragraph{Input Data: CalExp}
 
@@ -219,6 +241,8 @@ The SSObject list at the time of the observation. The SSObject positions will be
 
 Classification of DIASources based on their morphological features (and possibly estimates of the local density or  environment associated with the DIASource) will be undertaken prior to association in order to reduce the number of false positives. The data structures that define these classifications will be required as an input to the spuriousness analysis. 
 
+\subsubsection{Output Data}
+
 \paragraph{Output Data Product: DIAImage}
 
 Image differences (DIAImage) derived from subtracting a CalExp from a TemplateCoadd image 
@@ -234,25 +258,11 @@ DIASource will be associated with existing DIAObjects and persisted. New DIASour
 
 \paragraph{Output Data Product: DIAForcedPhotometry}
 
-For all DIAObjects forced photometry will be undertaken given a time windowed estimate of the DIAObject position.
-
-
-The process for image differencing requires the following steps
-\begin{itemize}
-\item Creation or \hyperref[sec:acRetrieveTemplate]{retrieval} of a TemplateCoadd.
-\item Matching the astrometry and PSF of a CalExp to the TemplateCoadd and subtracting the template image from the CalExp. This will require accounting for the relative differences in image quality and noise between the template and CalExp.
-\item (optional) Dependent on the density of sources \hyperref[sec:acSingleFrameDeblending]{deblending} of difference images may be necessary
-\item Measurement of image difference sources (accounting for whether the CalExp image was preconvolved or not)
-\item Removal of spurious DIASources 
-\item Association of the DIASources with previously detected DIAObjects and SSObjects
-\item Forced measurement for all DIAObjects on the DIAImage
-\end{itemize}
 
 
 
+\subsubsection{Template Generation}~
 \label{sec:apCRTemplates}
-
-\paragraph{Template Generation}~
 
 Template generation requires the creation or \hyperref[sec:acRetrieveTemplate]{retrieval} of a TemplateCoadd w that is matched to the position and spatial extent of the input CalExp. Generation of the TemplateCoadd could be from a persisted Coadd that was generated from CalExp exposures with comparable (within a predefined tolerance) airmass and parallactic angles or from a model that corrects for the effect of  \hyperref[sec:acDCRTemplates]{differential chromatic refraction}. It is expected that these operations would be undertaken on a CCD level but for efficiency the TemplateCoadd might be returned for a full visit. 
 
@@ -264,7 +274,7 @@ Template generation requires the creation or \hyperref[sec:acRetrieveTemplate]{r
   ``parallactic angle'' of the CalExp image
 \end{itemize}
 
-\paragraph{Image differencing}~
+\subsubsection{Image differencing}~
 
 Image differencing incorporates the matching of a CalExp to a TemplateCoadd (astrometrically and in terms of image quality), subtraction of the tempalte image, detection and measurement of DIASources, removal of spurious DIAsources, and association of the DIASources with previously identified DIAObjects, Objects, and SSObjects. 
 
@@ -283,7 +293,7 @@ Image differencing incorporates the matching of a CalExp to a TemplateCoadd (ast
 \item \hyperref[sec:acSpuriousnessAlgorithms]{Spuriousness algorithms} also known as ``real-bogus'' may have to be applied at this time dependent on the number of false positives. DIASources classified as spurious at this stage may not be persisted (dependent on the density of the false positives). The default technique will be based on a trained random forest classifier. It is likely that the training of this classifier will need to be conditioned on the image quality and airmass of the observations.
 \end{itemize}
 
-\paragraph{Source Association}~
+\subsubsection{Source Association}~
 
 In Source Association DIASources detected within a given CCD will be cross-matched (\hyperref[sec:acDIAObjectGeneration]{associated}) with the DIAObject table and the SSObjects (whose ephemerides have been generated for the time of the current observation. The association will be probabilistic  and account for the uncertainties within the positions. Dependent on the available computational resources the association may include flux and priors on expected proper motions for the sources. External targets (e.g.\ well resolved transient events from other telescopes or instruments) can be incorporated within this component of the nightly pipeline enabling either matching to DIASources or generation of forced photometry at the position of the external source. It is not clear that this is an objective of the pipeline. 
 
@@ -307,14 +317,14 @@ The prototype code is available at \url{https://github.com/lsst/ip_diffim}. The 
 
 \subsection{Alert Generation Pipeline (\wbsAP)}
 
-\subsubsection{Key Requirements}
-
 Alert Generation Pipeline shall take the newly discovered \DIASources and all associated metadata as described in the \DPDD, and deliver alert packets in \VOEvent format to a variety of endpoints via standard IVOA protocols (eg., VOEvent Transport Protocol; VTP\@).
 
 To directly serve the end-users, the Alert Generation Pipeline shall provide a basic, limited capacity, alert filtering service. This service will run at the LSST U.S. Archive Center (at NCSA). It will let astronomers create simple filters that limit what alerts, and what fields from those alerts, are ultimately forwarded to them. These \emph{user defined filters} will be possible to specify using an SQL-like declarative language, or short snippets of (likely Python) code.
 
 Since there is a need to keep both the alert database and the brokers consistent, there is a big win if both the database and the brokers read from the same fault tolerant intermediate persistence format.  A redundant, cluster based, strongly ordered, message system like Kafka (http://kafka.apache.org) is a very attractive option as the intermediate persistence.  It is very similar in concept to persisting to some well known file format with the addition of reduntant storage, configurable expiration time of messages, and strict ordering so database catch-up is trivial.  It is also scalable.
 
+
+\subsubsection{Input Data}
 
 \paragraph{Input Data: Object}
 
@@ -333,11 +343,13 @@ The TemplateCoadd used in the image subtraction will be used to  generate postag
 
 The image subtracted DIAImage will be used to  generate postage stamp or cut out images of DIAObjects within the CCD
 
+\subsubsection{Output Data}
+
 \paragraph{Output Data Product: VOevents}
 
 VOEvents generated from the DIAObjects will be persisted. The form of these persisted events has  not been decided.
 
-\paragraph{Alert generation}~
+\subsubsection{Alert generation}~
 
 \paragraph{Pipeline Tasks}
  \begin{itemize}
@@ -346,7 +358,7 @@ VOEvents generated from the DIAObjects will be persisted. The form of these pers
 \item Alert database ingestion client reads all new alerts and persists them permanently in the alert database
 \end{itemize}
 
-\paragraph{Alert Distribution: To community brokers}
+\subsubsection{Alert Distribution: To community brokers}
 
 \paragraph{Pipeline Tasks}
 \begin{itemize}
@@ -356,7 +368,7 @@ VOEvents generated from the DIAObjects will be persisted. The form of these pers
 \item Transmit bundled VOEvents to community broker endpoints
 \end{itemize}
 
-\paragraph{Alert Distribution: Minimal brokers}
+\subsubsection{Alert Distribution: Minimal brokers}
 \noindent
 Each minimal broker will have some subset of users.  The following is for a single broker.
 
@@ -369,7 +381,7 @@ Each minimal broker will have some subset of users.  The following is for a sing
 \item Publish the VOEvent to the appropriate endpoint (potentially another messaging queue so clients can access asynchronously)
 \end{itemize}
 
-\paragraph{Forced Photometry on all DIAObjects}~
+\subsubsection{Forced Photometry on all DIAObjects}~
 
 \paragraph{Pipeline Tasks}
 \begin{itemize}
@@ -384,28 +396,27 @@ Each minimal broker will have some subset of users.  The following is for a sing
 
 \subsection{Precovery Photometry Pipeline}
 
-\noindent
-{\bf Input Data:}\\
+Within 24 hrs.
+
+\subsubsection{Input Data}
+
+\paragraph{Input Data}
 \begin{itemize}
 \item Butler access to DIA images within finite time interval (default 
   30 days) 
 \item Butler access to DIAobjects detected from the previous night 
   with no associations 
 \end{itemize}
-{\bf Output Data}\\
+
+\subsubsection{Output Data}
 \begin{itemize}
 \item Updated and persisted forced photometry tables for all newly
   detected DIAobjects
 \end{itemize}
 
-\subsubsection{Key Requirements}
 
-Within 24 hrs.
+\subsubsection{Precovery of new DIAObjects}~
 
-\paragraph{Precovery of new DIAObjects}~
-
-\noindent
-{\bf Subtasks:}
 \begin{itemize}
 \item Force photometer in difference images for all new DIAObjects for the past 30 days.
 \end{itemize}
@@ -413,19 +424,27 @@ Within 24 hrs.
 
 \subsection{Moving Object Pipeline (\wbsMOPS)}
 
-\subsubsection{Key Requirements}
 
 The Moving Object Pipeline is responsible for generating and managing the Solar System\footnote{Also sometimes referred to as `Moving Object'} data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% of all Solar System objects that meet the findability criteria as defined in the \OSS\@. 
 
-\subsubsection{Baseline Design}
-{\bf Input Data}\\
+\begin{itemize}
+\item Feed all input orphan DIASources to \hyperref[sec:acMakeTracklets][makeTracklets]. 
+\item Run \hyperref[sec:acAttributionAndPrecovery]{attribution and precovery} on with just the tracklets and DIASources from the previous night.  This culls any tracklets or DIASources that obviously belong to an existing SSObject from the rest of the processing. 
+\item Compute new \hyperref[sec:acOrbitFitting]{orbits} and \hyperref[sec:acOrbitMerging]{merge orbits}. 
+\item Run \hyperref[sec:acAttributionAndPrecovery]{attribution and precovery} on with full survey of tracklets and DIASources but only running over new SSObjects. 
+\item \hyperref[sec:acOrbitMerging]{Merge Orbits}. 
+\end{itemize}
+
+\subsubsection{Input Data}
+
 \begin{itemize}
 \item 'Orphan' DIASources from the last night of observing.  This means DIASources that are not associated with a DIAObject.  DIASources associated with an SSObject in the night are still passed through the MOPS machinery
 \item DIAObject database
 \item SSObject database
 \item Exposure metadata database
 \end{itemize}
-{\bf Output Data}\\
+
+\subsubsection{Output Data}
 \begin{itemize}
 \item Updated SSObject databaase
 \item Updated DIASource database
@@ -439,14 +458,6 @@ The Moving Object Pipeline is responsible for generating and managing the Solar 
 {\bf Actions in case of failure}\\
 {\bf Alternative procedures}\\
 
-{\bf Subtasks:}
-\begin{itemize}
-\item Feed all input orphan DIASources to \hyperref[sec:acMakeTracklets][makeTracklets].
-\item Run \hyperref[sec:acAttributionAndPrecovery]{attribution and precovery} on with just the tracklets and DIASources from the previous night.  This culls any tracklets or DIASources that obviously belong to an existing SSObject from the rest of the processing.
-\item Compute new \hyperref[sec:acOrbitFitting]{orbits} and \hyperref[sec:acOrbitMerging]{merge orbits}.
-\item Run \hyperref[sec:acAttributionAndPrecovery]{attribution and precovery} on with full survey of tracklets and DIASources but only running over new SSObjects.
-\item \hyperref[sec:acOrbitMerging]{Merge Orbits}.
-\end{itemize}
 
 \subsubsection{Prototype Implementation}
 
