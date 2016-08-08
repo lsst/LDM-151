@@ -166,13 +166,9 @@ QA-1 designates the capability to assess data quality in real-time observing sce
 There are two distinct aspects to this capability:
 
 \begin{enumerate}
-\item Some metric products and services serve standalone user-driven use cases as in QA-0 but with additional data sources, such as the Engineering and Facilities Database (EFD), and with real LSST data as opposed to simulated data or pre-cursor data sets.  An example use case is ``Show the width of point sources on data taken this week in windy conditions with all vents closed versus only the vents in the wind direction as a function of wind speed''.
+\item Some metric products and services serve stand-alone user-driven use cases as in QA-0 but with additional data sources, such as the Engineering and Facilities Database (EFD), and with real LSST data as opposed to simulated data or precursor data sets.  An example use case is ``Show the width of point sources on data taken this week in windy conditions with all vents closed versus only the vents in the wind direction as a function of wind speed''.
 
-\item Some metric products are produced as part of the routine opreational processing for Level 1 and Calibration pipelines. These will predominantly use the production DM architecture at the Archive Center and its satellites and produce metric products either through QA-specific steps in the processing or via the outputs of task instrumentation. An example use case is ``show execution times of the deblending task as a function of galactic latitude''.
-
-
-
-``show the running time of the deblending step'' 
+\item Some metric products are produced as part of the routine operational processing for Level 1 and Calibration pipelines. These will predominantly use the production DM architecture at the Archive Center and its satellites and produce metric products either through QA-specific steps in the processing or via the outputs of task instrumentation, though there might be additional metrics optimised for Commissioning that are required to run in different architectures. An example use case is ``show execution times of the deblending task as a function of galactic latitude''.
 
 \end{enumerate}
 
