@@ -154,7 +154,7 @@ defined but the default procedure assumes three iterations.
 \paragraph{Source measurement:}~
 \label{sec:apSourcemeasurement}
 
-For the Source catalog generated in \ref{sec:apPSFBackground} measure the source properties using a subset of features described in \ref{sec:acMeasurement}. Source measurement if for all sources within the Source catalog and not just the bright subset used to calibrate the PSF. 
+For the Source catalog generated in \ref{sec:apPSFBackground} measure the source properties using a subset of features described in \ref{sec:acMeasurement}. Source measurement is for all sources within the Source catalog and not just the bright subset used to calibrate the PSF. 
 
 \paragraph{Pipeline Tasks}
 We anticipate using the following plugin algorithms for \ref{sec:acMeasurement}
@@ -254,7 +254,7 @@ The process for image differencing requires the following steps
 
 \paragraph{Template Generation}~
 
-Template generation requires the creation or \hyperref[sec:acRetrieveTemplate]{retrieval} of a TemplateCoadd w that is matched to the position and spatial extent of the input CalExp. Generation of the TemplateCoadd could be from a persisted Coadd that was generated from CalExp exposures with comparable (within a predefined tolerance) airmass and parallactic angles or from a model that corrects for the effect of  \hyperref[sec:acDCRTemplates]{differential chromatic refraction}. It is expected that these operations would be undertaken on a CCD level but for efficiency the TemplateCoadd might be returned for a full visit. 
+Template generation requires the creation or \hyperref[sec:acRetrieveTemplate]{retrieval} of a TemplateCoadd that is matched to the position and spatial extent of the input CalExp. Generation of the TemplateCoadd could be from a persisted Coadd that was generated from CalExp exposures with comparable (within a predefined tolerance) airmass and parallactic angles or from a model that corrects for the effect of  \hyperref[sec:acDCRTemplates]{differential chromatic refraction}. It is expected that these operations would be undertaken on a CCD level but for efficiency the TemplateCoadd might be returned for a full visit. 
 
 
 \paragraph{Pipeline Tasks}
@@ -266,7 +266,7 @@ Template generation requires the creation or \hyperref[sec:acRetrieveTemplate]{r
 
 \paragraph{Image differencing}~
 
-Image differencing incorporates the matching of a CalExp to a TemplateCoadd (astrometrically and in terms of image quality), subtraction of the tempalte image, detection and measurement of DIASources, removal of spurious DIAsources, and association of the DIASources with previously identified DIAObjects, Objects, and SSObjects. 
+Image differencing incorporates the matching of a CalExp to a TemplateCoadd (astrometrically and in terms of image quality), subtraction of the template image, detection and measurement of DIASources, removal of spurious DIAsources, and association of the DIASources with previously identified DIAObjects, Objects, and SSObjects. 
 
 \paragraph{Pipeline Tasks}
 \begin{itemize}
