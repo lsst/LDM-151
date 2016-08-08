@@ -187,7 +187,7 @@ There are two QA components developed for Alert Production:
 
 \begin{itemize}
 
-\item A static analysis component that can check, for example, whether the alerts conform to a valid format. This kind of component can be incorporated in the normal Alert Production pipeline.
+\item A static analysis component that can check, for example, whether the notifications in the alert stream conform to a valid format. This kind of component can be incorporated in the normal Alert Production pipeline.
 
 \item A component to receive alerts (akin to a mini-broker) and collect statistics on received events. This would run as a canary node outside LSST facilities to test the alert system is functioning correctly.
 
@@ -229,7 +229,7 @@ The SDQA system will also provide QA of Calibration images and products.
 
 \begin{itemize}
 
-\item Images taken from the Camera will require ``prompt QA'' that will run in the quasi-real-time image processing system. Camera is interested in the monitoring infrastructure of SDQA for tracking parameters such as read noice, cross-talk, linearity etc.
+\item Images taken from the Camera will require ``prompt QA'' that will run in the quasi-real-time image processing system. Camera is interested in the monitoring infrastructure of SDQA for tracking parameters such as read noise, cross-talk, linearity etc.
 
 \item QA of Calibration Products Production data products (i.e., master calibration images and calibration database entries). These are similar in architecture and implementation to other DRP-related tests. The one exception to the above is the daily daytime/twilight calibration operations prior to night-time observing. QA done for this calibration sequence needs to run under Obsetvatory Control System. There is therefore an explicit or implicit (via the DMCS) interface to the OCS that is yet to be finalised. 
 
@@ -276,7 +276,7 @@ In addition to the components provided in QA-0, and QA-1, the new components for
 
 If the SDQA system determines that data (whether science or calibration) is defective, it provides all the information required for the workflow system to take action on this information.
 
-A simple example of this is that a calibration is bad, and it needs to be marked as such so that it is not used in further DRP processing (similar to how if a data frame is bad and the compute time should not be wasted processing it further for AP)
+A simple example of this is that a calibration is bad, and it needs to be marked as such so that it is not used in further DRP processing (similar to how if a data frame is bad the compute time should not be wasted processing it further for AP)
 
 A more complex implementation is that a data product previously thought to be good is on further processing or new tests determined to be bad. In this case will be combined with provenance information to mark \em{all} data polluted with the bad frame as bad, and provide sufficient information to the workflow system to allow it to trigger the necessary reprocessing with that data excluded.
 
