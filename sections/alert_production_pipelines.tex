@@ -97,21 +97,22 @@ question into Andy R about Camera operations
 
 \subsubsection{Instrumental Signature Removal:}~
 \label{sec:apISR}
-Instrumental Signature Removal characterizes, corrects, interpolates
-and flags the camera (or raw) images to generate a flat-fielded and corrected
-exposure.
+Instrumental Signature Removal characterizes, corrects, interpolates and flags the camera (or raw) images to generate a flat-fielded and corrected exposure.
 
 \paragraph{Pipeline Tasks}
 \begin{itemize}
-\item Mask CCD defects based on the and saturation
-\item Assembly
-\item Full frame corrections: Dark, Flats (includes fringing)
-\item Pixel level corrections: Brighter fatter, static pixel size effects
-\item Interpolation of defects and saturation
-\item \hyperref[sec:artifact]{CR rejection}
-\item Generate snap difference
-\item Snap combination
+\item Mask the image defects at the amplifier level based on the sensor defect lists, and the per CCD saturation limits
+\item Assemble the amplifiers into a single frame (masking missing amplifiers)
+\item Apply full frame corrections: dark current correction, flat field to preserve surface brightness, fringe corrections
+\item Apply pixel level corrections: apply a correction model for brighter-fatter to homogenize the PSF, correct for static pixel size effects based on a model
+\item Interpolate across defects and saturated pixels assuming a model for the PSF (with a nominal FWHM)
+\item Apply a \hyperref[sec:artifact]{cosmic ray detection algorithm}
+\item Generate a summed and difference image from the individual snaps
 \end{itemize}
+
+\begin{note} What will we know about the PSF prior to measuring it - will we need to rerun interpolation after deriving the PSF or can we use a previously defined PSF. DO we interpolate CRs \end{note}
+
+Dependent on the properties of the delivered LSST image quality for 15 second snaps it may be advantageous to model any bulk motion between snaps prior to combination.
 
 
 \subsubsection{PSF and background determination:}~
