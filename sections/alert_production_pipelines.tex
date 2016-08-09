@@ -3,7 +3,7 @@
 
 
 
-Alert Production is run each night to product catalogs and images for sources that have varied or moved relative to a previous observation.  The data products produced by Alert production are given in  table~\hyperref[table:ap_data_products].
+Alert Production is run each night to product catalogs and images for sources that have varied or moved relative to a previous observation.  The data products produced by Alert production are given in table~\hyperref[table:ap_data_products].
 
 \begin{table}
 \small
@@ -40,7 +40,7 @@ processing, alert detection, alert generation, precovery photometry,
 and a moving objects pipeline. The first four of these components run
 as a linear pass through of the data. The moving objects pipeline is
 run independently of the rest of the alert production. The flow of
-information through this system is shown in figure~\ref{fig:nightly}.
+information through this system is shown in Figure~\ref{fig:nightly}.
 
 \begin{figure}[th]
 \begin{center}
@@ -62,17 +62,17 @@ Single Frame Processing pipeline will be implemented as a flexible   framework w
 
 \paragraph{Input Data: Raw}
 
-Amplifier images that the camera has corrected for crosstalk, overscan, linearity.  All images from a visit should be available to the task (including snaps). An approximate WCS is assumed to be available as metadata
+Amplifier images that the camera has corrected for crosstalk, overscan, linearity.  All images from a visit should be available to the task (including snaps). An approximate WCS is assumed to be available as metadata.
 
 \paragraph{Input Data Product: Reference}
 
 A full-sky reference catalog of stars derived either from an external survey (e.g.\ Gaia) or from the Data Release Processing.
 
-Flatfield calibration images for all passbands and all CCDs appropriate for the time at which the observations were undertaken
+Flatfield calibration images for all passbands and all CCDs appropriate for the time at which the observations were undertaken.
 
-List of the positions and extents of sensor defects for all CCDs within the focal plane
+List of the positions and extents of sensor defects for all CCDs within the focal plane.
 
-Metadata for all CCDs including electronic parameters (saturation limits, readnoise, electronic footprint)
+Metadata for all CCDs including electronic parameters (saturation limits, readnoise, electronic footprint).
 
 \paragraph{Output Data Product: CalExp}
 
@@ -100,13 +100,13 @@ SFM pipeline functions include:
 \item Per-CCD PSF determination;
 \item Per-CCD WCS determination and astrometric registration of images;
 \item Per-CCD sky background determination;
-\item Source detection and measurement on single frame images
+\item Source detection and measurement on single frame images;
 \item Generation of metadata required by the OCS
 \end{itemize}
 
 Calibrated exposure produced by the SFM pipeline must possess all information necessary for measurement of source properties by single-epoch Object Characterization algorithms.
 
-\paragraph{Actions in case of failure:}
+\paragraph{Actions in case of failure}
 
 In the case camera data are not available due to a network outage that is longer than the data buffer at the summit the single frame processing will work on raw images (i.e.\ without the camera pixel corrections) and be run in a batch mode. 
 
@@ -131,9 +131,8 @@ exposure.
 \end{itemize}
 
 
-\paragraph{PSF and background determination:}~
+\paragraph{PSF and Background Determination}~
 \label{sec:apPSFBackground}
-
 Given exposures that have been processed through the Instrument Signature Removal, sources must be detected that will be used to determine the WCS and photometric calibration of the images. Detection and measurement of the properties of these calibration Sources requires knowlege of the PSF and background for the image which in turn requires knowledge of the sources on the image. An iterative procedure is, therefore, adopted to generate the Source catalog. 
 
 \paragraph{Pipeline Tasks}
@@ -151,7 +150,7 @@ defined but the default procedure assumes three iterations.
 \end{itemize}
 
 
-\paragraph{Source measurement:}~
+\paragraph{Source Measurement}~
 \label{sec:apSourcemeasurement}
 
 For the Source catalog generated in \ref{sec:apPSFBackground} measure the source properties using a subset of features described in \ref{sec:acMeasurement}. Source measurement is for all sources within the Source catalog and not just the bright subset used to calibrate the PSF. 
@@ -167,7 +166,7 @@ We anticipate using the following plugin algorithms for \ref{sec:acMeasurement}
 \item  \hyperref[sec:apertureCorrection]{Aperture correction} for  detected sources
 \end{itemize}
 
-\paragraph{Photometric and Astrometric calibration:}~
+\paragraph{Photometric and Astrometric Calibration:}~
 Photometric and astrometric calibration entails a ``semi-blind'' cross match of a reference catalog (derived either from the DRP Objects or from an external catalog), the generation of a WCS (on the scale of a CCD or visit), and the generation of a photometric zeropoint (on the scale of a CCD).
 
 \paragraph{Pipeline Tasks}
@@ -264,7 +263,7 @@ Template generation requires the creation or \hyperref[sec:acRetrieveTemplate]{r
   ``parallactic angle'' of the CalExp image
 \end{itemize}
 
-\paragraph{Image differencing}~
+\paragraph{Image Differencing}~
 
 Image differencing incorporates the matching of a CalExp to a TemplateCoadd (astrometrically and in terms of image quality), subtraction of the template image, detection and measurement of DIASources, removal of spurious DIAsources, and association of the DIASources with previously identified DIAObjects, Objects, and SSObjects. 
 
@@ -337,7 +336,7 @@ The image subtracted DIAImage will be used to  generate postage stamp or cut out
 
 VOEvents generated from the DIAObjects will be persisted. The form of these persisted events has  not been decided.
 
-\paragraph{Alert generation}~
+\paragraph{Alert Generation}~
 
 \paragraph{Pipeline Tasks}
  \begin{itemize}

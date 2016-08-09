@@ -381,7 +381,7 @@ In many areas we will need to represent spatial models.  This will include model
 \subsection{Background Estimation}
 \label{sec:acBackgroundEstimation}
 
-Background estimation will be done on the largest scale feasible first.  In the case of Alert Production, this may be on the size of a chip.  In DRP, we expect this to be on a full focalplane.  An initial low order estimate will be made on a large scale.  Each chip will be divided into subregions.  For each subregion, a robust average of the non-masked pixels will be computed.  All values for all chips will be fit by an appropriate function (see \S \ref{sec:acSpatialModels}).  This will provide a low order background estimation in focal plance coordinates.  Note that this can only be done if the instrument signature removal is very high fidelity.  Any sharp discontinuity could cause problems with fitting a smooth function.
+Background estimation will be done on the largest scale feasible first.  In the case of Alert Production, this may be on the size of a chip.  In DRP, we expect this to be on a full focalplane.  An initial low order estimate will be made on a large scale.  Each chip will be divided into subregions.  For each subregion, a robust average of the non-masked pixels will be computed.  All values for all chips will be fit by an appropriate function (see \S \ref{sec:acSpatialModels}).  This will provide a low order background estimation in focal plance coordinates.  Note that this can only be done if the Instrument Signature Removal is very high fidelity.  Any sharp discontinuity could cause problems with fitting a smooth function.
 
 A higher order background model can be computed per chip.  First, the low order background is subtracted from the image.  The non-masked pixels will again be binned on a finer grid avoiding bright objects.  The median in each bin is fit by an appropriate function.  In practice, this process will likely be iterative.
 
@@ -691,7 +691,7 @@ astrometric accuracy of the registration of images and the dependence
 of this astrometric accuracy on DCR we plan to define an interpolation
 scheme for generating DCR corrected templates.
 
-\subsubsection{Refraction from the atmosphere }
+\subsubsection{Refraction from the Atmosphere}
 %reference stone and community posting on DCR
 
 Refraction is dependent on the local index of refraction of air $n_0(\lambda)$ at the observatory and, as a function of wavelength is given by, 
@@ -751,7 +751,7 @@ with $z_0$ the zenith distance.
 % \end{table}
 % %\vspace{-0.7cm}
 
-\subsubsection{Generating a DCR corrected template}
+\subsubsection{Generating a DCR Corrected Template}
 
 Given a set of observed images, $O(x, z)$, at an airmass of $z$, and
 assuming that we know the wavelength dependence of the refraction, we
@@ -850,7 +850,7 @@ Richards et al. define two classes of features: those designed to characterize v
 
 All of these metrics are calculated for both Objects (\DPDD{} table 4, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}) and DIAObjects (\DPDD{} table 2, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}). They are calculated and recorded separately in each band. Calculations for Objects are performed based on forced point source model fits (\DPDD{} table 5, \texttt{psFlux}).  Calculations for DIAObjects are performed based on point source model fits to DIASources (\DPDD{} table 1, \texttt{psFlux}). In each case, calculation requires the fluxes and errors for all of the sources in the lightcurve to be available in memory simultaneously.
 
-\subsubsection{Characterization of periodic variability}
+\subsubsection{Characterization of Periodic Variability}
 
 \begin{itemize}
 
@@ -882,7 +882,7 @@ NB the \DPDD{} baselines providing 32 floats, but, since $\mathrm{PH}_{1,1}$ is 
 }
 \end{itemize}
 
-\subsubsection{Characterization of aperiodic variability}
+\subsubsection{Characterization of Aperiodic Variability}
 
 In addition to the periodic variability described above, we follow \cite{Richards11} in providing a series of statistics computed from the lightcurve which do not assume peridoicity. They define 20 floating point quantities in four groups which we describe here, again with the caveat that future revisions to the \DPDD{} may require changes to this list.
 
@@ -1147,7 +1147,7 @@ The number of tracklets goes up as $O(n^2)$ where $n$ is the number of images co
 
 When tracklets are collapsed, we gain more information about the collasped tracklet since we have multiple observations of it.  This allows some tracklets to be dismissed ds spurious linkages.  Any observation that deviates from the linear fit to the collapsed tracklet by a threshold amount will be discarded as spurious.
 
-\subsection{Attribution and precovery}
+\subsection{Attribution and Precovery}
 \label{sec:acAttributionAndPrecovery}
 Precovery is the process of adding 'orphan' DIASources, those that do not belong to a SSObject or DIAObject, to a SSObject.  Any time an SSObjects orbital parameters change significanly, it's possible that DIASources not associated previously could now match.  The process is to calculate ephemerides backward in time from the earliest observation as far as is possible given the uncertainty in the orbit.  These ephemerides are compared to the orphan DIASources.  If a match is found, a new orbit is fit and if the new orbit is a better fit than the old one, the SSObject is updated with the new fit.
 
