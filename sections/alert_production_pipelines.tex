@@ -51,6 +51,10 @@ In this document we do not address the question of estimating the selection func
 
 Single Frame Processing (SFM) Pipeline is responsible for reducing raw or camera corrected image data to\emph{calibrated exposures}, the detection and measurement of \Sources (using the components functionally  part of the Object Characterization Pipeline), the characterization of the point-spread-function (PSF), and the generation of an astrometric solution for an image.
 
+Detection and measurement of the properties of \Sources used to astrometrically and photometrically calibrate the CCD images requires knowlege of the PSF and background for the image which in turn requires knowledge of the properties of \Sources on the image. An iterative procedure is, therefore, adopted to generate an estimate of the background and PSF and \Source catalogs that comprises \hyperref[sec:apPSFBackground]{}  and \hyperref[sec:apSourcemeasurement]{}
+
+
+
 Single Frame Processing pipeline will be implemented as a flexible framework where new processing steps can be added without modifying the stack code. It should be possible for this pipeline or a subset of this pipeline to be run at the telescope facility during commissioning and operations.  
 
 %SFM pipeline functions include:
@@ -71,6 +75,7 @@ Calibrated exposure produced by the SFM pipeline must possess all information ne
 \noindent{\bf Actions in case of failure:} In the case camera data are not available due to a network outage that is longer than the data buffer at the summit the single frame processing will work on raw images (i.e.\ without the camera pixel corrections) and be run in a batch mode. For this case crosstalk (ref) and bias subtraction will be included within the ISR stage.
 
 \subsubsection{Input Data}
+\label{sec:apSFMInput}
 
 \paragraph*{Raw Camera Images:} Amplifier images that have been corrected for crosstalk and bias by the camera software All images from a visit should be available to the task (including snaps). An approximate WCS is assumed to be available as metadata with an absolute pointing uncertainty (for a full focal plane) of 2 arcseconds (OSS-REQ-0298) and the field rotation known to an accuracy of 32 arcseconds (LTS-206).
 \begin{note}
@@ -95,7 +100,7 @@ question into Andy R about Camera operations
 \paragraph*{Derived Metadata} A parameterization of the PSF, WCS, photometric zeropoint, and depth for each CCD in a visit. These data will be made available to the telescope Observatory Control System (OCS) to assess the success of each observation. It is expected that these data will be persisted within a database that will be queried by the OCS.
 
 
-\subsubsection{Instrumental Signature Removal:}~
+\subsubsection{Instrumental Signature Removal}~
 \label{sec:apISR}
 Instrumental Signature Removal characterizes, corrects, interpolates and flags the camera (or raw) images to generate a flat-fielded and corrected exposure.
 
@@ -106,68 +111,75 @@ Instrumental Signature Removal characterizes, corrects, interpolates and flags t
 \item Apply full frame corrections: dark current correction, flat field to preserve surface brightness, fringe corrections
 \item Apply pixel level corrections: apply a correction model for brighter-fatter to homogenize the PSF, correct for static pixel size effects based on a model
 \item Interpolate across defects and saturated pixels assuming a model for the PSF (with a nominal FWHM)
-\item Apply a \hyperref[sec:artifact]{cosmic ray detection algorithm}
-\item Generate a summed and difference image from the individual snaps
+\item Apply a cosmic ray detection algorithm as described in \hyperref[sec:artifact]{sec:artifact}
+\item Generate a summed and difference image from the individual snaps propagating the union of the mask pixels in each snap
 \end{itemize}
 
-\begin{note} What will we know about the PSF prior to measuring it - will we need to rerun interpolation after deriving the PSF or can we use a previously defined PSF. DO we interpolate CRs \end{note}
+\begin{note} What will we know about the PSF prior to measuring it - will we need to rerun interpolation after deriving the PSF or can we use a previously defined PSF. Do we interpolate CRs \end{note}
 
 Dependent on the properties of the delivered LSST image quality for 15 second snaps it may be advantageous to model any bulk motion between snaps prior to combination.
 
 
-\subsubsection{PSF and background determination:}~
+\subsubsection{PSF and background determination}~
 \label{sec:apPSFBackground}
 
-Given exposures that have been processed through the Instrument Signature Removal, sources must be detected that will be used to determine the WCS and photometric calibration of the images. Detection and measurement of the properties of these calibration Sources requires knowlege of the PSF and background for the image which in turn requires knowledge of the sources on the image. An iterative procedure is, therefore, adopted to generate the Source catalog. 
+Given exposures that have been processed through Instrument Signature Removal, \Sources must be detected to determine the astrometric and photometric calibration of the images. As noted previously an iterative procedure will be adopted to generate an estimate of the background and PSF, and to characterize the properties of the detected sources.  Convergence criteria for this procedure are not currently defined. The default implementation assumes three iterations.
 
 \paragraph{Pipeline Tasks}
-The procedure for PSF and background estimation and the associated
-algorithmic components. Convergence criteria for the procedure is not
-defined but the default procedure assumes three iterations.
+The iterative process for PSF and background estimation comprises
 \begin{itemize}
-\item \hyperref[sec:acBackgroundEstimation]{Background estimation}
-\item \hyperref[sec:acSourceDetection]{Source detection} to the 5$\sigma$ limit of
+\item Background estimation on the scale of a single CCD is as described in \hyperref{sec:acBackgroundEstimation}, which divides the CCD into subregions and estimates  a robust mean for non-source pixels.
+\item Subtraction of the background and the detection of sources as described in \hyperref{sec:acSourceDetection}. The initial detection threshold will be 5$\sigma$ with  $\sigma$ the estimated from variance image plane.
+\item Measurement of the properties of the detected sources (see \hyperref[sec:apSourcemeasurement]{sec:apSourcemeasurement})
 %\item Single CCD \hyperref[sec:acDeblending]{Deblend sources}
-\item Selection of PSF candidate stars based on a signal-to-noise threshold 
-  (default 50 $\sigma$) and isolated sources 
-\item Single CCD \hyperref[sec:acSingleCCDPSF]{PSF determination} given the selected bright sources
+\item Selection of isolated PSF candidate stars based on a signal-to-noise threshold (default 50 $\sigma$) \item Single CCD PSF determination using \hyperref[sec:acSingleCCDPSF]{} and given the selected bright sources 
+\item Masking of source pixels within the CCD (growing the footprint of the \Sources to mask the outer regions of the \Source profiles will likely be required)
 %\item Single CCD \hyperref[sec:acModelSpatialPSF]{PSF spatial model}
 \end{itemize}
 
+The default expectation is that all tasks within this procedure would be iterated until convergence.  There maybe significant optimizations to be gained by excluding the \Source detection step after an initial detection if the number of sources does not change significantly.
 
-\subsubsection{Source measurement:}~
+\begin{note} Treatment of covariance \end{note}
+
+
+\subsubsection{Source measurement}~
 \label{sec:apSourcemeasurement}
 
-For the Source catalog generated in \ref{sec:apPSFBackground} measure the source properties using a subset of features described in \ref{sec:acMeasurement}. Source measurement if for all sources within the Source catalog and not just the bright subset used to calibrate the PSF. 
-
-\paragraph{Pipeline Tasks}
-We anticipate using the following plugin algorithms for \ref{sec:acMeasurement}
+For the \Source catalog generated in \ref{sec:apPSFBackground} source properties are measured using a subset of features described in \ref{sec:acMeasurement}. Source measurement is for all sources within the Source catalog and not just the bright subset used to calibrate the PSF.  We anticipate using the following plugin algorithms,
 \begin{itemize}
-\item \hyperref[sec:acCentroidAlgorithms]{Centroids}
-\item \hyperref[sec:acPixelFlags]{Pixel Flag Aggregation}
-\item \hyperref[sec:acAperturePhotometry]{Aperture Photometry} (but only for one or two radii) 
-\item \hyperref[sec:acPSFPhotometry]{PSF Photometry} 
-\item \hyperref[sec:acStaticPointSourceModels]{Static Point Source Models}
-\item  \hyperref[sec:apertureCorrection]{Aperture correction} for  detected sources
+\item Centroids based on a static PSF model fit (see \hyperref[sec:acCentroidAlgorithms]{} and \hyperref[sec:acStaticPointSourceModels])
+\item Aggregation of pixel flags as described in \hyperref[sec:acPixelFlags]{}
+\item Aperture Photometry as geven in \hyperref[sec:acAperturePhotometry]{} (but only for one or two radii) 
+\item PSF photometry given in \hyperref[sec:acPSFPhotometry]{} assuming a static PSF model fit
+\item  An aperture correction estimated assuming a static PSF model and measurement of the curve of growth for  detected sources as given in \hyperref[sec:apertureCorrection]{}
 \end{itemize}
 
-\subsubsection{Photometric and Astrometric calibration:}~
-Photometric and astrometric calibration entails a ``semi-blind'' cross match of a reference catalog (derived either from the DRP Objects or from an external catalog), the generation of a WCS (on the scale of a CCD or visit), and the generation of a photometric zeropoint (on the scale of a CCD).
+\begin{note} why only one or two radii \end{note}
+
+
+\subsubsection{Photometric and Astrometric calibration}~ 
+Photometric and astrometric calibration entails a ``semi-blind'' cross match of a reference catalog derived either from the DRP \Objects or from an external catalog (see \hyperref[sec:apSFMInput]{}), the generation of a WCS (on the scale of a CCD or visit), and the generation of a photometric zeropoint (on the scale of a CCD).
 
 \paragraph{Pipeline Tasks}
-Photometric and astrometric calibration performed at the scale of a
-single sensor (extended to the scale of a visit depending on required fidelity)
+The photometric and astrometric calibration is expected to be performed at the scale of a single sensor. It is possible that the calibration process will need to be extended to larger scales (up to a single visit) if there is significant structure in the photometric zero point, or if astrometric distortions cannot be calibrated at the scale of the CCD with sufficient accuracy such that that the astrometric distortions do not dominate the false positives in the image subtraction.
+
+A visit level calibration strategy will introduce synchronization points within the processing of the CCDs as the detections on all CCDs will need to be aggregated prior to the astrometric fit.
+
+The procedures used to match and calibrate the data are,
 \begin{itemize}
-\item CCD level \hyperref[sec:acSingleCCDReferenceMatching]{source
-    association} between the DRP reference catalog and Sources from the \ref{sec:apSourcemeasurement}
-\item Generation of a \hyperref[sec:acSingleCCDPhotometricFit]{photometric solution} at the level of a single CCD
-\item Decomposition of the astrometric components (e.g.\ optical distortions, sensor tree-rings) for a single CCD and generation of an \hyperref[sec:acSingleCCDAstrometricFit]{astrometric fit} at the level of a single CCD
-\item Persistence of the astrometric, PSF, and photometric solutions so that the OCS can incorporate it into their telemetry
+\item CCD level source association between the DRP reference catalog
+  (or external catalog) and \Sources  during the PSF and background
+  estimation using a simplified TaberB approach described in \hyperref[sec:acSingleCCDReferenceMatching]{}. Given an astrometric accuracy of $<0.5$ milliarcseconds from external catalogs such as GAIA (for a $V=19$ G2V star) or a $<50$ milliarcseconds for the DRP catalogs the search radii for sources will be small {\bf NUMBER}
+\item Generation of a photometric fit on the scale of a single CCD as described in \hyperref[sec:acSingleCCDPhotometricFit]{}
+\item Decomposition of the astrometric components (e.g.\ optical distortions, sensor tree-rings) for a single CCD and generation of  an astrometric fit at the level of a single CCD (or visit) using the tasks given in \hyperref[sec:acSingleCCDAstrometricFit]{}
+\item Persistence of the astrometric, PSF, and photometric solutions that will be made available to the OCS 
 \end{itemize}
 
 Given the number of stars available on a CCD or the complexity of the astrometric solutions for the LSST it may be necessary that the astrometric and photometric solutions must be performed at the level of a visit and not a CCD.  For these cases the operations will be \hyperref[sec:acSingleVisitReferenceMatching]{single visit matching},   \hyperref[sec:acSingleCCDPhotometricFit]{single visit photometric solutions}, \hyperref[sec:acSingleVisitAstrometricFit]{single visit astrometric fits}.
 
 Astrometric and photometric performance within crowded fields will require that the order of the WCS should depend on the number of calibration Sources that are available.
+
+\begin{note} What about high density regions? \end{note}
 
 \subsection{Alert Detection (\wbsDiffim)}
 \label{sec:apAlertDetection}
