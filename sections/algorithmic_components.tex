@@ -188,11 +188,13 @@ Snap differences will provide significant leverage for masking linear features. 
 
 \subsubsection{Warped Image Comparison}
 \label{sec:acWarpedImageArtifactDetection}
-AUTHOR: Jim
-\begin{itemize}
-\item Find more optical artifacts by looking at differences between warped images (this is run during background matching).
-\item Find transient astronomical sources we don't want to include in coadds.
-\end{itemize}
+
+Additional artifacts will be detected in DRP by comparing multiple viists that have already been resampled to the same coordinate system.  This is similar conceptually to \hyperref[sec:acSnapSubtraction]{Span Subtraction}, but will operate quite differently in practice, in that we do not expect to combine this stage with the morphological detection stages; instead we assume that everything we can detect morphologically will have already been detected.
+
+Instead, this stage will examine the full 3-d data cube (two spatial dimensions as well as the epoch dimension) for outliers in the epoch dimension that are contiguous in the spatial dimensions.  This is an extension of traditional coadd outlier-rejection, which can cause spurious rejections of single pixels (or small groups of pixels) due to noise and differing PSFs.  This can obviously detect astrophysical transients as well as image artifacts, and this is usually desirable; this stage is responsible for determing which pixels should contribute to our definition of the static sky, and we want to reject astrophysical transients from that as well.
+
+The largest challenge for this algorithm is probably handling highly variable astrophysical sources that are the nevertheless present in most epochs.  For these, defining the static sky is more subjective, and we may need to modify our criteria for rejecting a region on a visit as an outlier.
+
 
 \subsection{Artifact Interpolation}
 \label{sec:acArtifactInterpolation}
@@ -202,6 +204,7 @@ AUTHOR: Jim
 \item Eliminate small artifacts by interpolating them.
 \item Uses PSF model as interpolant.
 \end{itemize}
+
 
 \subsection{Source Detection}
 \label{sec:acSourceDetection}
