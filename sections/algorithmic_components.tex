@@ -35,11 +35,10 @@ AUTHOR: Merlin
 
 
 \subsection{Artifact Detection}
-\label{sec:artifact}
+\label{sec:acArtifactDetection}
 
-\subsubsection{Single-Exposure Morphology}
-\label{sec:acMorphologicalArtifactDetection}
-\paragraph{Cosmic Ray Identification}
+\subsubsection{Cosmic Ray Identification}
+\label{sec:acCosmicRayDetection}
 Cosmic rays will be identified using a Laplacian edge detection algorithm \citep{dokkum01}.  Laplacian edge detection involves convolving the image (I) with a smoothing function (f) tuned to the size of the expected edge width.
 \[
 L = \bigtriangledown^2f\ast I
@@ -79,7 +78,8 @@ images, we will define a set of default values.
 We can use something like L.A.COSMIC (or CRBLASTER) but if it is too slow, we can fall back to the SDSS algorithm which does a similar thing, but does no convolutions.
 We should also consider why we do not use a Canny algorithm instead.
 \end{note}
-\paragraph{Optical ghosts}
+
+\subsubsection{Optical ghosts}
 We will have a set of optical ghost models.  Some of these will be models of stationary ghosts (e.g. pupil
 ghost). Others will be a set of ghosts produced by point sources as a function of source position and
 brightness. The structure of the stationary ghosts can be measured using stacked, dithered star fields.  The latter will likely be modeled using raytracing tools or measured using projectors.
@@ -103,8 +103,8 @@ source ghosts can appear at significant separations, this may be a source of spu
 The CR rejection algorithm does not depend on the PSF of the image.  The single source ghosts may be a function of the PSF, but not very strongly I don't think.
 \end{note}
 
-\subsubsection{Single-Exposure Aggregation}
-\paragraph{Linear feature detection and removal}
+\subsubsection{Linear feature detection and removal}
+
 Satellite trails, out of focus airplanes, and meteors all cause long linear features in astronomical images.  The Hough Transform \citep{citation_needed} is a common tool used in computer vison applications to detect linear features.  Linear features are parameterized by $r$, the perpendicular distance to the line from the origin and $\theta$, the the angle of $r$ with the x-axis.  The $(r, \theta)$ space is binned and each pixel in the image adds its flux to all the bins consistent with that pixel location.  For bright linear features, the bin at the true location of the feature will fill up because more than one bright pixel is contributing to that location in parameter space.  After all pixels have been polled, the highest bins correspond to the linear features in the image.
 
 This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.  
@@ -129,16 +129,13 @@ Note that there is a writeup by Steve Bickerton on a different way to modify the
 
 \subsubsection{Snap Subtraction}
 \label{sec:acSnapSubtraction}
-\paragraph{Improvements by using multiple snaps}~\\
-{\bf Cosmic Rays}
-We will need to still run some sort of topological identifier like the one outlined above.  This is because there will be real transients and we still only want to pick out the sharp features as CRs.  It will help to have less crowding, so we should do CR rejection on the snap difference if we have it.
+\paragraph{Cosmic Rays}
+We will need to still run some sort of morphological identifier like the one outlined above.  This is because there will be real transients and we still only want to pick out the sharp features as CRs.  It will help to have less crowding, so we should do CR rejection on the snap difference if we have it.
 
-\noindent
-{\bf Ghosts}
+\paragraph{Ghosts}
 Snap differences will not help with ghosting as the ghosts should difference almost perfectly.
 
-\noindent
-{\bf Linear features}
+\paragraph{Linear features}
 Snap differences will provide significant leverage for masking linear features.  Since each segment will appear in at most one snap we can mask based on the pixels marked as detected in the difference images that are part of the trail.  This will help in crowded regions.  This technique will require running some sort of trail detection algorithm, but the requirements will be less stringent since the image will be so much less crowded.
 
 \subsubsection{Warped Image Comparison}
