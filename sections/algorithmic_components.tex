@@ -112,14 +112,14 @@ S^\prime = (S \ast M_5)
 \]
 If the PSF is well sampled, this SNR image can be used to detect the CRs by simply drawing a threshold in SNR.
 If the PSF is undersampled, the author uses the assumption that undersampled point sources are more symmetric
-than CRs.  By constructing a "fine-structure" image, one can place a minimum contrast between the Laplacian image and the fine structure image that further improves differentiation between CRs and point sources.
+than CRs.  By constructing a ``fine-structure'' image, one can place a minimum contrast between the Laplacian image and the fine structure image that further improves differentiation between CRs and point sources.
 \[
 F = (M_3 \ast I) - [(M_3 \ast I) \ast M_7]
 \]
 
 So the final CR selection criteria are: $S^\prime > \sigma_{lim}$ and $L^+/F > F_{lim}$.  The tuning
 parameters are: $f_s$ the subsampling rate, $\sigma_{lim}$ the SNR of the CRs in the detection image,
-$f_{lim}$ the minimum contrast relative to the "fine-structure" image. Assuming reasonable values for optical
+$f_{lim}$ the minimum contrast relative to the ``fine-structure'' image. Assuming reasonable values for optical
 images, we will define a set of default values.
 
 \begin{note}[Add to SFM section]
