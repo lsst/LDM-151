@@ -525,6 +525,8 @@ The catalogs are stacked and matched using a multi-matching algorithm like OPTIC
 
 Joint astrometric fitting must be able to work both with and without an external reference catalog (while only producing relative results in the latter case, of course).
 
+The first run of this algorithm in DRP may be responsible for correcting source positions to account for DCR.  Later runs should be given as input centroids measured with a PSF model that includes (and hence corrects for) DCR, and hence should not need to make this correction.
+
 \subsection{Photometric Fitting}
 \label{sec:acPhotometricFitting}
 \subsubsection{Single CCD (for AP)}
