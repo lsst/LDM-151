@@ -208,12 +208,22 @@ Artifact interpolation will not handle regions significantly larger than the PSF
 
 \subsection{Source Detection}
 \label{sec:acSourceDetection}
-AUTHOR: Jim
+
+Detection is responsible for identifying new sources in a single image, yielding approximation positions significance estimates.  We expect the same algorithm (or only slightly different algorithms) to be run on single-visit direct images, difference images, and coadds.  For difference images, this must include detection of negative and dipole sources.
+
+The output of detection is a set of \hyperref[sec:spFootprints]{Footprints} (containing peaks).
+
+In the limit of faint, isolated objects and white noise, detection should be equivalent to a maximum likelihood threshold for (at least) point sources, which can be achieved by correlating an image with its PSF and thresholding.  Other approaches may be necessary for different classes of objects, such as:
 \begin{itemize}
-\item Detect above-threshold regions and peaks in direct or difference images.
-\item Needs to work on preconvolved and unconvolved images.
-\item May need multi-pass variants: detect bright objects first, then faint; detect with approximate PSF, then improved.
+  \item In crowded stellar fields, we expect to need to detect iteratively while subtracting the brightest objects at each iteration (see e.g. Section~\ref{sec:drpBootstrapImChar}).
+  \item Optimal detection of diffuse galaxies may require correlating with kernels broader than the PSF.
+  \item When blending or any signficant sub-threshold objects are present, the noise properties may be sufficiently different from the usual assumptions in maximum-likelihood detection to allow those methods, and an alternate approach may be necessary.
+  \item When processing preconvolved difference images or likelihood coadds, detection will need to operate on images that have already been correlated with the desired filter.
+  \item When operating on non-likelihood coadds and standard difference images, detection may need to operate on images with significant correlated noise.
 \end{itemize}
+
+In deep DRP processing (Section~\ref{sec:drp_coadd_processing}), detection is closely tied to the \hyperref[drpDeepAssociate]{deep association} and \hyperref[drpDeepDeblend]{deep deblending} algorithms, and may change signficantly from the baseline plan based on developments in those algorithms.  For example, we may need to adopt a multi-scale approach to these operations (and \hyperref[sec:drpCoaddBackgroundEstimation]{background estimation}) that essentially merges these into a single algorithmic component with no well-defined boundaries.
+
 
 \subsection{Deblending}
 \label{sec:acDeblending}
