@@ -375,8 +375,8 @@ Note that deblending dipole sources is a complicated process and we do not inten
 \label{sec:acSpatialModels}
 In many areas we will need to represent spatial models.  This will include models fit to sparse and non-uniformly sampled data.  We will support fitting Chebyshev polynomials and splines.  We will also support regression techniques like Gaussian Processes.
 
-\subsection{Background Estimation}
-\label{sec:acBackgroundEstimation}
+\subsection{Single-Visit Background Estimation}
+\label{sec:acSingleVisitBackgroundEstimation}
 
 Background estimation will be done on the largest scale feasible first.  In the case of Alert Production, this may be on the size of a chip.  In DRP, we expect this to be on a full focalplane.  An initial low order estimate will be made on a large scale.  Each chip will be divided into subregions.  For each subregion, a robust average of the non-masked pixels will be computed.  All values for all chips will be fit by an appropriate function (see \S \ref{sec:acSpatialModels}).  This will provide a low order background estimation in focal plance coordinates.  Note that this can only be done if the Instrument Signature Removal is very high fidelity.  Any sharp discontinuity could cause problems with fitting a smooth function.
 
@@ -391,10 +391,15 @@ Requirements include working in crowded fields.  I think estimating a full focal
 I didn't explicitly talk about composition of background models, but this takes that into account by allowing a global model to be subtracted from the single chip image before a higher order model is fit.
 \end{note}
 
+\subsection{Coadd Background Estimation}
+\label{sec:acCoaddBackgroundEstimation}
+
+A variant of \hyperref[sec:acSingleVisitBackgroundEstimation]{Single-Visit Background Estimation} that is run on coadds to model the remaining background that is not removed during background matching.  This includes the observational background from the reference image
+
 \subsection{Matched Background Estimation}
 \label{sec:acMatchedBackgroundEstimation}
 
-A variant of \hyperref[sec:acBackgroundEstimation]{Background Estimation} for use on difference images produced in \hyperref[sec:drpBackgroundMatchAndReject]{Background Matching}.  This will be able to operate on full visit scales with much less concern for oversubtracting bright objects, which may allow it to use qualitatively different algorithms.  It may also be able to use models specifically designed to subtract specific ghosts or stray light patterns.
+A variant of \hyperref[sec:acSingleVisitBackgroundEstimation]{Single-Visit Background Estimation} for use on difference images produced in \hyperref[sec:drpBackgroundMatchAndReject]{Background Matching}.  This will be able to operate on full visit scales with much less concern for oversubtracting bright objects, which may allow it to use qualitatively different algorithms.  It may also be able to use models specifically designed to subtract specific ghosts or stray light patterns.
 
 \subsection{Build Background Reference}
 \label{sec:acBuildBackgroundReference}
