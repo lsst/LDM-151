@@ -198,12 +198,12 @@ The largest challenge for this algorithm is probably handling highly variable as
 
 \subsection{Artifact Interpolation}
 \label{sec:acArtifactInterpolation}
-AUTHOR: Jim
-\begin{itemize}
-\item Set mask planes for all artifacts.
-\item Eliminate small artifacts by interpolating them.
-\item Uses PSF model as interpolant.
-\end{itemize}
+
+This component is responsible for interpolating over small (PSF scale or smaller) artifacts such as cosmic rays.  By utilizing the PSF model, this interpolation should be good enough that many downstream algorithms do not need to worry about masked pixels (especially those that do not have a built-in formalism for missing data, such as \hyperref[sec:acAperturePhotometry]{aperture fluxes} or \hyperref[sec:acShapeAlgorithms]{second-moment shapes}).  Interpolated pixels will also be masked (both as interpolated and with a bit indicating the reason why).
+
+This will likely use Gaussian processes, but an existing implementation in the stack should be considered to be a placeholder, as it only interpolates in one direction (to deal with satellite trails).
+
+Artifact interpolation will not handle regions significantly larger than the PSF size; these must be either be subtracted or masked.
 
 
 \subsection{Source Detection}
