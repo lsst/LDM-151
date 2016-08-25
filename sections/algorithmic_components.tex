@@ -4,7 +4,19 @@
 \subsection{Reference Catalog Construction}
 \label{sec:acReferenceCats}
 
-We will need reference catalogs of various types for all sorts of calibration, characterization and modeling efforts.  We need to write down the process by which we construct these catalogs in DRP.
+\subsubsection{Alert Production Reference Catalogs}
+\label{sec:acAlertProductionReferenceCatalogs}
+
+Alert Production will use a subset of the DRP Object table as a reference catalog.  As the DRP Object table is regenerated on the same schedule as the template images used in Alert Production, we should always be able to guarantee that the reference catalog and the template images are consistent and cover the same area.
+
+Obtaining this catalog from the DRP database should simply be a matter of executing a SQL query, though some experimentation and iteration may be necessary to define this query.
+
+\subsubsection{Data Release Production Reference Catalogs}
+\label{sec:acDataReleaseProductionReferenceCatalogs}
+
+The reference catalog used in Data Release Production is expected to be built primarily from the Gaia catalog, but it may be augmented by data taken by LSST during commissioning (e.g. a short-exposure, full-survey layer).  DRP processing will also iteratively update this catalog (utilizing LSST survey data) in the course of a single production, but it is not yet decided whether these changes will be propagated to later data releases.
+
+Constructing the DRP reference catalog is thus more of a one-off activity rather than a reusable software component, and much of the work will be testing and research to determine how much we need to augment the Gaia catalog.
 
 \subsection{Instrument Signature Removal}
 \label{sec:acISR}
