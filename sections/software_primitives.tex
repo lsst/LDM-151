@@ -71,7 +71,7 @@
 \end{itemize}
 
 
-\subsubsection{Spherical Geometry}
+\subsection{Spherical Geometry}
 \label{sec:spSphericalGeometry}
 
 The spherical geometry library is a dependency of the database as well as applications, it includes fundamental types that are logically present in database tables (as groups of fields), and some geometry classes are important for spatial indexing.
@@ -422,8 +422,8 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item Supports spatially-varying convolution with a variety of tricks for special kernels (e.g. spatially varying linear combinations of fixed kernels, kernels separable in x and y).
 \item Must support correlation as well.
 \item Closely related to PSFs, but kernels are not wavelength-dependent, and PSFs are.  Not clear whether difference imaging kernels should actually be Kernels (they could be more like PSFs if they're wavelength-dependent).
-\item Closely related to image resampling.  Can a resampling kernel be a Kernel?  Implies that output pixel grid could be different from input pixel grid.
-\item May want to be able to compose Kernels.
+\item Includes support for image warping with both Lanczos and PSF-like kernels.
+\item Need to be able to compose Kernels.
 \item Needs to support approximation on different spatial scales (smoothly varying kernels need not be fully evaluated at every pixel).
 \end{itemize}
 
@@ -437,6 +437,7 @@ Probably needs to be persistable, but only to ease persistence of higher-level o
 \item Needs very lightweight implementations of affine/linear transforms.
 \item Needs interoperability with Image xy0 concept.
 \item Needs serialization to both internal (round-trippable) formats and import/export to standard external formats.  Ideally the internal format would also be at least somewhat external (i.e. shared with Astropy).
+\item Needs to be able to at least export to standard FITS WCS (with some approximation).
 \item Coordinate tranforms are not wavelength-dependent.
 \item See also DMTN-10.
 \end{itemize}

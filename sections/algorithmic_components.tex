@@ -35,11 +35,10 @@ AUTHOR: Merlin
 
 
 \subsection{Artifact Detection}
-\label{sec:artifact}
+\label{sec:acArtifactDetection}
 
-\subsubsection{Single-Exposure Morphology}
-\label{sec:acMorphologicalArtifactDetection}
-\paragraph{Cosmic Ray Identification}
+\subsubsection{Cosmic Ray Identification}
+\label{sec:acCosmicRayDetection}
 Cosmic rays will be identified using a Laplacian edge detection algorithm \citep{dokkum01}.  Laplacian edge detection involves convolving the image (I) with a smoothing function (f) tuned to the size of the expected edge width.
 \[
 L = \bigtriangledown^2f\ast I
@@ -79,7 +78,8 @@ images, we will define a set of default values.
 We can use something like L.A.COSMIC (or CRBLASTER) but if it is too slow, we can fall back to the SDSS algorithm which does a similar thing, but does no convolutions.
 We should also consider why we do not use a Canny algorithm instead.
 \end{note}
-\paragraph{Optical ghosts}
+
+\subsubsection{Optical ghosts}
 We will have a set of optical ghost models.  Some of these will be models of stationary ghosts (e.g. pupil
 ghost). Others will be a set of ghosts produced by point sources as a function of source position and
 brightness. The structure of the stationary ghosts can be measured using stacked, dithered star fields.  The latter will likely be modeled using raytracing tools or measured using projectors.
@@ -103,8 +103,8 @@ source ghosts can appear at significant separations, this may be a source of spu
 The CR rejection algorithm does not depend on the PSF of the image.  The single source ghosts may be a function of the PSF, but not very strongly I don't think.
 \end{note}
 
-\subsubsection{Single-Exposure Aggregation}
-\paragraph{Linear feature detection and removal}
+\subsubsection{Linear feature detection and removal}
+
 Satellite trails, out of focus airplanes, and meteors all cause long linear features in astronomical images.  The Hough Transform \citep{citation_needed} is a common tool used in computer vison applications to detect linear features.  Linear features are parameterized by $r$, the perpendicular distance to the line from the origin and $\theta$, the the angle of $r$ with the x-axis.  The $(r, \theta)$ space is binned and each pixel in the image adds its flux to all the bins consistent with that pixel location.  For bright linear features, the bin at the true location of the feature will fill up because more than one bright pixel is contributing to that location in parameter space.  After all pixels have been polled, the highest bins correspond to the linear features in the image.
 
 This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.  
@@ -129,16 +129,13 @@ Note that there is a writeup by Steve Bickerton on a different way to modify the
 
 \subsubsection{Snap Subtraction}
 \label{sec:acSnapSubtraction}
-\paragraph{Improvements by using multiple snaps}~\\
-{\bf Cosmic Rays}
-We will need to still run some sort of topological identifier like the one outlined above.  This is because there will be real transients and we still only want to pick out the sharp features as CRs.  It will help to have less crowding, so we should do CR rejection on the snap difference if we have it.
+\paragraph{Cosmic Rays}
+We will need to still run some sort of morphological identifier like the one outlined above.  This is because there will be real transients and we still only want to pick out the sharp features as CRs.  It will help to have less crowding, so we should do CR rejection on the snap difference if we have it.
 
-\noindent
-{\bf Ghosts}
+\paragraph{Ghosts}
 Snap differences will not help with ghosting as the ghosts should difference almost perfectly.
 
-\noindent
-{\bf Linear features}
+\paragraph{Linear features}
 Snap differences will provide significant leverage for masking linear features.  Since each segment will appear in at most one snap we can mask based on the pixels marked as detected in the difference images that are part of the trail.  This will help in crowded regions.  This technique will require running some sort of trail detection algorithm, but the requirements will be less stringent since the image will be so much less crowded.
 
 \subsubsection{Warped Image Comparison}
@@ -378,8 +375,8 @@ Note that deblending dipole sources is a complicated process and we do not inten
 \label{sec:acSpatialModels}
 In many areas we will need to represent spatial models.  This will include models fit to sparse and non-uniformly sampled data.  We will support fitting Chebyshev polynomials and splines.  We will also support regression techniques like Gaussian Processes.
 
-\subsection{Background Estimation}
-\label{sec:acBackgroundEstimation}
+\subsection{Single-Visit Background Estimation}
+\label{sec:acSingleVisitBackgroundEstimation}
 
 Background estimation will be done on the largest scale feasible first.  In the case of Alert Production, this may be on the size of a chip.  In DRP, we expect this to be on a full focalplane.  An initial low order estimate will be made on a large scale.  Each chip will be divided into subregions.  For each subregion, a robust average of the non-masked pixels will be computed.  All values for all chips will be fit by an appropriate function (see \S \ref{sec:acSpatialModels}).  This will provide a low order background estimation in focal plance coordinates.  Note that this can only be done if the Instrument Signature Removal is very high fidelity.  Any sharp discontinuity could cause problems with fitting a smooth function.
 
@@ -394,10 +391,15 @@ Requirements include working in crowded fields.  I think estimating a full focal
 I didn't explicitly talk about composition of background models, but this takes that into account by allowing a global model to be subtracted from the single chip image before a higher order model is fit.
 \end{note}
 
+\subsection{Coadd Background Estimation}
+\label{sec:acCoaddBackgroundEstimation}
+
+A variant of \hyperref[sec:acSingleVisitBackgroundEstimation]{Single-Visit Background Estimation} that is run on coadds to model the remaining background that is not removed during background matching.  This includes the observational background from the reference image
+
 \subsection{Matched Background Estimation}
 \label{sec:acMatchedBackgroundEstimation}
 
-A variant of \hyperref[sec:acBackgroundEstimation]{Background Estimation} for use on difference images produced in \hyperref[sec:drpBackgroundMatchAndReject]{Background Matching}.  This will be able to operate on full visit scales with much less concern for oversubtracting bright objects, which may allow it to use qualitatively different algorithms.  It may also be able to use models specifically designed to subtract specific ghosts or stray light patterns.
+A variant of \hyperref[sec:acSingleVisitBackgroundEstimation]{Single-Visit Background Estimation} for use on difference images produced in \hyperref[sec:drpBackgroundMatchAndReject]{Background Matching}.  This will be able to operate on full visit scales with much less concern for oversubtracting bright objects, which may allow it to use qualitatively different algorithms.  It may also be able to use models specifically designed to subtract specific ghosts or stray light patterns.
 
 \subsection{Build Background Reference}
 \label{sec:acBuildBackgroundReference}
@@ -424,7 +426,7 @@ and $\sigma^2_i$ the average variance of the pre-scaled exposure.  By combining 
 these statistics with coverage, we can construct an objective/cost function that relates the importance of
 coverage and sky-background, and can select a visit that minimizes that quantity objective function.
 
-\subsubsection{}
+\subsubsection{Tract Level}
 Constructing reference images for tract-sized co-adds follows the same principle, but requires maximizing the
 SNR/coverage of a large mosaic constructed from multiple visits.  Algorithms for mosaicking partially
 overlapping images have been well established \citep[e.g.][]{Sick2013, Berriman2008}. By mosaicking visits,
@@ -463,7 +465,7 @@ The order of the spatial model cannot excede number of PSF exemplars in the fram
 We can get arbitrarily complex, but I don't thinkn we need a more complex system in the baseline until we show this won't work.  Some have considered using Gaussian process regression for this, but I don't know that anyone has formalized that.
 \end{note}
 
-\subsection{Wavefront Sensor PSF Estimation}
+\subsubsection{Wavefront Sensor PSF Estimation}
 \label{sec:acWavefrontSensorPSF}
 AUTHOR: Jim
 \begin{itemize}
@@ -471,7 +473,7 @@ AUTHOR: Jim
 \item Model can have very few degrees of freedom (very simple optical model + elliptical Moffat/Double-Gaussian?)
 \item Only needs to be good enough to bootstrap PSF model well enough to bootstrap processing of science images (but it needs to work in crowded fields, too).
 \item Being able to go to brighter magnitudes may be important in crowded fields because the shape of the luminosity function may make it easier to find stars with (relatively) significant neighbors.
-\item Assumed to be at least mostly contributed by Systems Engineering.
+\item Assumed to be at least mostly contributed by Telescope and Site.
 \end{itemize}
 
 \subsubsection{Full Visit PSF Estimation}
@@ -522,6 +524,8 @@ In the case where there are multiple visits overlapping the same part of the sky
 The catalogs are stacked and matched using a multi-matching algorithm like OPTICS.  At this point, the measurements can be matched to an external catalog for the purposes of absolute astrometry.  With all measurements in hand, a multi-component WCS is fit to all measurements at the same time on order to minimize the residual from the mean position for each object.
 
 Joint astrometric fitting must be able to work both with and without an external reference catalog (while only producing relative results in the latter case, of course).
+
+The first run of this algorithm in DRP may be responsible for correcting source positions to account for DCR.  Later runs should be given as input centroids measured with a PSF model that includes (and hence corrects for) DCR, and hence should not need to make this correction.
 
 \subsection{Photometric Fitting}
 \label{sec:acPhotometricFitting}
@@ -615,43 +619,6 @@ Detection on the difference image occurs through correlation of $D(x,y)$ with th
 \end{itemize}
 
 In PSF-matched coaddition, input images are convolved by a kernel that matches their PSF to a predefined constant PSF before they are combined. This so-called ``model PSF matching'' uses the PSF-matching algorithm described in the previous section to match the PSF {\em   model} from an exposure to a pre-determined template (e.g., a constant-across-the-sky double Gaussian) PSF model. For this task, we realize each PSF model into an exposure-sized grid, and then utilize those as kernel candidates as input for the PSF matching algorithm described above. 
-
-\subsection{Image Warping}
-\label{sec:acWarping}
-AUTHOR: Jim
-\subsubsection{Oversampled Images}
-\label{sec:acOversampledWarping}
-
-Oversampled images are warped to a new \hyperref[sec:spWCS]{WCS} and resampled using a two dimensional Lancsoz kernel of configurable order. The baselined default order is 3.
-
-The one dimensional Lancsoz kernel of order $a$ is defined as
-\[
-L(x) = \begin{cases}
-       \operatorname{sinc}(x)\, \operatorname{sinc}(x/a) & \text{if}\;\; -a < x < a\\ 0 & \text{otherwise.}
-       \end{cases}
-\]
-The two dimensional Lancsoz kernel is $L(x, y) = L(x) \cdot L(y)$.
-
-For each integer pixel position in the remapped image, the associated pixel position in the source image is determined using the source and destination WCS. The warping kernel is then applied to the source image to compute the remapped pixel value. A flux conservation factor is applied based on the relative sizes of the pixel in the source and destination WCS.
-
-For performance reasons, it is desirable to reduce the total number of WCS calculations. It is therefore acceptable to perform the mapping between source and destination images over a regular grid and linearly interpolate between grid points, rather than mapping every pixel independently.
-
-Since chromaticity is accounted for in the \hyperref[sec:spPSF]{PSF} rather than the WCS, no special account is taken of color when warping.
-
-\begin{note}
-The above describes the current warping implementation in afw. We should identify deficiencies with the current implementation to establish resource requirements.
-\end{note}
-
-\subsubsection{Undersampled Images}
-\label{sec:acUndersampledWarping}
-\begin{itemize}
-\item Can use PSF model as interpolant if we also want to convolve with PSF (as in likelihood coadds).  Otherwise impossible?
-\end{itemize}
-\subsubsection{Irregularly-Sampled Images}
-\label{sec:acFixPixelAreaVariations}
-\begin{itemize}
-\item Approximate procedure for fixing small-scale distortions in pixel grid.
-\end{itemize}
 
 \subsection{Image Coaddition}
 \label{sec:acCoaddition}
