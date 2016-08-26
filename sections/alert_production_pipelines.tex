@@ -53,8 +53,6 @@ Single Frame Processing (SFM) Pipeline is responsible for reducing raw or camera
 
 Detection and measurement of the properties of \Sources used to astrometrically and photometrically calibrate the CCD images requires knowlege of the PSF and background for the image which in turn requires knowledge of the properties of \Sources on the image. An iterative procedure is, therefore, adopted to generate an estimate of the background and PSF and \Source catalogs that comprises \hyperref[sec:apPSFBackground]{}  and \hyperref[sec:apSourcemeasurement]{}
 
-
-
 Single Frame Processing pipeline will be implemented as a flexible framework where new processing steps can be added without modifying the stack code. It should be possible for this pipeline or a subset of this pipeline to be run at the telescope facility during commissioning and operations.  
 
 %SFM pipeline functions include:
@@ -188,13 +186,12 @@ Alert Detection identifies variable, moving, and transient sources within a cali
 
 Alert Detection pipeline shall difference, and detect and characterize sources in the time required to achieve the 60 second design goal for nightly processing (current timing allocation: 24 seconds). The algorithms employed by the pipeline shall result in purity and completeness of the sample as required by the \DMSR\@. Image differencing shall perform as well in crowded as in uncrowded fields. 
 
-For all DIAObjects forced photometry will be undertaken given a time windowed estimate of the DIAObject position.
 
 
 The process for image differencing requires the following steps
 \begin{itemize}
 \item Creation or \hyperref[sec:acRetrieveTemplate]{retrieval} of a TemplateCoadd.
-\item Matching the astrometry and PSF of a CalExp to the TemplateCoadd and subtracting the template image from the CalExp. This will require accounting for the relative differences in image quality and noise between the template and CalExp.
+\item Matching the astrometry and PSF of a CalExp to the  and subtracting the template image from the CalExp. This will require accounting for the relative differences in image quality and noise between the template and CalExp.
 \item (optional) Dependent on the density of sources \hyperref[sec:acSingleFrameDeblending]{deblending} of difference images may be necessary
 \item Measurement of image difference sources (accounting for whether the CalExp image was preconvolved or not)
 \item Removal of spurious DIASources 
@@ -202,52 +199,44 @@ The process for image differencing requires the following steps
 \item Forced measurement for all DIAObjects on the DIAImage
 \end{itemize}
 
-
+For all DIAObjects forced photometry will be undertaken given a time windowed estimate of the DIAObject position.
 
 \subsubsection{Input Data}
+\label{sec:apADInput}
 
-\paragraph{Input Data: CalExp}
+\paragraph*{CalExp Images:} Calibrated exposure processed through \ref{sec:apSingleFrameProcessing} with associated WCS, PSF, mask, variance, and background estimation.
 
-Calibrated exposure processed through \ref{sec:apSingleFrameProcessing} with associated WCS, PSF, mask, variance, and background estimation.
+\paragraph*{Coadd Images:} TemplateCoadd images that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This coadded image is optimized for image subtraction and is expected to be characterized in terms of a tract/patch/filter. Generation of this template may account for differential chromatic refraction or be generated for a limited range of airmass, seeing, and parallactic angles.
 
-\paragraph{Input Data: Coadd}
+\paragraph*{Object Catalogs:} \Objects that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This \Object catalog will provide the source list for determining nearest neighbors to the detected DIASources. 
 
-TemplateCoadd images that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This Coadd image is optimized for image subtraction and is expected to be characterized in terms of a tract/patch/filter. Generation of this template may account for differential chromatic refraction or be generated for a limited range of airmass and seeing.
+\begin{note} We should selected nearest 3 stars and nearest 3 galaxies \end{note}
 
-\paragraph{Input Data Product: Object}
+\paragraph*{DIAObject Catalogs:} \DIAObjects that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This DIAObject catalog will provide the association  list against which the DIASources will be matched. 
 
-Objects that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This Object catalog will provide the source list for determining nearest neighbors to the detected DIASources. 
+\paragraph*{SSObject Catalogs:} The \SSObject list at the time of the observation. The SSObject positions will be propagated to the date of the CalExp observations and will provide an association  list for cross-matching against the detected \DIASources to identify known Solar System objects.
 
-Flatfield calibration images for all passbands and all CCDs appropriate for the time at which the observations were undertaken 
+\paragraph*{Reference classification catalogs:} Classification of \DIASources based on their morphological features (and possibly estimates of the local density or  environment associated with the DIASource) will be undertaken prior to association in order to reduce the number of false positives. The data structures that define these classifications will be required as an input to the spuriousness analysis. 
 
-\paragraph{Input Data Product: DIAObjects}
 
-DIAObjects that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This DIAObject catalog will provide the association  list against which the DIASources will be matched. 
-
-\paragraph{Input Data Product: SSObjects}
-
-The SSObject list at the time of the observation. The SSObject positions will be propagated to the date of the CalExp observations and will provide an association  list for cross-matching against the DIASource list to identify known Solar System objects.
-
-\paragraph{Input Data Product: Reference}
-
-Classification of DIASources based on their morphological features (and possibly estimates of the local density or  environment associated with the DIASource) will be undertaken prior to association in order to reduce the number of false positives. The data structures that define these classifications will be required as an input to the spuriousness analysis. 
 
 \subsubsection{Output Data}
+\label{sec:apADOutput}
 
-\paragraph{Output Data Product: DIAImage}
+\paragraph*{DIAImage Images:} Image differences (DIAImage) derived from subtracting a CalExp from a TemplateCoadd image 
 
-Image differences (DIAImage) derived from subtracting a CalExp from a TemplateCoadd image 
-
-\paragraph{Output Data Product: DIASource}
-
-Sources detected and measured from the DIAImages (DIASources) using the set of parameters described in table \hyperref[table:ap_features] will be persisted
+\paragraph*{DIASource Catalogs:} Sources detected and measured from the DIAImages (DIASources) using the set of parameters described in table \hyperref[table:ap_features] will be persisted
 
 
-\paragraph{Output Data Product: DIAObject}
+\paragraph*{DIAObject Catalogs:} DIASource will be associated with existing DIAObjects and persisted. New DIASource (i.e.\ those not persisted) will generate a new instance of a DIAObject 
 
-DIASource will be associated with existing DIAObjects and persisted. New DIASource (i.e.\ those not persisted) will generate a new instance of a DIAObject 
+\paragraph*{DIAForcedPhotometry Catalogs:}
 
-\paragraph{Output Data Product: DIAForcedPhotometry}
+
+
+
+
+
 
 
 
@@ -261,8 +250,7 @@ Template generation requires the creation or \hyperref[sec:acRetrieveTemplate]{r
 \paragraph{Pipeline Tasks}
 \begin{itemize}
 \item Query for a TemplateCoadd images that are within a given time interval of the CalExp  (default 2 years) of the current sensor image, and are within a specified airmass and parallactic angle
-\item (optional) Derive an airmass and DCR corrected TemplateCoadd from a model (see  \hyperref[sec:acDCRTemplates]{ DCR template generation}). The direction of the DCR correction will be aligned with the 
-  ``parallactic angle'' of the CalExp image
+\item (optional) Derive an airmass and DCR corrected TemplateCoadd from a model (see  \hyperref[sec:acDCRTemplates]{ DCR template generation}). The direction of the DCR correction will be aligned with the   ``parallactic angle'' of the CalExp image
 \end{itemize}
 
 \subsubsection{Image differencing}~
@@ -306,115 +294,108 @@ The prototype code is available at \url{https://github.com/lsst/ip_diffim}. The 
 
 \clearpage
 
-\subsection{Alert Generation Pipeline (\wbsAP)}
+\subsection{Alert Distribution Pipeline (\wbsAP)}
 
-Alert Generation Pipeline shall take the newly discovered \DIASources and all associated metadata as described in the \DPDD, and deliver alert packets in \VOEvent format to a variety of endpoints via standard IVOA protocols (eg., VOEvent Transport Protocol; VTP\@).
+The Alert Distribution Pipelines takes the newly discovered \DIAObjects (including their associated historical observations) and all related metadata as described in the \DPDD, and deliver alert packets in \VOEvent format to a variety of endpoints via standard IVOA protocols (eg., \VOEvent Transport Protocol; VTP\@). Packaging of the event will include the generation of postage stamp cutouts (30x30 pixels on average) for the difference image and the template image. For an event rate of about 1.5x10$^7$ (including false positives)l we expect the compressed \VOEvents to amount to approximately 600GB of data per night per \VOEvent stream (assuming no filtering of the data). 
 
-To directly serve the end-users, the Alert Generation Pipeline shall provide a basic, limited capacity, alert filtering service. This service will run at the LSST U.S. Archive Center (at NCSA). It will let astronomers create simple filters that limit what alerts, and what fields from those alerts, are ultimately forwarded to them. These \emph{user defined filters} will be possible to specify using an SQL-like declarative language, or short snippets of (likely Python) code.
+To directly serve the end-users, the Alert Generation Pipeline will provide a basic, limited capacity, alert filtering service. This service will run at the LSST U.S. Archive Center (at NCSA). It will enable astronomers to create simple filters that limit what alerts, and what fields from those alerts, are ultimately forwarded to them. These \emph{user defined filters} will be configurable with a simplified SQL-like declarative language, or short snippets of (likely Python) code.
 
-Since there is a need to keep both the alert database and the brokers consistent, there is a big win if both the database and the brokers read from the same fault tolerant intermediate persistence format.  A redundant, cluster based, strongly ordered, message system like Kafka (http://kafka.apache.org) is a very attractive option as the intermediate persistence.  It is very similar in concept to persisting to some well known file format with the addition of reduntant storage, configurable expiration time of messages, and strict ordering so database catch-up is trivial.  It is also scalable.
-
+\VOEvent alerts will be persisted in an alert database as well as distributed through a message queue. The alert database (AlertDB) will be synchronized at least once every 24 hours and will be queriable by external users. The message queue that distributes the alerts is expected to have the capability  to replay events given a break in the network connection but not to support general queries.
 
 \subsubsection{Input Data}
+\label{sec:apADInput}
 
-\paragraph{Input Data: Object}
+\paragraph*{DIAObject catalog:} \DIAObjects generated through image differencing and association with existing \DIAObjects will be used to create alert packets 
 
-DIAObjects that generated through image differencing and association will be used to generate alert packets 
+\paragraph{Difference Images:} The DIAImage will be used to  generate postage stamp or cut out images of DIAObjects within the CCD 
 
-\paragraph{Input Data: CalExp}
+\paragraph{Coadd Images:} The TemplateCoadd used in the image subtraction will be used to  generate postage stamp or cut out images of DIAObjects   within the CCD
 
-The CCD level CalExp will be used to generate postage stamp or cut out images of DIAObjects  within the CCD
-
-\paragraph{Input Data: TemplateCoadd}
-
-The TemplateCoadd used in the image subtraction will be used to  generate postage stamp or cut out images of DIAObjects   within the CCD
-
-
-\paragraph{Input Data Product: DIAImage}
-
-The image subtracted DIAImage will be used to  generate postage stamp or cut out images of DIAObjects within the CCD
 
 \subsubsection{Output Data}
 
-\paragraph{Output Data Product: VOevents}
+\paragraph{\VOEvent Catalog:} \VOEvents generated from the DIAObjects and cutouts will be persisted. The form of these persisted events has not been decided.
 
-VOEvents generated from the DIAObjects will be persisted. The form of these persisted events has  not been decided.
 
-\subsubsection{Alert generation}~
+
+\subsubsection{Alert postage stamp generation}~
+
+Creates the associated image cutouts (30x30 pixels on average) for all detect DIAObjects (cutouts are generated from the current observation and not from historical observations).
 
 \paragraph{Pipeline Tasks}
  \begin{itemize}
-\item Generate postage stamps for all DIASources: direct image and difference image
-\item Push alert records to alert persistence
-\item Alert database ingestion client reads all new alerts and persists them permanently in the alert database
+\item Extract from the DIAImage the a cutout of each DIAObject with a DIASource detected within the current observation.  Cutout images will be scaled to the size of the DIASource but on average will be 30x30 pixels. Variance and mask planes, WCS, background model, and associated metadata will be extracted. The prototype implementation assumes that these cutouts will be persisted as FITS images. The projection for these images will be the native projection of the DIAImages.
+
+\item Extract from the TemplateCoadd  a cutout of each DIAObject with a DIASource detected within the current observation.  Cutout images will be identical in size and footprint as those derived from the DIAImage. Variance and mask planes, WCS, and associated metadata will be extracted with the pixel data. The prototype implementation assumes that these cutouts will be persisted as FITS images. The projection for these images will be the native projection of the DIAImages.
 \end{itemize}
 
-\subsubsection{Alert Distribution: To community brokers}
+\subsubsection{Alert queuing and persistance}
+\label{sec:apQueue}
+Distributes and persists the DIAObject events as \VOEvents through a message queue together with a {\it limited} filtering interface. Persists the \VOEvents in the AlertDB. Event message stream and the AlertDB are synchronized at least once every 24 hours.
+
 
 \paragraph{Pipeline Tasks}
 \begin{itemize}
-\item For each visit read all new alert records from the alert persistence
-\item Package each message as a properly formatted VOEvent
-\item Bundle VOEvents using a pre-negotiated format
-\item Transmit bundled VOEvents to community broker endpoints
+\item Publish DIAObjects to a caching message queue (e.g.\ \hyperref[http://kafka.apache.org]{Apache Kafka}) through the butler. The prototype implementation assumes a distributed and partitioned messaging system that uses a \hyperref[https://en.wikipedia.org/wiki/Publish_subscribe_pattern]{publication-subscription} model for communication of DIAObjects. This model maintains feeds of messages in categories called topics. An example topic would be a DIAObject. Whether a topic would comprise a full DIAObject or a subset of the data remains open. A topic model with subsets of parameters would require that consumers of the topics would be able to synchronize and join topics into a full DIAObject. For each of the 189 CCDs, approximately 75, assuming a 50\% false positive rate, events will be passed as messages to the messaging queuing system in an asynchronous manner.
+\item A consumer layer will subscribe to the  message queue and package them as \VOEvents and distribute these events to external users. To account for network outages between the message queue and the consumer the message queue must be able to replay previous events. 
+\item  The consumer layer will provide a command line API to define simple queries or filtering of the events that will be distributed (limited to querying on existing DIAObject fields, or filtering the attributes of the DIAObject that will be packaged within a \VOEvent. Web-based interfaces to the consumer layer will be developed by SUIT. 
+\item Filtered DIAObjects are packaged into \VOEvents and broadcast to VOEvent clients through the consumer layer
+\item A full, unfiltered, VOEvent alert stream will be broadcast to the AlertDB using the consumer layer. 
+\item Prior to the start of the following nights observations the message queue will be flushed and synchronized with the AlertDB. It is possible to persist the message queue on longer timescale but will require synchronization with 24 hours of the observations to meet the requirements specified in the DPPD.
 \end{itemize}
 
-\subsubsection{Alert Distribution: Minimal brokers}
-\noindent
-Each minimal broker will have some subset of users.  The following is for a single broker.
 
-\paragraph{Pipeline Tasks}
-\begin{itemize}
-\item Read new alert records from the alert persistence in order
-\item Filter event records for relevance (WHERE)
-\item Filter event columns for content (SELECT)
-\item Package event as a valid VOEvent
-\item Publish the VOEvent to the appropriate endpoint (potentially another messaging queue so clients can access asynchronously)
-\end{itemize}
+To cope with the variation in density of events as a function of position on the sky and the need for fault tolerance the message queue will need to be able to partition and replicate data. Each full DIAObject stream will require about 1 Gb/s network capacity. Whether the consumer layer will instantiate a new consumer for each filter (or client) or will orchestrate the \VOEvents from a single subscription to the message queue is an open question that will depend on the expected network topology (internal and external to the data center at NCSA).
+
+The AlertDB will have an interface that can be queried (to enable historical searches of events) including searches on other than timestamps. It is expected that the AlertDB will be a noSQL datastore (e.g.\ Cassandra).
+
+%partitions must be ordered the same, failover must let a consumer to move to a different partion and have the messages ordered
+
 
 \subsubsection{Forced Photometry on all DIAObjects}~
 
+Generate forced (PSF) photometry on the DIAImage for all DIAObjects that overlap with the footprint of the CCD. Forced photometry is only generated for DIAObjects for which there has been a DISource detection within the last 12 months. The forced photometry is persisted in the forced photometry table in the level 1 database. Alerts are released prior to the generation of forced photometry and forced photometry is not released as apart of an alert which means that this component of the processing is not subject to the 60 second processing requirements for nightly processing.
+
 \paragraph{Pipeline Tasks}
 \begin{itemize}
-\item Compute forced photometry on all DIAObjects in the field.  This
-  does not end up in the alerts.
-\item Update the DIA Object forced photometry tables
+\item Extract all DIAObjects within the level 1 database for which these is no associated DIAObject. This information is available from the DIASource and DIAObject association.  DIAObjects within the last 12 months for which there have been no DIASource detections will be excluded from the forced photometry calculation
+\item For the aggregate positions within the DIAObject undertake a PSF forced measurement as described in section \hyperref[sec:acForcedMeasurement]{}
+\item Update the forced photometry tables in the level 1 database.
 \end{itemize}
 
-\subsubsection{Prototype Implementation}
+
 
 \clearpage
 
 \subsection{Precovery Photometry Pipeline}
 
-Within 24 hrs.
+Within 24 hours, forced photometry will be performed on all unassociated DIASources within an image (i.e.\ new DIAObjects). For each DIAObject forced (PSF) photometry will be measured at the position of the source in the preceding DIAImages (for a 30-day window prior to the observation)
 
 \subsubsection{Input Data}
 
-\paragraph{Input Data}
-\begin{itemize}
-\item Butler access to DIA images within finite time interval (default 
-  30 days) 
-\item Butler access to DIAobjects detected from the previous night 
-  with no associations 
-\end{itemize}
+\paragraph*{DIAImages:} A cache of DIAImages within finite time interval (default 30 days)  of the previous nights observations
+
+\paragraph*{DIAObject Catalog:} All unassociated (new) DIAObjects observed within the previous night
+
+\begin{note} We associate (measure forward) for 12 months but look back for 30 days\end{note}
 
 \subsubsection{Output Data}
+
+\paragraph*{DIAObject Forced Photometry:} Updated forced photometry table for all new DIAObjects
+
+
+\paragraph{Pipeline Tasks}
 \begin{itemize}
-\item Updated and persisted forced photometry tables for all newly
-  detected DIAobjects
-\end{itemize}
-
-
-\subsubsection{Precovery of new DIAObjects}~
-
-\begin{itemize}
-\item Force photometer in difference images for all new DIAObjects for the past 30 days.
+\item Extract from the Level 1 database all DIAObjects that were unassociated (i.e.\ new DIASource detections) from the previous nights reduction
+\item Extract DIAImages within a  default 30 day window prior to the observation
+\item Force photometer the extracted images as described in \ref{sec:acForcedMeasurement} using a PSF model and the centroid defined in the DIAObject
+\item Update the forced photometry table within the Level 1 database
 \end{itemize}
 \clearpage
 
-\subsection{Moving Object Pipeline (\wbsMOPS)}
 
+
+\subsection{Moving Object Pipeline (\wbsMOPS)}
 
 The Moving Object Pipeline is responsible for generating and managing the Solar System\footnote{Also sometimes referred to as `Moving Object'} data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% of all Solar System objects that meet the findability criteria as defined in the \OSS\@. 
 
@@ -428,12 +409,15 @@ The Moving Object Pipeline is responsible for generating and managing the Solar 
 
 \subsubsection{Input Data}
 
-\begin{itemize}
-\item 'Orphan' DIASources from the last night of observing.  This means DIASources that are not associated with a DIAObject.  DIASources associated with an SSObject in the night are still passed through the MOPS machinery
-\item DIAObject database
-\item SSObject database
-\item Exposure metadata database
-\end{itemize}
+\paragraph*{DIASources}
+Orphan' DIASources from the last night of observing.  This means DIASources that are not associated with a DIAObject.  DIASources associated with an SSObject in the night are still passed through the MOPS machinery
+
+DIAObject database
+
+SSObject database
+
+Exposure metadata database
+
 
 \subsubsection{Output Data}
 \begin{itemize}
