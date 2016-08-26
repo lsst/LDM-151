@@ -83,7 +83,7 @@ question into Andy R about Camera operations
 
 \paragraph*{Reference Catalog:} A full-sky astrometric and photometric reference catalog of stars derived either from an external survey (e.g.\ Gaia) or from the Data Release Processing. Given the current GAIA data release timeline the reference catalog is expected to have an astrometric uncertainty of $<0.5$ milliarcseconds and a photometric uncertainty of $<$20 millimag (for a $V=19$ G2V star). The expected release of these calibration catalogs in 2018 and will be derived from the GAIA spectrophotometric observations of non-variable sources.
 
-\paragraph*{Calibration Images:} Flatfield calibration images for all passbands and all CCDs appropriate for the time at which the observations were undertaken. No corrections will be made in the flatfields for non-uniform pixel sizes - the flatfields will correct to a common  surface brightness. Fringe frame calibration images scaled to an expected amplitude expected for the sky conditions.
+\paragraph*{Calibration Images:} Flat-field calibration images for all passbands and all CCDs appropriate for the time at which the observations were undertaken. No corrections will be made in the flat-fields for non-uniform pixel sizes - the flat-fields will correct to a common  surface brightness. Fringe frame calibration images scaled to an expected amplitude expected for the sky conditions.
 \begin{note} What assumptions will we make about SEDs for the flats. Are we assuming we know the sky SED for fringe frames \end{note}
 
 \paragraph*{Image Metadata:} List of the positions and extents of sensor defects for all CCDs within the focal plane; electronic parameters for all CCDs (saturation limits, readnoise parameters, electronic and physical footprint for the sensors, linearity functions, brighter-fatter model, and parameterized models for component WCS (e.g.\ optical distortion model) as needed.
@@ -231,12 +231,6 @@ For all DIAObjects forced photometry will be undertaken given a time windowed es
 \paragraph*{DIAObject Catalogs:} DIASource will be associated with existing DIAObjects and persisted. New DIASource (i.e.\ those not persisted) will generate a new instance of a DIAObject 
 
 \paragraph*{DIAForcedPhotometry Catalogs:}
-
-
-
-
-
-
 
 
 
@@ -397,42 +391,77 @@ Within 24 hours, forced photometry will be performed on all unassociated DIASour
 
 \subsection{Moving Object Pipeline (\wbsMOPS)}
 
-The Moving Object Pipeline is responsible for generating and managing the Solar System\footnote{Also sometimes referred to as `Moving Object'} data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% of all Solar System objects that meet the findability criteria as defined in the \OSS\@. 
+The Moving Object Pipeline (MOPS) is responsible for generating and managing the Solar System\footnote{Also sometimes referred to as `Moving Object'} data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% of all Solar System objects that meet the findability criteria as defined in the \OSS\@. 
 
-\begin{itemize}
-\item Feed all input orphan DIASources to \hyperref[sec:acMakeTracklets][makeTracklets]. 
-\item Run \hyperref[sec:acAttributionAndPrecovery]{attribution and precovery} on with just the tracklets and DIASources from the previous night.  This culls any tracklets or DIASources that obviously belong to an existing SSObject from the rest of the processing. 
-\item Compute new \hyperref[sec:acOrbitFitting]{orbits} and \hyperref[sec:acOrbitMerging]{merge orbits}. 
-\item Run \hyperref[sec:acAttributionAndPrecovery]{attribution and precovery} on with full survey of tracklets and DIASources but only running over new SSObjects. 
-\item \hyperref[sec:acOrbitMerging]{Merge Orbits}. 
-\end{itemize}
+
+Components of MOPS are run during and separately from nightly processing. MOPS for nightly processing is described in \ref{xxx} as part of the source association. ``Day MOPS'' processes the newly detected DIASources (or DIAObjects) to search for candidate asteroid tracks. The procedure for ``Day MOPS'' is to link DIASource detections within a night (called tracklets), to link these tracklets across multiple nights (into tracks), to fit the tracks with an orbital model to identify those tracks that are consistent with an asteroid orbit, to match these new orbits with existing SSObjects, and to update the SSObject table. By its nature this process is iterative with DIASources being associated and disassociated with SSObjects. The frequency of the iterations is an open area.
+
+\begin{note} Specify the expected number of sources \end{note}
 
 \subsubsection{Input Data}
 
-\paragraph*{DIASources}
-Orphan' DIASources from the last night of observing.  This means DIASources that are not associated with a DIAObject.  DIASources associated with an SSObject in the night are still passed through the MOPS machinery
+\paragraph*{DIASource catalog: } Unassociated DIASources from the previous night of observing.  This means DIASources that have not been associated with a DIAObject.  DIASources associated with an SSObject in the night are still passed through the MOPS machinery
 
-DIAObject database
+\paragraph*{SSObject catalog: } The catalog of known solar system sources
 
-SSObject database
-
-Exposure metadata database
+\paragraph*{Exposure metadata:} A description of the footprint of the observations including the positions of bright stars or a model for the detection threshold as a function of position on the sky (including gaps between chips)
 
 
 \subsubsection{Output Data}
-\begin{itemize}
-\item Updated SSObject databaase
-\item Updated DIASource database
-\end{itemize}
-{\bf Anscillary Products}\\
-\begin{itemize}
-\item Tracklet database
-\item Track database
-\item Intermediate orbit prediction database
-\end{itemize}
-{\bf Actions in case of failure}\\
-{\bf Alternative procedures}\\
 
+\paragraph*{SSObject catalog: } An updated SSObject database with SSObjects both added and pruned as the orbital fits are refined
+
+\paragraph*{DIASource database:} A updated DIASource database with DIASources assigned and unassigned to SSObjects
+
+
+\subsubsection{Tracklet identification}~
+From multiple visits within a night, link unassociated DIASources to form pairs (or more) of DIASources
+
+\paragraph{Pipeline Tasks}
+\begin{itemize}
+\item Extract unassociated DIASources from the Level 1 database
+\item Link DIASources into tracklets assuming a maximum velocity for the moving sources. The maximum velocity will be based on a prior as described in  \cite{kubica05}. For each tracklet a velocity vector will be calculated to enable pruning or merging of degenerate tracklets within a data set. Tracklets can contain multiple points. In the process of merging tracklets DIASources that are not a good fit for the merged tracklet will be remove and their associated tracklets returned to the tracklet database.  Moving or trailed sources will incorporate the position angle of the source when linking. Details of the implementation of the DIASource linkage is described in \ref{sec:acMakeTracklets}
+\item Temporarily persist a database of tracklets. This database will be required for at least 30 days of data but, depending on resources available, may persist for longer.
+\end{itemize}
+
+
+\subsubsection{Precovery and merging of tracklets}~
+Tracklets are matched and merged with existing \SSObjects and removed from the Tracklet database. This culls any tracklets or DIASources that obviously belong to an existing SSObject from the rest of the processing. 
+
+\paragraph{Pipeline Tasks}
+\begin{itemize}
+\item Return all tracklets identified within a given night of observations
+\item Return the footprints of each visit and the time of the observation
+\item Extract SSObjects from the SSObject database and propagated those orbits to the position and time of a visit. Details of this orbit propagation for precovery are described in \ref{sec:acEphemerisCalculation}. The computational requirements for this precovery are substantial and efficient mechanisms for indexing the SSObject orbits will be necessary. Trajectories of known asteroids could be pre-calculated and modelled as polynomials to enable fast interpolation during day MOPS.
+\begin{note}What are the numbers for the SSObject propagation and number of tracklets per visit\end{note}
+\item Merge (precovery) the tracklets with the projected SSObject trajectories and refit  the SSObject orbit model. DIASources previously associated with an SSObject may no longer fit the updated SSObject orbits. These DIASources will be removed from the SSObject and returned as unassociated DIAObjects to the level 1 database. All tracklets associated with these DIAObjects will be  returned to the tracklet database. Details of this attribution and precovery are described in \ref{sec:acAttributionAndPrecovery}
+\end{itemize}
+
+\subsubsection{Linking tracklets and orbit fitting}~
+
+Given a database of tracklets constructed from a window (default 30 days) of time, link the tracklets into tracks assuming a quadratic approximation to the trajectory. Fit these tracks with orbital models and update the SSObject database.
+
+\paragraph{Pipeline Tasks}
+\begin{itemize}
+\item Extract all tracklets from the tracklet database for a specified window in time (default 30 days)
+\item Merge tracklets into tracks based on their velocities and accelerations. Candidate tracks are pruned by fitting a quadratic relation to the positions (after applying a topocentric correction to the positions of the sources). Efficiency in this matching procedure is provided by a spatial index such as a kd-tree (see \ref{sec:acOrbitFitting}). 
+\item Fit an orbit to each candidate track using a tool such as OOrb (https://github.com/oorb/oorb) and, for poorly fitting  points, return the DIASources and associated tracklets to their respective databases for subsequent reprocessing.
+\item Merge SSObjects that have similar orbital parameters based on range searches within the six dimensional orbital parameter space.  Merged SSObjects will need to be refit and any poorly fitting DIASources (and associated tracklets) returned  to their respective databases for subsequent reprocessing. Details of this procedure are given in \ref{sec:acOrbitMerging}
+\end{itemize}
+
+\subsubsection{Global precovery}~
+For all new or updated SSObjects propagate the orbits to the positions and times of the observations of all tracklets and orphan DIAObjects to ``precover'' further support for the orbits. This will prune the number of tracklets and DIAObjects that will require merging in subsequent observations. 
+
+\paragraph{Pipeline Tasks}
+\begin{itemize}
+\item Return all tracklets identified within a given night of observations
+\item Return the footprints of each visit and the time of the observation
+\item Extract orbits for all new or updated SSObjects and propagate the positions to the times of the observations for all visits covering the extent of the tracklet database, default 30 days, (see \ref{sec:acEphemerisCalculation})
+\item Merge the tracklets with the projected SSObject positions and refit the SSObject orbit model. Poorly fitting DIASources (and associated tracklets) will be removed from the SSObject and returned as unassociated DIAObjects to the Level 1 database (as described in\ref{sec:acAttributionAndPrecovery}).
+\end{itemize}
+
+
+The process for precovery and updating of the SSObject models is naturally iterative (given the pruning of poorly fitting DIAObjects and tracklets). Updates of the SSObjects as part of each night of operations should enable sufficient iterations without requiring Day-MOPS to be rerun multiple times per day. The computationally expensive operations in this pipeline are the orbit propagation and the orbit fitting. Resources required for orbit propagation could be reduced be removing the initial precovery stage but at the cost of increasing the number of tracklets that would be available for matching into tracks. Extending the Global precovery to include singleton DIASources (i.e.\ one that are not merged into tracklets) would enable the identification of asteroids at the edge of the nightly footprint (where an object moves outside of the nightly survey footprint prior to the second visit or a second visit is not obtained for a given field).
 
 \subsubsection{Prototype Implementation}
 
