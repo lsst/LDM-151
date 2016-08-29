@@ -1,7 +1,20 @@
-\section{Services for Data Quality Analysis (SDQA)}
+\section{Science Data Quality Assurance (SDQA)}
 \label{sec:sdqa}
 
 \subsection{Overview}
+
+Science Data Quality Assurance (SDQA) describes a collection of capabilities for Quality Analysis (QA) and Quality Control (QC) that collectively ensure a high quality performing software system as well as the ability to meet the scientific goals of the system.
+
+\subsubsection{Quality Analysis (QA)}
+
+Quality Analysis describes a range of {\em activities} aimed at understanding the algorithmic performance of the code and eventually the properties of the data. These are achieved by a set of {\em tools} that leverage components of the Data Management subsystem, as well as additional capabilities as necessary, to allow for the scientific inspection of data both by DM developers and scientists during construction as well as commissioning engineers and scientists during commissioning and operations.
+
+\subsubsection{Quality Control (QC)}
+
+Quality Control describes a range of {\em services} aimed at measuring and monitoring and characterising the system (both software and data) to verify and characterise its performance. Whereas Quality Assurance describes the activities of people, Quality Control describes systems running autonomously and only notify people when an anomaly that cannot be automatically rectified is detected. 
+
+A view of QC services is shown in \figure{fig:qa-overview}. Capabilities are increasingly progressive (eg. tier QA-1 includes QA-0 services). A definition of the QA tiers is given in the rest of this section. 
+
 
 \begin{figure}
 \centering
@@ -278,7 +291,7 @@ If the SDQA system determines that data (whether science or calibration) is defe
 
 A simple example of this is that a calibration is bad, and it needs to be marked as such so that it is not used in further DRP processing (similar to how if a data frame is bad the compute time should not be wasted processing it further for AP)
 
-A more complex implementation is that a data product previously thought to be good is on further processing or new tests determined to be bad. In this case will be combined with provenance information to mark \em{all} data polluted with the bad frame as bad, and provide sufficient information to the workflow system to allow it to trigger the necessary reprocessing with that data excluded.
+A more complex implementation is that a data product previously thought to be good is on further processing or new tests determined to be bad. In this case will be combined with provenance information to mark {\em all} data polluted with the bad frame as bad, and provide sufficient information to the workflow system to allow it to trigger the necessary reprocessing with that data excluded.
 
 These are implemented in a manner that is agnostic as to the implementation of the Workflow (e.g., they are values in a database table or API methods that different workflow systems can utilize).
 
