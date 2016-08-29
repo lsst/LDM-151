@@ -7,13 +7,13 @@ Science Data Quality Assurance (SDQA) describes a collection of capabilities for
 
 \subsubsection{Quality Analysis (QA)}
 
-Quality Analysis describes a range of {\em activities} aimed at understanding the algorithmic performance of the code and eventually the properties of the data. These are achieved by a set of {\em tools} that leverage components of the Data Management subsystem, as well as additional capabilities as necessary, to allow for the scientific inspection of data both by DM developers and scientists during construction as well as commissioning engineers and scientists during commissioning and operations.
+Quality Analysis describes a range of \emph{activities} aimed at understanding the algorithmic performance of the code and eventually the properties of the data. These are achieved by a set of {\em tools} that leverage components of the Data Management subsystem, as well as additional capabilities as necessary, to allow for the scientific inspection of data both by DM developers and scientists during construction as well as commissioning engineers and scientists during commissioning and operations.
 
 \subsubsection{Quality Control (QC)}
 
-Quality Control describes a range of {\em services} aimed at measuring and monitoring and characterising the system (both software and data) to verify and characterise its performance. Whereas Quality Assurance describes the activities of people, Quality Control describes systems running autonomously and only notify people when an anomaly that cannot be automatically rectified is detected. 
+Quality Control describes a range of \emph{services} aimed at measuring and monitoring and characterising the system (both software and data) to verify and characterise its performance. Whereas Quality Assurance describes the activities of people, Quality Control describes systems running autonomously and only notify people when an anomaly that cannot be automatically rectified is detected.
 
-A view of QC services is shown in \figure{fig:qa-overview}. Capabilities are increasingly progressive (eg. tier QA-1 includes QA-0 services). A definition of the QA tiers is given in the rest of this section. 
+A view of QC services is shown in \ref{fig:qa-overview}. Capabilities are increasingly progressive (e.g., tier QA-1 includes QA-0 services). A definition of the QA tiers is given in the rest of this section.
 
 
 \begin{figure}
@@ -40,13 +40,13 @@ SDQA is a set of loosely coupled services intended to service LSST's quality ass
 
 \item SDQA shall allow for notifications to be issued when monitoring quantities that fall outside permissible bounds and/or have degraded over historical values.
 
-\item SDQA shall be able to collect and harvest the outputs and logs of execution of a pipeline, and extract and expose metrics from these logs. 
+\item SDQA shall be able to collect and harvest the outputs and logs of execution of a pipeline, and extract and expose metrics from these logs.
 
 \item SQDA shall make provision to store outputs that are not stored through other LSST data access services.
 
 \item SDQA should be deployable as high-reliability scalable services for production as well as allow for core data assessment functionality to be executed on a developer's local machine.
 
-\item SDQA shall be architected in a manner that would enable it to be deployable on standard cloud architectures outside of the LSST facilities so that community-based L3 development activities can be supported. 
+\item SDQA shall be architected in a manner that would enable it to be deployable on standard cloud architectures outside of the LSST facilities so that community-based L3 development activities can be supported.
 
 \end{itemize}
 
@@ -102,7 +102,7 @@ The core capabilities of QA-0 services are:
 \label{sec:qaVerify}
 \begin{itemize}
 
-\item During Construction, progress towards meeting DM subsystem requirements revolve around the Key Performance Metrics (KPMs) outlined in LDM-240. SDQA implements code to calculate these KPMs. Consult \emph{ reference to KPM Verification document} for a list of those metrics and how (and by whom and on what) they will be calculated.
+\item During Construction, progress towards meeting DM subsystem requirements revolve around the Key Performance Metrics (KPMs) outlined in LDM-240. SDQA implements code to calculate these KPMs. Consult \emph{reference to KPM Verification document} for a list of those metrics and how (and by whom and on what) they will be calculated.
 
 \item Additional metrics must be calculated to be met in order for the DM subsystem to demonstrate its operational readiness. The list of those metrics and how (and by whom) they will be calculated will be in \emph{reference to DM Verification Plan CoDR document}. In terms of QA infrastructure, these metrics will not require different capabilities than the KPMs.
 
@@ -118,7 +118,7 @@ The core capabilities of QA-0 services are:
 
 \item While the scope of this document is the scientific aspects of the pipelines, SDQA must also accommodate non-scientific KPMs and other metrics, such as computational performance characterisation.
 
-\item SDQA will provide a capability to instrument the production pipelines to calculate computational performance metrics, and harvest data from those instrumentations (via logs or more direct ways of populating the QA database tables). 
+\item SDQA will provide a capability to instrument the production pipelines to calculate computational performance metrics, and harvest data from those instrumentations (via logs or more direct ways of populating the QA database tables).
 
 \item The computational performance metrics that SDQA calculates will be in practice surrogates for the actual computational performance in production since those will depend on the production system architecture. The purpose of calculating those as part of SDQA is to continuously monitor relative performance to alert the developers that a regression has occurred.
 
@@ -162,7 +162,7 @@ Notes:
 
 \begin{itemize}
 
-\item As construction progresses, first-party DM systems to underwrite the functions of SQUASH will become production ready. In the meantime, basic implementations of minimum viable functionality may be done with boostrap or off-the-shelf solutions either as an interim measure or, in some cases, a more lightweight solution (for example, working around features the butler does not have yet). 
+\item As construction progresses, first-party DM systems to underwrite the functions of SQUASH will become production ready. In the meantime, basic implementations of minimum viable functionality may be done with boostrap or off-the-shelf solutions either as an interim measure or, in some cases, a more lightweight solution (for example, working around features the butler does not have yet).
 
 \item A simple example of a ``factory'' analysis based on SQUASH is ``Calculate the astrometric repeatability on this dataset; display the trend; drill down to to show the histogram of the points that went into calculating this trend''.
 
@@ -208,7 +208,7 @@ There are two QA components developed for Alert Production:
 
 \item SDQA can provide upper limits to verify AP requirements such as ``no more than 0.1\% of images shall fail to produce alerts''
 
-\item Given the aggressive time budget for AP, SDQA can use an API or other interface to the workflow system (if available) to abort further processing in the event that image quality metrics are too low for successful Alert Production to proceed. 
+\item Given the aggressive time budget for AP, SDQA can use an API or other interface to the workflow system (if available) to abort further processing in the event that image quality metrics are too low for successful Alert Production to proceed.
 
 \end{itemize}
 
@@ -244,9 +244,9 @@ The SDQA system will also provide QA of Calibration images and products.
 
 \item Images taken from the Camera will require ``prompt QA'' that will run in the quasi-real-time image processing system. Camera is interested in the monitoring infrastructure of SDQA for tracking parameters such as read noise, cross-talk, linearity etc.
 
-\item QA of Calibration Products Production data products (i.e., master calibration images and calibration database entries). These are similar in architecture and implementation to other DRP-related tests. The one exception to the above is the daily daytime/twilight calibration operations prior to night-time observing. QA done for this calibration sequence needs to run under Obsetvatory Control System. There is therefore an explicit or implicit (via the DMCS) interface to the OCS that is yet to be finalised. 
+\item QA of Calibration Products Production data products (i.e., master calibration images and calibration database entries). These are similar in architecture and implementation to other DRP-related tests. The one exception to the above is the daily daytime/twilight calibration operations prior to night-time observing. QA done for this calibration sequence needs to run under Obsetvatory Control System. There is therefore an explicit or implicit (via the DMCS) interface to the OCS that is yet to be finalised.
 
-\item SDQA is responsible for prompt QA of the spectrometer and potentially the sky background spectrometer. 
+\item SDQA is responsible for prompt QA of the spectrometer and potentially the sky background spectrometer.
 
 \end{itemize}
 
@@ -264,9 +264,9 @@ QA-2 designates the capability to assess the periodic Data Release Products that
 
 \begin{enumerate}
 
-\item the ability to characterise and inspect large data sets; 
+\item the ability to characterise and inspect large data sets;
 
-\item detecting failure modes (excursions from expectation or specification) that are rare in QA-0 analysis or real-time QA-1 processing, but represent an identifiable and systematic population or effect on the scale of a full Data Release; 
+\item detecting failure modes (excursions from expectation or specification) that are rare in QA-0 analysis or real-time QA-1 processing, but represent an identifiable and systematic population or effect on the scale of a full Data Release;
 
 \item additional characterisation derived from calibration efforts in support of the stringent relative color calibration requirements
 
@@ -291,7 +291,7 @@ If the SDQA system determines that data (whether science or calibration) is defe
 
 A simple example of this is that a calibration is bad, and it needs to be marked as such so that it is not used in further DRP processing (similar to how if a data frame is bad the compute time should not be wasted processing it further for AP)
 
-A more complex implementation is that a data product previously thought to be good is on further processing or new tests determined to be bad. In this case will be combined with provenance information to mark {\emph all} data polluted with the bad frame as bad, and provide sufficient information to the workflow system to allow it to trigger the necessary reprocessing with that data excluded.
+A more complex implementation is that a data product previously thought to be good is on further processing or new tests determined to be bad. In this case will be combined with provenance information to mark \emph{all} data polluted with the bad frame as bad, and provide sufficient information to the workflow system to allow it to trigger the necessary reprocessing with that data excluded.
 
 These are implemented in a manner that is agnostic as to the implementation of the Workflow (e.g., they are values in a database table or API methods that different workflow systems can utilize).
 
@@ -307,7 +307,7 @@ QA results may provide key feedback to model and parameter choices in the Scienc
 \paragraph{Comparison tools for overlap areas due to satellite processing}
 \label{sec:qaComparisonSatelliteDataCenters}
 
-Data Release Processing may be distributed across multiple geographic data centers.  It is important to verify consistency (identity even) of the results across these data centers by analyzing both subsets of the overall data processing that are processed redundantly by each data center. A framework to define the splits and overlap region and a coherent dashboard and QA configuration to analyze these overlap regions will be key in building confidence in the merged Data Release. 
+Data Release Processing may be distributed across multiple geographic data centers.  It is important to verify consistency (identity even) of the results across these data centers by analyzing both subsets of the overall data processing that are processed redundantly by each data center. A framework to define the splits and overlap region and a coherent dashboard and QA configuration to analyze these overlap regions will be key in building confidence in the merged Data Release.
 
 \paragraph{Metrics/products for science users to understand quality of science data products (depth mask/selection function, etc.)}
 \label{sec:qaScienceUsersMetrics}
@@ -325,7 +325,7 @@ The Data Release Processing should generate statistics of depth, typical seeing,
 
 Data quality services will be made available for use with science analysis performed by the LSST Science Collaborations and the community. Tier 0--2 visualization and data exploration tools will be made available (either as a service or as documented deployable systems) to the community.
 
-As community-driven data processing is not fully specified at this point, further requirements of SDQA for L3 will be included in the Level 3 requirements and design documentation. 
+As community-driven data processing is not fully specified at this point, further requirements of SDQA for L3 will be included in the Level 3 requirements and design documentation.
 
 
 \subsubsection{Interactive Visualization}
