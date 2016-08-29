@@ -10,22 +10,22 @@ as the ability to meet the scientific goals of the system. These are
 designed to service LSST's quality assessment needs through all phases
 of Construction, Commissioning and Operations. Consumers of these
 services may include developers, facility staff, DAC (e.g., Level 3)
-users, and the general LSST science user community. 
+users, and the general LSST science user community.
 
 SDQA capabilities can be divided into Quality Analysis (QA) and
-Quality Control (QC) Capabilities. 
+Quality Control (QC) Capabilities.
 
 \subsubsection{Quality Analysis (QA)}
 
-Quality Analysis describes a range of \emph{activities} aimed at understanding the algorithmic performance of the code and eventually the properties of the data. These are achieved by a set of {\em tools} that leverage components of the Data Management subsystem, as well as additional capabilities as necessary, to allow for the scientific inspection of data both by DM developers and scientists during construction as well as commissioning engineers and scientists during commissioning and operations.
+Quality Analysis describes a range of \emph{activities} aimed at understanding the algorithmic performance of the code and eventually the properties of the data. These are achieved by a set of \emph{tools} that leverage components of the Data Management subsystem, as well as additional capabilities as necessary, to allow for the scientific inspection of data both by DM developers and scientists during construction as well as commissioning engineers and scientists during commissioning and operations.
 
-QA activities include processing, analysing and inspecting data for forensic purposes. They also include the development of tests for verifying and characterising algorithmic performance, and are closely tied to the development of the Science Pipelines and the Science User Interface. 
+QA activities include processing, analysing and inspecting data for forensic purposes. They also include the development of tests for verifying and characterising algorithmic performance, and are closely tied to the development of the Science Pipelines and the Science User Interface.
 
 \subsubsection{Quality Control (QC)}
 
-Quality Control describes a range of {\em services and processes} aimed at measuring and monitoring and characterising the system (both software and data) to verify and characterise its performance. Whereas Quality Assurance describes the activities of people, Quality Control describes systems running autonomously and only notify people when an anomaly that cannot be automatically rectified is detected. 
+Quality Control describes a range of \emph{services and processes} aimed at measuring and monitoring and characterising the system (both software and data) to verify and characterise its performance. Whereas Quality Assurance describes the activities of people, Quality Control describes systems running autonomously and only notify people when an anomaly that cannot be automatically rectified is detected.
 
-QC services include regression detection, measurement of Key Performance Metrics, a notification infrastructure and quality monitor dashboards. They are primarily the responsibility of the Science Quality and Reliability Engineering (SQuaRE) team. 
+QC services include regression detection, measurement of Key Performance Metrics, a notification infrastructure and quality monitor dashboards. They are primarily the responsibility of the Science Quality and Reliability Engineering (SQuaRE) team.
 
 \subsection{Key Features of SDQA (QA and QC) systems}
 
@@ -42,13 +42,13 @@ QC services include regression detection, measurement of Key Performance Metrics
 
 \item SDQA allows for notifications to be issued when monitoring quantities that fall outside permissible bounds and/or have degraded over historical values.
 
-\item SDQA is able to collect and harvest the outputs and logs of execution of a pipeline, and extract and expose metrics from these logs. 
+\item SDQA is able to collect and harvest the outputs and logs of execution of a pipeline, and extract and expose metrics from these logs.
 
 \item SQDA makes provision to store outputs that are not stored through other LSST data access services.
 
 \item SDQA is deployable as high-reliability scalable services for production as well as allow for core data assessment functionality to be executed on a developer's local machine.
 
-\item SDQA is architected in a manner that would enable it to be deployable on standard cloud architectures outside of the LSST facilities so that community-based L3 development activities can be supported. 
+\item SDQA is architected in a manner that would enable it to be deployable on standard cloud architectures outside of the LSST facilities so that community-based L3 development activities can be supported.
 
 \end{itemize}
 
@@ -63,7 +63,7 @@ SDQA system provides a framework that is capable of monitoring QC information at
 \item[QA Tier 3] Ability for the community to evaluate the data quality of their own analyses. These should made available as well-documented and deployable versions of core QC Tier 0--2 services.
 \end{itemize}
 
-A view of the tiered QC services is shown in \figure{fig:qa-overview}. Capabilities are increasingly layered (eg. tier QC-1 includes QC-0 services). A definition of the QC tiers is given in the rest of this section. 
+A view of the tiered QC services is shown in \ref{fig:qa-overview}. Capabilities are increasingly layered (eg. tier QC-1 includes QC-0 services). A definition of the QC tiers is given in the rest of this section.
 
 \begin{figure}
 \centering
@@ -129,7 +129,7 @@ The core capabilities of QC-0 services are:
 
 \item While the scope of this document is the scientific aspects of the pipelines, SDQA must also accommodate non-scientific KPMs and other metrics, such as computational performance characterisation.
 
-\item SDQA will provide a capability to instrument the production pipelines to calculate computational performance metrics, and harvest data from those instrumentations (via logs or more direct ways of populating the QC database tables). 
+\item SDQA will provide a capability to instrument the production pipelines to calculate computational performance metrics, and harvest data from those instrumentations (via logs or more direct ways of populating the QC database tables).
 
 \item The computational performance metrics that SDQA calculates will be in practice surrogates for the actual computational performance in production since those will depend on the production system architecture. The purpose of calculating those as part of SDQA is to continuously monitor relative performance to alert the developers that a regression has occurred.
 
@@ -255,9 +255,9 @@ The SDQA system will also provide QC of Calibration images and products.
 
 \item Images taken from the Camera will require ``prompt QC'' that will run in the quasi-real-time image processing system. Camera is interested in the monitoring infrastructure of SDQA for tracking parameters such as read noise, cross-talk, linearity etc.
 
-\item QC of Calibration Products Production data products (i.e., master calibration images and calibration database entries). These are similar in architecture and implementation to other DRP-related tests. The one exception to the above is the daily daytime/twilight calibration operations prior to night-time observing. QC done for this calibration sequence needs to run under Obsetvatory Control System. There is therefore an explicit or implicit (via the DMCS) interface to the OCS that is yet to be finalised. 
+\item QC of Calibration Products Production data products (i.e., master calibration images and calibration database entries). These are similar in architecture and implementation to other DRP-related tests. The one exception to the above is the daily daytime/twilight calibration operations prior to night-time observing. QC done for this calibration sequence needs to run under Obsetvatory Control System. There is therefore an explicit or implicit (via the DMCS) interface to the OCS that is yet to be finalised.
 
-\item SDQA is responsible for prompt QC of the spectrometer and potentially the sky background spectrometer. 
+\item SDQA is responsible for prompt QC of the spectrometer and potentially the sky background spectrometer.
 
 \end{itemize}
 
@@ -277,7 +277,7 @@ QA-2 designates the capability to assess the periodic Data Release Products that
 
 \item the ability to characterise and inspect large data sets;
 
-\item detecting failure modes (excursions from expectation or specification) that are rare in QC-0 analysis or real-time QC-1 processing, but represent an identifiable and systematic population or effect on the scale of a full Data Release; 
+\item detecting failure modes (excursions from expectation or specification) that are rare in QC-0 analysis or real-time QC-1 processing, but represent an identifiable and systematic population or effect on the scale of a full Data Release;
 
 \item additional characterisation derived from calibration efforts in support of the stringent relative color calibration requirements
 
@@ -318,7 +318,7 @@ QA results may provide key feedback to model and parameter choices in the Scienc
 \paragraph{Comparison tools for overlap areas due to satellite processing}
 \label{sec:qaComparisonSatelliteDataCenters}
 
-Data Release Processing may be distributed across multiple geographic data centers.  It is important to verify consistency (identity even) of the results across these data centers by analyzing both subsets of the overall data processing that are processed redundantly by each data center. A framework to define the splits and overlap region and a coherent dashboard and QC configuration to analyze these overlap regions will be key in building confidence in the merged Data Release. 
+Data Release Processing may be distributed across multiple geographic data centers.  It is important to verify consistency (identity even) of the results across these data centers by analyzing both subsets of the overall data processing that are processed redundantly by each data center. A framework to define the splits and overlap region and a coherent dashboard and QC configuration to analyze these overlap regions will be key in building confidence in the merged Data Release.
 
 \paragraph{Metrics/products for science users to understand quality of science data products (depth mask/selection function, etc.)}
 \label{sec:qaScienceUsersMetrics}
