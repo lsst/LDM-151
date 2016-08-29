@@ -3,18 +3,67 @@
 
 \subsection{Overview of SDQA}
 
-Science Data Quality Assurance (SDQA) describes a collection of capabilities for Quality Analysis (QA) and Quality Control (QC) that collectively ensure a high quality performing software system as well as the ability to meet the scientific goals of the system.
+Science Data Quality Assurance (SDQA) describes a collection of
+capabilities for Quality Analysis (QA) and Quality Control (QC) that
+collectively ensure a high quality performing software system as well
+as the ability to meet the scientific goals of the system. These are
+designed to service LSST's quality assessment needs through all phases
+of Construction, Commissioning and Operations. Consumers of these
+services may include developers, facility staff, DAC (e.g., Level 3)
+users, and the general LSST science user community. 
+
+SDQA capabilities can be divided into Quality Analysis (QA) and
+Quality Control (QC) Capabilities. 
 
 \subsubsection{Quality Analysis (QA)}
 
 Quality Analysis describes a range of {\em activities} aimed at understanding the algorithmic performance of the code and eventually the properties of the data. These are achieved by a set of {\em tools} that leverage components of the Data Management subsystem, as well as additional capabilities as necessary, to allow for the scientific inspection of data both by DM developers and scientists during construction as well as commissioning engineers and scientists during commissioning and operations.
 
+QA activities include processing, analysing and inspecting data for forensic purposes. They also include the development of tests for verifying and characterising algorithmic performance, and are closely tied to the development of the Science Pipelines and the Science User Interface. 
+
 \subsubsection{Quality Control (QC)}
 
 Quality Control describes a range of {\em services and processes} aimed at measuring and monitoring and characterising the system (both software and data) to verify and characterise its performance. Whereas Quality Assurance describes the activities of people, Quality Control describes systems running autonomously and only notify people when an anomaly that cannot be automatically rectified is detected. 
 
-A view of QC services is shown in \figure{fig:qa-overview}. Capabilities are increasingly layered (eg. tier QC-1 includes QC-0 services). A definition of the QC tiers is given in the rest of this section. 
+QC services include regression detection, measurement of Key Performance Metrics, a notification infrastructure and quality monitor dashboards. They are primarily the responsibility of the Science Quality and Reliability Engineering (SQuaRE) team. 
 
+\subsection{Key Features of SDQA (QA and QC) systems}
+
+\begin{itemize}
+\item SDQA provides capabilities for science data quality analysis of Level 1, 2, and Calibration Processing pipelines.
+
+\item SDQA provides services to support software development in Construction, Commissioning and Operations.
+
+\item SDQA provides for the visualization, analysis and monitoring capabilities needed for common science quality data analysis use cases. Its inputs may be gathered from SDQA services, the production pipelines, engineering data sources and non-LSST data sources.
+
+\item SDQA has the flexibility to support execution of ad-hoc (user-driven) tests and analyses of ad-hoc datasets (provided they are supported by the LSST stack) within a standard framework.
+
+\item SDQA supports use cases involving interactive ``drill-down'' of QC data exposed through its visualization interfaces.
+
+\item SDQA allows for notifications to be issued when monitoring quantities that fall outside permissible bounds and/or have degraded over historical values.
+
+\item SDQA is able to collect and harvest the outputs and logs of execution of a pipeline, and extract and expose metrics from these logs. 
+
+\item SQDA makes provision to store outputs that are not stored through other LSST data access services.
+
+\item SDQA is deployable as high-reliability scalable services for production as well as allow for core data assessment functionality to be executed on a developer's local machine.
+
+\item SDQA is architected in a manner that would enable it to be deployable on standard cloud architectures outside of the LSST facilities so that community-based L3 development activities can be supported. 
+
+\end{itemize}
+
+\subsection{Key Tasks for Each Tier of QC}
+
+SDQA system provides a framework that is capable of monitoring QC information at four different stages of capability and maturity:
+
+\begin{itemize}
+\item[QA Tier 0] Testing and Validation of the DM sub-system during software development
+\item[QA Tier 1] Real-time data quality and system assesment during commissioning and operations (also, forensics)
+\item[QA Tier 2] Quality assessment of Data Releases (also, forensics)
+\item[QA Tier 3] Ability for the community to evaluate the data quality of their own analyses. These should made available as well-documented and deployable versions of core QC Tier 0--2 services.
+\end{itemize}
+
+A view of the tiered QC services is shown in \figure{fig:qa-overview}. Capabilities are increasingly layered (eg. tier QC-1 includes QC-0 services). A definition of the QC tiers is given in the rest of this section. 
 
 \begin{figure}
 \centering
@@ -23,45 +72,7 @@ A view of QC services is shown in \figure{fig:qa-overview}. Capabilities are inc
 \label{fig:qa-overview}}
 \end{figure}
 
-\subsection{Key Requirements}
 
-SDQA is a set of loosely coupled services intended to service LSST's quality assessment needs through all phases of Construction, Commissioning and Operations. Consumers of these services may include developers, facility staff, DAC (e.g., Level 3) users, and the general LSST science user community. Use of these services is intended for routine characterisation, fault detection and fault diagnosis.
-
-\begin{itemize}
-\item SDQA shall provide services for science data quality analysis of Level 1, 2, and Calibration Processing pipelines.
-
-\item SDQA shall provide services to support software development in Construction, Commissioning and Operations.
-
-\item SDQA shall provide for the visualization, analysis and monitoring capabilities needed for common science quality data analysis use cases. Its inputs may be gathered from SDQA services, the production pipelines, engineering data sources and non-LSST data sources.
-
-\item SDQA shall have the flexibility to support execution of ad-hoc (user-driven) tests and analyses of ad-hoc datasets (provided they are supported by the LSST stack) within a standard framework.
-
-\item SDQA shall support use cases involving interactive ``drill-down'' of QC data exposed through its visualization interfaces.
-
-\item SDQA shall allow for notifications to be issued when monitoring quantities that fall outside permissible bounds and/or have degraded over historical values.
-
-\item SDQA shall be able to collect and harvest the outputs and logs of execution of a pipeline, and extract and expose metrics from these logs. 
-
-\item SQDA shall make provision to store outputs that are not stored through other LSST data access services.
-
-\item SDQA should be deployable as high-reliability scalable services for production as well as allow for core data assessment functionality to be executed on a developer's local machine.
-
-\item SDQA shall be architected in a manner that would enable it to be deployable on standard cloud architectures outside of the LSST facilities so that community-based L3 development activities can be supported. 
-
-\end{itemize}
-
-The majority of the work described in the section below falls under the 02C.10 WBS (Science Quality and Reliability Engineering). Exceptions are noted in the text as appropriate.
-
-\subsection{Key Tasks for Each Tier of QC}
-
-SDQA system will provide a framework that is capable of monitoring QC information at four different stages of capability and maturity:
-
-\begin{itemize}
-\item[QA Tier 0] Testing and Validation of the DM sub-system during software development
-\item[QA Tier 1] Real-time data quality and system assesment during commissioning and operations (also, forensics)
-\item[QA Tier 2] Quality assessment of Data Releases (also, forensics)
-\item[QA Tier 3] Ability for the community to evaluate the data quality of their own analyses. These should made available as well-documented and deployable versions of core QC Tier 0--2 services.
-\end{itemize}
 
 \subsubsection{QA Tier 0}
 
