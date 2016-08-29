@@ -1,6 +1,10 @@
 \section{Algorithmic Components}
 \label{sec:algorithmic-components}
 
+This section describes mid-level Algorithmic Components that are used (possibly in multiple contexts) by the pipelines described in Sections~\ref{sec:ap}, \ref{sec:cpp}, and \ref{sec:drp}.  These in turn depend on the even lower-level Software Primitives described in Section~\ref{sec:software-primitives}.  Algorithmic Components will typically be implemented as Python classes (such as the \texttt{Task} classes in the codebase as of the time this was written) that frequently delegate to C++.  Unlike the pipelines discussed in previous sections, which occupy a specific place in a production, Algorithmic Components should be designed to be reusable in slightly different contexts, even if the baseline design only has them being used in one place.  Many components may require different variants for use in different contexts, however, and these different variants may or may not require different classes.  These context-specific variants are identified below.
+
+We expect that these components will form the bulk of the LSST Science Pipelines codebase.
+
 \subsection{Reference Catalog Construction}
 \label{sec:acReferenceCats}
 
