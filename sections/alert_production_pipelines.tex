@@ -50,10 +50,10 @@ TemplateCoadd & Temporary &
 
 Alert Production is designed as five separate components: single frame processing, alert generation, alert distribution, precovery photometry, and a moving objects pipeline. The first four of these components run as a linear pass through of the data. The moving objects pipeline is run independently of the rest of the alert production. The flow of information through this system is shown in \hyperref[fig:nightly]{Figure~\ref{fig:nightly}}.
 
-\begin{figure}[th]
+\begin{figure}[h]
 \begin{center}
-\includegraphics[width=0.9\textwidth]{figures/Level_1_Processing_Flowchart.jpg}
-\caption{\label{fig:nightly} The alert production flow of data through the processing pipelines (single frame processing, alert detection,  alert generation, precovery photometry) }
+\includegraphics[width=0.9\textwidth]{figures/LDM-151_Nightly_Overview.png}
+\caption{\label{fig:nightly} The alert production flow of data through the processing pipelines (single frame processing, alert generation,  alert distribution, precovery photometry) }
 \end{center}
 \end{figure}
 
@@ -62,11 +62,18 @@ In this document we do not address estimation of the selection function for aler
 \subsection{Single Frame Processing Pipeline (\wbsSFM)}
 \label{sec:apSingleFrameProcessing}
 
-Single Frame Processing (SFM) Pipeline is responsible for reducing raw or camera corrected image data to\emph{calibrated exposures}, the detection and measurement of \Sources (using the components functionally  part of the Object Characterization Pipeline), the characterization of the point-spread-function (PSF), and the generation of an astrometric solution for an image.
+Single Frame Processing (SFM) Pipeline is responsible for reducing raw or camera corrected image data to\emph{calibrated exposures}, the detection and measurement of \Sources (using the components functionally  part of the Object Characterization Pipeline), the characterization of the point-spread-function (PSF), and the generation of an astrometric solution for an image (see Figure~\ref{fig:apSFM}).
 
 Detection and measurement of the properties of \Sources used to astrometrically and photometrically calibrate the CCD images requires knowlege of the PSF and background for the image which in turn requires knowledge of the properties of \Sources on the image. An iterative procedure is, therefore, adopted to generate an estimate of the background and PSF and \Source catalogs comprising \hyperref[sec:apPSFBackground]{}  and \hyperref[sec:apSourcemeasurement]{}
 
 Single Frame Processing pipeline will be implemented as a flexible framework where new processing steps can be added without modifying the stack code. It should be possible for this pipeline or a subset of this pipeline to be run at the telescope facility during commissioning and operations.  
+
+\begin{figure}[th]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/SFM.png}
+\caption{\label{fig:apSFM} Single frame processing of the nightly data: instrument signature removal, astrometric and photometric calibration, background and PSF estimation from the cross-talk corrected camera images.}
+\end{center}
+\end{figure}
 
 %SFM pipeline functions include:
 %\begin{itemize}
@@ -191,16 +198,22 @@ Astrometric and photometric performance within crowded fields will require that 
 
 \begin{note} What about high density regions? \end{note}
 
-\subsection{Alert Generation (\wbsDiffim)}
+\subsection{Alert Generation Pipeline (\wbsDiffim)}
 \label{sec:apAlertGeneration}
 
-Alert Generation identifies variable, moving, and transient sources within a calibrated exposure by subtracting a deeper template image. Sources, DIASources, detected on a DiffExp are associated with known DIAObjects and Objects (including SSObjects that have been propagated to the date of the CalExp exposure) and their properties measured. The resulting DiffExps and DIAObjects will be persisted by the Alert Generation pipeline.
+Alert Generation identifies variable, moving, and transient sources within a calibrated exposure by subtracting a deeper template image (see Figure~\ref{fig:apAlertgen}). Sources, DIASources, detected on a DiffExp are associated with known DIAObjects and Objects (including SSObjects that have been propagated to the date of the CalExp exposure) and their properties measured. The resulting DiffExps and DIAObjects will be persisted by the Alert Generation pipeline.
 \begin{note} Check we match to objects for nearest neighbor searches \end{note}
 
 The Alert Generation pipeline is required to difference, detect and characterize, and distribute sources within 60s second design goal for nightly processing. For the current allocation of timing (see \hyperref[]{}) the time to image difference, detect and characterize  \DIASources is 24 seconds (allowing for multiple cores and multithreading of the processing). The requirement on the algorithms for purity and completeness of the sample is given by the \DMSR\@. Image differencing shall perform as well in crowded as in uncrowded fields. 
 
 The process for image differencing requires the creation or retrieval of a TemplateCoadd, and the matching of the  astrometry and PSF of a CalExp to the TemplateCoadd and subtracting the template image from the CalExp. This will require accounting for the relative differences in image quality and noise between the Dependent on the density of sources deblending of \DIASources may be necessary. Measurement of \DIASources will account for whether the CalExp image was preconvolved or not and spurious \DIASources will be removed using morphological and environment based classification algorithms. 
 
+\begin{figure}[th]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Alert_Generation.png}
+\caption{\label{fig:apAlertgen} Generation of alerts from the nightly data: image differencing and measurement of the properties of the \DIASources, identification and filtering of spurious events, association of previously detected \DIAObjects and \SSObjects with the newly detected \DIASources. }
+\end{center}
+\end{figure} 
 \subsubsection{Input Data}
 \label{sec:apADInput}
 
@@ -283,29 +296,33 @@ In Source Association \DIASources detected within a given CCD will be cross-matc
 
 \subsection{Alert Distribution Pipeline (\wbsAP)}
 
-The Alert Distribution Pipelines takes the newly discovered \DIAObjects (including their associated historical observations) and all related metadata as described in the \DPDD, and deliver alert packets in \VOEvent format to a variety of endpoints via standard IVOA protocols (eg., \VOEvent Transport Protocol; VTP\@). Packaging of the event will include the generation of postage stamp cutouts (30x30 pixels on average) for the difference image and the template image. For an event rate of about 1.5x10$^7$ (including false positives)l we expect the compressed \VOEvents to amount to approximately 600GB of data per night per \VOEvent stream (assuming no filtering of the data). 
+The Alert Distribution Pipelines takes the newly discovered \DIAObjects (including their associated historical observations) and all related metadata as described in the \DPDD, and deliver alert packets in \VOEvent format to a variety of endpoints via standard IVOA protocols (eg., \VOEvent Transport Protocol; VTP\@). Packaging of the event will include the generation of postage stamp cutouts (30x30 pixels on average) for the difference image and the template image. For an event rate of about 1.5x10$^7$ (including false positives)l we expect the compressed \VOEvents to amount to approximately 600GB of data per night per \VOEvent stream (assuming no filtering of the data).  Figure~\ref{fig:apAlertDistribution} shows generation and distribution of \VOEvents.
 
 To directly serve the end-users, the Alert Generation Pipeline will provide a basic, limited capacity, alert filtering service. This service will run at the LSST U.S. Archive Center (at NCSA). It will enable astronomers to create limited  filters (see  \ref{sec:apQueue}) that limit what alerts, and what fields from those alerts, are ultimately forwarded to them. These \emph{user defined filters} will be configurable with a simplified SQL-like declarative language, or short snippets of (likely Python) code.
 
 \VOEvent alerts will be persisted in an alert database as well as distributed through a message queue. The alert database (AlertDB) will be synchronized at least once every 24 hours and will be queriable by external users. The message queue that distributes the alerts is expected to have the capability  to replay events given a break in the network connection but not to support general queries.
 
-On completion of the Alert Distribution, forced PSF photometry will be undertaken for all \DIAObjects that have been detected within a window of time from the observation (default 1 year)
+\begin{figure}[th]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Alert_Distribution.png}
+\caption{\label{fig:apAlertDistribution} Distribution of alerts from the nightly data: image differencing and measurement of the properties of the \DIASources, identification and filtering of spurious events, association of previously detected \DIAObjects and \SSObjects with the newly detected \DIASources. }
+\end{center}
+\end{figure} 
 
 \subsubsection{Input Data}
 \label{sec:apADInput}
 
 \paragraph*{DIAObject Database:} \DIAObjects generated through image differencing and association with existing \DIAObjects will be used to create alert packets.
 
-\paragraph{Difference Images:} The DiffExp will be used to  generate postage stamp (cut-out) images of \DIASources within the CCD. 
+\paragraph*{Difference Images:} The DiffExp will be used to  generate postage stamp (cut-out) images of \DIASources within the CCD. 
 
-\paragraph{Coadd Images:} The TemplateCoadd used in image subtraction will be used to  generate postage stamp images of the template image for \DIAObjects.
+\paragraph*{Coadd Images:} The TemplateCoadd used in image subtraction will be used to  generate postage stamp images of the template image for \DIAObjects.
 
 
 \subsubsection{Output Data}
 
-\paragraph{\VOEvent Database:} \VOEvents generated from the DIAObjects and cutouts will be persisted within a database (i.e.\ a noSQL database) or object store. 
+\paragraph*{\VOEvent Database:} \VOEvents generated from the DIAObjects and cutouts will be persisted within a database (i.e.\ a noSQL database) or object store. 
 
-\paragraph*{DIAForcedSource Databases:} Forced PSF photometry at the centroid (from the aggregated individual \DIASource centroids) of a \DIAObject.
 
 
 
@@ -345,6 +362,37 @@ The AlertDB will have an interface that can be queried (to enable historical sea
 %partitions must be ordered the same, failover must let a consumer to move to a different partion and have the messages ordered
 
 
+
+
+
+\clearpage
+
+\subsection{Precovery and Forced Photometry Pipeline}
+
+The precovery and forced photometry  pipeline performs two tasks (see Figure~\ref{fig:apForcedPrecovery}). Forced PSF photometry is undertaken for all \DIAObjects that have a detected \DIASource within a window of time from the observation (default 1 year).  Within 24 hours, precovery forced photometry is performed on all unassociated DIASources within an image (i.e.\ new \DIAObjects). For each DIAObject forced (PSF) photometry will be measured at the position of the source in the preceding DiffExps (for a 30-day window prior to the observation). 
+
+Forced photometry is not required prior to alert generation. Completion of the precovery photometry is required within 24 hours of the completion of the observations. Forced and precovery can be undertaken as part of the nightly workflow if they do not impact the time required to distribute the alerts.
+
+\begin{figure}[th]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Forced_Precovery.png}
+\caption{\label{fig:apForcedPrecovery} Forced photometry for \DIAObjects: forced photometry on a night's DiffExp for all \DIAObjects that have detected \DIASources within the last year, precovery photometry for the previous 30 days of DiffExps for new \DIAObjects}
+\end{center}
+\end{figure} 
+
+\subsubsection{Input Data}
+
+\paragraph*{Difference images:} A cache of DiffExps within finite time interval (default 30 days) of the previous nights observations (including the previous nights data)
+
+\paragraph*{DIAObject Database:} All \DIAObjects with a \DIASource detection within the last 12 months and all unassociated (new) DIAObjects observed within the previous night
+
+\begin{note} We associate (measure forward) for 12 months but look back for 30 days\end{note}
+
+\subsubsection{Output Data}
+
+\paragraph*{DIAForcedSource Databases:} Forced PSF photometry at the centroid (from the aggregated individual \DIASource centroids) of a \DIAObject. The forced photometry is undertaken on the previous night's DiffExp for all \DIAObjects with \DIASources detected within the last year, and on the previous 30 days of DiffExp for all newly detected \DIASources.
+
+
 \subsubsection{Forced Photometry on all DIAObjects}~
 
 Generate forced (PSF) photometry on the DiffExp for all DIAObjects that overlap with the footprint of the CCD. Forced photometry is only generated for DIAObjects for which there has been a DISource detection within the last 12 months. The forced photometry is persisted in the forced photometry table in the level 1 database. Alerts are released prior to the generation of forced photometry and forced photometry is not released as apart of an alert which means that this component of the processing is not subject to the 60 second processing requirements for nightly processing.
@@ -359,23 +407,9 @@ Generate forced (PSF) photometry on the DiffExp for all DIAObjects that overlap 
 
 
 
-\clearpage
+\paragraph*{DIAObject Forced Photometry:} 
 
-\subsection{Precovery Photometry Pipeline}
-
-Within 24 hours, forced photometry will be performed on all unassociated DIASources within an image (i.e.\ new DIAObjects). For each DIAObject forced (PSF) photometry will be measured at the position of the source in the preceding DiffExps (for a 30-day window prior to the observation)
-
-\subsubsection{Input Data}
-
-\paragraph*{DiffExps:} A cache of DiffExps within finite time interval (default 30 days)  of the previous nights observations
-
-\paragraph*{DIAObject Database:} All unassociated (new) DIAObjects observed within the previous night
-
-\begin{note} We associate (measure forward) for 12 months but look back for 30 days\end{note}
-
-\subsubsection{Output Data}
-
-\paragraph*{DIAObject Forced Photometry:} Updated forced photometry table for all new DIAObjects
+Updated forced photometry table for all new DIAObjects
 
 
 \paragraph{Pipeline Tasks}
@@ -395,9 +429,16 @@ Within 24 hours, forced photometry will be performed on all unassociated DIASour
 The Moving Object Pipeline (MOPS) is responsible for generating and managing the Solar System data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% of all Solar System objects that meet the findability criteria as defined in the \OSS\@. 
 \begin{note} where is this definition \end{note}
 
-Components of MOPS are run during and separately from nightly processing. MOPS for nightly processing is described in \ref{sec:apSourceAssoc} as part of the source association. ``Day MOPS'' processes the newly detected DIASources (or DIAObjects) to search for candidate asteroid tracks. The procedure for ``Day MOPS'' is to link DIASource detections within a night (called tracklets), to link these tracklets across multiple nights (into tracks), to fit the tracks with an orbital model to identify those tracks that are consistent with an asteroid orbit, to match these new orbits with existing SSObjects, and to update the SSObject table. By its nature this process is iterative with DIASources being associated and disassociated with SSObjects. The frequency of the iterations is an open area.
+Components of MOPS are run during and separately from nightly processing (see Figure~\ref{fig:apMOPS}). MOPS for nightly processing is described in \ref{sec:apSourceAssoc} as part of the source association. ``Day MOPS'' processes the newly detected DIASources (or DIAObjects) to search for candidate asteroid tracks. The procedure for ``Day MOPS'' is to link DIASource detections within a night (called tracklets), to link these tracklets across multiple nights (into tracks), to fit the tracks with an orbital model to identify those tracks that are consistent with an asteroid orbit, to match these new orbits with existing SSObjects, and to update the SSObject table. By its nature this process is iterative with DIASources being associated and disassociated with SSObjects. The frequency of the iterations is an open area.
 
 \begin{note} Specify the expected number of sources \end{note}
+
+\begin{figure}[th]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/MOPS.png}
+\caption{\label{fig:apMOPS} Detection and orbital modelling of moving sources within the nightly data: Tracklet generation from revisits, filtering of tracklets based on  known \SSObjects, fitting of tracks and orbits to tracklets, pruning of tracklets and DIAObjects based on new and updated \SSObjects.}
+\end{center}
+\end{figure} 
 
 \subsubsection{Input Data}
 
