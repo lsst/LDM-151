@@ -231,7 +231,11 @@ In deep DRP processing (Section~\ref{sec:drp_coadd_processing}), detection is cl
 
 \subsection{Deblending}
 \label{sec:acDeblending}
-AUTHOR: Jim
+
+Deblending is both one of the most important and one of the most difficult algorithmic challenges for LSST, and our plans for deblending algorithms are best described as a research project at this stage.
+
+The baseline interface takes as input a set of \hyperref[sec:spFootprints]{Footprints} (including peaks), possibly merged from detections on several images (see \hyperref[sec:acObjectGeneration]{Object Generation}, and a set of images (related to, but not necessarly identical to the set of deytection images).  It returns a tree of \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} that contain the deblended images of objects.  The tree may have multiple levels, indicating a sequence of blend hypotheses that subdivide an image into more and more objects.  There may be different \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} for each deblended image (at least one for every band), making the size of all \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} comparable to this size of the image data, at least for coadds.  Depending on the deblending algorithm chosen, a more compact representation of the deblend results may be available that would allow the full \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} to be regenerated quickly from the image data.
+
 
 For templates, try:
 \begin{itemize}
