@@ -234,31 +234,43 @@ In deep DRP processing (Section~\ref{sec:drp_coadd_processing}), detection is cl
 
 Deblending is both one of the most important and one of the most difficult algorithmic challenges for LSST, and our plans for deblending algorithms are best described as a research project at this stage.
 
-The baseline interface takes as input a set of \hyperref[sec:spFootprints]{Footprints} (including peaks), possibly merged from detections on several images (see \hyperref[sec:acObjectGeneration]{Object Generation}, and a set of images (related to, but not necessarly identical to the set of deytection images).  It returns a tree of \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} that contain the deblended images of objects.  The tree may have multiple levels, indicating a sequence of blend hypotheses that subdivide an image into more and more objects.  There may be different \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} for each deblended image (at least one for every band), making the size of all \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} comparable to this size of the image data, at least for coadds.  Depending on the deblending algorithm chosen, a more compact representation of the deblend results may be available that would allow the full \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} to be regenerated quickly from the image data.
+The baseline interface takes as input a set of \hyperref[sec:spFootprints]{Footprints} (including peaks), possibly merged from detections on several images (see \hyperref[sec:acObjectGeneration]{Object Generation}, and a set of images (related to, but not necessarly identical to the set of deytection images).  It returns a tree of \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} that contain the deblended images of objects.  The tree may have multiple levels, indicating a sequence of blend hypotheses that subdivide an image into more and more objects.  There may be different \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} for each deblended image (at least one for every band), making the size of all \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} comparable to this size of the image data, at least for coadds.  Depending on the deblending algorithm chosen, a more compact representation of the deblend results may be possible (in that that it would allow the full \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} to be regenerated quickly from the image data).
 
+As deblending may involve \hyperref[sec:acSimultaneousFitting]{simultaneous fitting} of galaxy and point source models, it may also output the parameters of these models directly as measurements, in addition to generating a pixel-level separation of neighboring objects that can be used by other measurement algorithms via \hyperref[sec:acNeighborReplacement]{NeighborReplacement}.
 
-For templates, try:
-\begin{itemize}
-\item symmetry ansatz with additional regularization
-\item simultaenous fit of galaxy models
-\item spline-based models with regularization?
-\item (multi-coadd only) optimize color uniformity
-\end{itemize}
+Deblending large objects is also closely related to \hyperref[sec:acBackgroundEstimation]{background estimation}.  Some science cases (focusing on small, rare objects) may prefer aggressive background subtraction that removes astrophysical backgrounds such as intra-cluster light or galactic cirrus, while other science cases obviously care about preserving these structures (as well as the wings of bright galaxies, which are frequently difficult to model parametrically).  Rather than produce independent catalogs with different realizations of the background, it makes more sense to include these smaller-scale astrophysical background features in the deblend tree, which already provides a way to express multiple interpretations of the sky.
 
-Will be especially challenging in crowded fields, but it needs to work in that regime as well.
+The baseline approach to deblending involves the following steps:
+\begin{enumerate}
+\item Define a ``template'' for each potential object in the blend (a model that at least approximately reproduces the image of the object).
+\item Simultaneously fit the amplitudes of all templates in the blend.
+\item Remove redundant templates/objects according to some criteria (and loop back to the first step).
+\item Apportion each pixel's flux to objects according to the value of the objects amplitude-scaled template at the position of that pixel divided by the sum of all amplitude-scaled templates.
+\end{enumerate}
+Regardless of the templates used, this approach strictly preserves flux, and it can preserve the morphology of even complex objects in the limit that they are widely separated.  The complexity in this approach is of course in the definition of templates and the procedure for dealing with redundancy.
+
+The deblender in the SDSS Photo pipeline uses a rotational symmetry ansatz to derive templates directly from the images.  This approach is probably too underconstrained to work in the deeper, more blended regime of LSST, and hence we plan to try at least using various parametric models (both PSF-convolved and not).  An ansatz that requires each object to have a approximately uniform color over its image may also be worth exploring, and we may also investigate other less-parametric models such as Gaussian mixtures, wavelet decompositions, or splines.  Hybrid approaches, such as using a symmetry ansatz for the brightest object(s) in blends and more constrained models for the rest, will also be explored.
+
+This approach yields exactly only one level of parent/child relationships in the output blend tree; each peak in a blend generates at most one child, and all peaks have the same parent.  To extend this to the multi-level tree we expect to need to support all science cases, we expect to repeat this approach at multiple scales -- though it is currently unclear exactly how we will treat each scale differently; some possibilities include multiple detections on with different spatial filters and building a tree of peaks based on their detection significance and location.
+
+A key facet of any approach to deblending is to utilize the PSF model as a template for any children that can be safely identified as unresolved.  This provides a way to build a deblender that can operate in crowded stellar fields as effectively as a traditional crowded field codes: as the density of the field increases (either as detected by the algorithm or as a function of position on the sky), we can increase the probability with which we identify objects as unresolved.  The simultaneous template fit then becomes a simultaneous fit of PSF models, and if we iterate this procedure with detection (after subtracting previously-fit stars), we recover the traditional crowded-field algorithm.
+
+A final major challenge in developing an adequate deblender is characterizing its performance.  Not only do we lack quantitative requirements on the deblender's performance, we also lack metrics that would quantify improvement in the deblender across science cases.  Poor deblender performance will clearly impact existing science requirements, but this sort of indirect testing makes iterative improvement more difficult, and it is certain that some deblender failure modes will adversely affect important science cases without affecting any existing requirements.  Deblender development will thus have to also include significant work on characterizing deblender performance.
+
 
 \subsubsection{Single Frame Deblending}
 \label{sec:acSingleFrameDeblending}
-\begin{itemize}
-\item Generate HeavyFootprint deblends using only a single image.
-\item May need to be able to work with approximate/guess PSF, even in crowded fields, if we need to deblend before PSF estimation in DRP.
-\end{itemize}
+
+In single-frame processing (e.g. \hyperref[sec:drpBootstrapImChar]{DRP's BootstrapImChar} and possibly AP's \hyperref[sec:apSingleFrameProcessing]{Single Frame Processing} pipelines), deblending will be run on individual CCD images, which requires that it work without any access to color information and in some cases only a preliminary model of the PSF (since it may be run before a quality PSF model has been fit).
+
+Because single-epoch images are shallower than coadds, we expect blending to be less severe than in coadds.  Combining this with the fact that only a single image is being operated on, it is unlikely the single-epoch deblender will be constrained by memory even if run in a single thread.
 
 \subsubsection{Multi-Coadd Deblending}
 \label{sec:acMultiCoaddDeblending}
-\begin{itemize}
-\item Generate consistent HeavyFootprint deblends from coadds over multiple bands and possibly epoch ranges.
-\end{itemize}
+
+Deep deblending on coadds will require a deblender that can simultaneously process a suite of coadds.  This will include at least the deep coadds for each band, but it may also include short-period coadds (again, for each band) and possibly cross-band coadds.  Merely keeping all of these in memory together would probably necessitate multithreading to avoid requiring more memory/core than most other pipeline algorithms, but we also expect the number of objects in blends to be large on average and extreme in the worst case, and memory use by the deblender scales with this as well.  This will almost certainly require some sort of divide-and-conquer approach in addition to some combination of the already-complex algorithmic concepts described above.
+
+The outputs of the deep deblender will need to be ``projected'' to images other than the coadds actually used by the deblender.  This includes at least PSF-matched coadds (which will have the same pixel grid but different PSFs) and possibly individual epoch images (which will have different pixel grids and different PSFs) for \hyperref[sec:drpForcedPhotometry]{forced photometry} and \hyperref[sec:drpMultiFit]{multi-epoch fitting}; see Section~\ref{sec:acDeblendTemplateProjection} for more information.
 
 \subsection{Measurement}
 \label{sec:acMeasurement}
@@ -444,7 +456,10 @@ Note that deblending dipole sources is a complicated process and we do not inten
 \label{sec:acSpatialModels}
 In many areas we will need to represent spatial models.  This will include models fit to sparse and non-uniformly sampled data.  We will support fitting Chebyshev polynomials and splines.  We will also support regression techniques like Gaussian Processes.
 
-\subsection{Single-Visit Background Estimation}
+\subsection{Background Estimation}
+\label{sec:acBackgroundEstimation}
+
+\subsubsection{Single-Visit Background Estimation}
 \label{sec:acSingleVisitBackgroundEstimation}
 
 Background estimation will be done on the largest scale feasible first.  In the case of Alert Production, this may be on the size of a chip.  In DRP, we expect this to be on a full focalplane.  An initial low order estimate will be made on a large scale.  Each chip will be divided into subregions.  For each subregion, a robust average of the non-masked pixels will be computed.  All values for all chips will be fit by an appropriate function (see \S \ref{sec:acSpatialModels}).  This will provide a low order background estimation in focal plance coordinates.  Note that this can only be done if the Instrument Signature Removal is very high fidelity.  Any sharp discontinuity could cause problems with fitting a smooth function.
@@ -460,12 +475,12 @@ Requirements include working in crowded fields.  I think estimating a full focal
 I didn't explicitly talk about composition of background models, but this takes that into account by allowing a global model to be subtracted from the single chip image before a higher order model is fit.
 \end{note}
 
-\subsection{Coadd Background Estimation}
+\subsubsection{Coadd Background Estimation}
 \label{sec:acCoaddBackgroundEstimation}
 
 A variant of \hyperref[sec:acSingleVisitBackgroundEstimation]{Single-Visit Background Estimation} that is run on coadds to model the remaining background that is not removed during background matching.  This includes the observational background from the reference image
 
-\subsection{Matched Background Estimation}
+\subsubsection{Matched Background Estimation}
 \label{sec:acMatchedBackgroundEstimation}
 
 A variant of \hyperref[sec:acSingleVisitBackgroundEstimation]{Single-Visit Background Estimation} for use on difference images produced in \hyperref[sec:drpBackgroundMatchAndReject]{Background Matching}.  This will be able to operate on full visit scales with much less concern for oversubtracting bright objects, which may allow it to use qualitatively different algorithms.  It may also be able to use models specifically designed to subtract specific ghosts or stray light patterns.
