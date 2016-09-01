@@ -274,7 +274,8 @@ The outputs of the deep deblender will need to be ``projected'' to images other 
 
 \subsection{Measurement}
 \label{sec:acMeasurement}
-AUTHOR: Jim
+
+Source and object measurement involves a suite of algorithmic components at different levels; it is best thought of as a matrix (see Figure~\ref{fig:measurement-matrix}) of drivers and algorithms.  Drivers correspond to a certain context in which measurement is performed, and are described in Section~\ref{sec:acMeasurementDrivers}.  Drivers iterate (possibly in parallel) over all sources or objects in their target image(s), and execute measurement algorithms on each; each measurement algorithm (see Section~\ref{sec:acMeasurementAlgorithms}) processes either a single object or a group of blended objects.  One of the main tasks of the drivers is to help the algorithms measure blended objects; while some algorithms may handle blending internally by simultaneous fitting (Section~\ref{sec:acSimultaneousFitting}), most will be given deblended pixels by the driver, which will utilize deblender outputs and the neighbor-replacement procedure described in Section~\ref{sec:acReplaceNeighborsWithNoise} to provide the algorithms with deblended images.
 
 \begin{figure}
 \centering
@@ -284,6 +285,7 @@ AUTHOR: Jim
 \end{figure}
 
 \subsubsection{Drivers}
+\label{sec:acMeasurementDrivers}
 Measurement is run in several contexts, but always consists of running an ordered list of algorithm plugins on either individual objects or families thereof.  Each context corresponds to different variant of the measurement driver code, and has a different set of plugin algorithms and approaches to measuring blended objects.
 
 \paragraph{Single Frame Measurement:} Measure a direct single-visit CCD image, assuming deblend information already exists and can be used to replace neighbors with noise (see \ref{sec:acReplaceNeighborsWithNoise}).
@@ -330,7 +332,7 @@ Add references to specific AP pipelines that will use forced measurement.
 \end{note}
 
 \subsubsection{Algorithms}
-
+\label{sec:acMeasurementAlgorithms}
 \paragraph{Centroids}
 \label{sec:acCentroidAlgorithms}
 \begin{itemize}
