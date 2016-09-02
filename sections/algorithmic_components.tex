@@ -335,11 +335,13 @@ Add references to specific AP pipelines that will use forced measurement.
 \label{sec:acMeasurementAlgorithms}
 \paragraph{Centroids}
 \label{sec:acCentroidAlgorithms}
-\begin{itemize}
-\item should be equivalent to PSF model fit for stars
-\item use larger weight function (TBD) for extended objects
-\item need variant that doesn't require a PSF model (or can work with a poor guess) to run before PSF estimation.
-\end{itemize}
+
+Centroid measurements are run on single images to measure the position of objects.  Despite the name, these don't measure just the raw centroid of the photons that correspond to an object; we generally also expect our centroid algorithms to correct for offsets introduced by convolution with the PSF.
+While they may not be implemented this way, centroid algorithms should thus return results that are equivalent to the best-fit position parameters of a PSF-convolved symmetric model.  This model should be a delta function for unresolved objects and something approximately matched to the inferred size of extended objects.
+
+When run in the very first stages of processing, a full PSF model will not be available, making PSF correction impossible, and here centroid measurements will be expected to yield the raw centroid of the light.  Note that this must still be corrected for any weighting function used by the algorithm.
+
+Centroids will probably be run independently on each coadd during \hyperref[sec:acMultiCoaddMeasurement]{Multi-Coadd Measurement}, to allow for centroid shifts due to proper motion in short-period coadds.  Centroid measurements are superceded by \hyperref[sec:acMovingPointSourceModels]{Moving Point Source Models} and \hyperref[sec:acGalaxyModels]{Galaxy Models} in \hyperref[drpMultiFit]{MultiFit}, which impose different models for centroid differences between epochs that are consistent with morphology.  \hyperref[sec:ForcedMeasurement]{Forced Measurement} in production will never include centroid measurement, as the goal is explicitly to measure photometry at predetermined positions, but it may be useful to have the capability to centroid in forced measurement for diagnostic purposes.
 
 \paragraph{Pixel Flag Aggregation}
 \label{sec:acPixelFlags}
