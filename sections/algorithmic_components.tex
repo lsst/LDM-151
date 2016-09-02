@@ -345,17 +345,15 @@ Centroids will probably be run independently on each coadd during \hyperref[sec:
 
 \paragraph{Pixel Flag Aggregation}
 \label{sec:acPixelFlags}
-\begin{itemize}
-\item Compute summary statistics of masked pixels in the neighborhood of the source/object.
-\end{itemize}
+
+The pixel flag ``measurement algorithm'' simply computes summary statistics of masked pixels in the neighborhood of the source/object.  This provides a generic way to identify objects impacted by e.g. saturation or cosmic rays while allowing other measurement algorithms to ignore these problems (especially when they have been interpolated over.
 
 \paragraph{Second-Moment Shapes}
 \label{sec:acShapeAlgorithms}
-\begin{itemize}
-\item probably adaptive elliptical Gaussian weights, with fall back to unweighted, PSF-weighted, or some fixed Gaussian
-\item add regularization for unresolved objects - avoid crazy ellipticities for objects much smaller than PSF
-\item Should also compute moments of PSF model.
-\end{itemize}
+
+Shape measurements here are defined as an estimate of a characteristic ellipse for a source or object that does \emph{not} attempt to correct for the effect of the PSF, corresponding to the second moments of its image.  To make this measurement practical in the presence of noise, a weight function must be used, and our baseline plan is to use an elliptical Gaussian matched (adaptively) to the shape of the image.  This may be unstable for sources with extremely low SNR, and for these the PSF, a fixed circular Gaussian, or a top-hat may be used as the weight function.  We may also include regularization that ensures the size of the object is no smaller than the size of the PSF.
+
+To enable downstream code to correct shapes for the PSF, the shape algorithm must also measure the moments of the PSF model at the position of every object or source (though we expect the best PSF-corrected shape measures for galaxies to come from \hyperref[sec:acGalaxyModels]{Galaxy Model Fitting}).
 
 \paragraph{Aperture Photometry}
 \label{sec:acAperturePhotometry}
