@@ -544,36 +544,46 @@ The first run of this algorithm in DRP may be responsible for correcting source 
 \end{itemize}
 
 
-
 \subsubsection{Joint Multi-Visit}
 \label{sec:acJointPhotometricFit}
 
-For DRP, all the observations can be combined in the so-called ubercal procedure to generate the best possible measurement of the relative flux of each source.
+In joint photometric calibration, all observations within a tract are combined to jointly estimate the best possible measurement of the relative flux of each source and a spatially-varying gray photometric scaling for each visit.
 
+This includes:
 \begin{itemize}
-\item Derive SEDs for calibration stars from colors and reference catalog classifications.
-\item Utilize additional information from wavelength dependent photometric calibration built by calibration products production to convert observed flux to a flux through a standard atmosphere.
-\item Fit zeropoint and possibly perturbations to all CCDs on multiple visits simultaneously after matching to reference catalog.
+\item Deriving SEDs for calibration stars from colors and reference catalog classifications.
+\item Utilizing additional information from wavelength-dependent photometric calibration built by the calibration products production to convert observed flux to a flux through a standard atmosphere.
+\item Fitting zeropoint and possibly perturbations to all CCDs on multiple visits simultaneously after matching to reference catalog.
 \end{itemize}
 
-Because the number of stars gets ridiculously large, it can be useful to solve different overlapping regions of the sky in parallel.  Once all the regions converge, you can run the same ubercal matrix solution to tie the patches together.  The fist step is to solve:
+The first step is to solve:
 \begin{equation} \label{eq:uber}
-m_{ij} = m_i + z_j
+m_{i,j} = m_i + z(x, y)_j
 \end{equation}
-where $m_{ij}$ is an observed magnitude of star with true magnitude $m_i$ on observation $j$.  While it is possible to include more terms (say, fit out flat-fielding errors at the same time), more terms makes it much harder to solve in parallel.  Additional terms also make it easy to make the problem degenerate and it can slow the ubercal algorithm down rapidly. Naively, solving Equation~\ref{eq:uber} would involve simply computing the psudo-inverse of the sparse $m_{ij}$ matrix. Unfortunately, the inverse of a large sparse matrix is a large dense matrix.  Thus one must use iterative solvers such as the LSQR algorithm (a conjugate gradient-type solver) to find the best-fitting values of $m_i$ and $z_j$.  
+where $m_{i,j}$ is an observed magnitude of star with true magnitude $m_i$ on observation $j$, with position-dependent photometric scaling $z$.   Naively, solving Equation~\ref{eq:uber} would involve simply computing the pseudo-inverse of the sparse $m_{ij}$ matrix. Unfortunately, the inverse of a large sparse matrix is a large dense matrix.  Thus one must use iterative solvers such as the LSQR algorithm (a conjugate gradient-type solver) to find the best-fitting values of $m_i$ and the (model-dependent) parameters of $z_j$.
 
-This method leaves a ``floating zeropoint" in the solution (if you add X to all the $m_i$'s, and -X to all the $z_j$'s the solution is the same).  If one solves regions of the sky independently, then the floating zeropoints of each region (say a HEALpixel) need to be matched:
+It is possible that the calibration products production may not produce adequate wavelength-dependent photometric calibration (especially for the atmosphere), requiring this to be included in the fit as well.
+
+
+\subsubsection{Global Fitting}
+\label{sec:acGlobalPhotometricFit}
+
+Global photometric fitting (as opposed to tract-level \hyperref[sec:acJointPhotometricFit]{Joint Multi-Visit Photometric Fitting}) will most likely not be run in Data Release Production, as we expect to be able to use the Gaia catalogs to calibrate between tracts.  The suitability of the Gaia catalogs for this purpose still needs to be confirmed in detail (it depends on our ability to predict LSST colors from Gaia BP/RP spectra).  Even if Gaia is used, a global photometric fit may still be useful as a QA tool (run after DRP) to verify the quality of the global photometric.
+
+Tract-level photometric calibration leaves a ``floating zeropoint" in the solution (if you add X to all the $m_i$'s, and -X to all the $z_j$'s the solution is the same).  If one solves regions of the sky independently, then the floating zeropoints $T_j$ of each tract need to be matched:
 \begin{equation}
-p_{ij} = p_i + HP_j
+p_{i,j} = p_i + T_j
 \end{equation}
+This represents a full-survey sequence point.
 
-One open issue is that it's not clear what uncertainties to put in for the different $p_{ij}$'s (unlike the observed magnitudes where it's relatively easy to calculate a reasonable uncertainty). One must also come up with a method for computing the uncertainties on the returned best-fit parameters.
+One open issue is that it's not clear what uncertainties to put in for the different $p_{i,j}$'s (unlike the observed magnitudes where it's relatively easy to calculate a reasonable uncertainty). One must also come up with a method for computing the uncertainties on the returned best-fit parameters.
 
-After solving for all the magnitudes, and merging all the patch zeropoints, there's still the final floating zeropoint (in each filter) that needs to be removed.  One possibility is to use spectrophotometric White Dwarf standards to set the overall photometric zeropoint since they have spectra that should be theoretically calculated to millimag precision.  There's also speculation that GAIA BP/RP spectra could provide a good way to do the flux calibration.  
+After solving for all the magnitudes, and merging all the tract-level zeropoints, there's still the final floating zeropoint (in each filter) that needs to be removed.  One possibility is to use spectrophotometric White Dwarf standards to set the overall photometric zeropoint since they have spectra that should be theoretically calculated to millimag precision.  There's also speculation that Gaia BP/RP spectra could provide a good way to do the flux calibration.
 
-%It occurs to me that the ubercal problem can be pretty well described with a latex drawing and writing out the matrix that goes with it.  I can work on that if you want.
+\paragraph{Interim Wavelength-Dependent Fitting}
+\label{sec:acInterimPhotometryFit}
 
-Joint photometric fitting must be able to work both with and without an external reference catalog (while only producing relative results in the latter case, of course).
+Most LSST software development will be tested on precursor datasets, such as images taken from the HSC and DECam instruments, and these lack the detailed characterization of wavelength-dependent photometric transmission effects planned for LSST.  Even when LSST commissioning data and the LSST atmospheric monitoring telescope are available, the Gaia catalog and monochromatic flats may not be.  In order to exercise and commission the pipelines before the full system is operational we will have to include fitting for these chromatic effects in a global photometric fit that can be run on important precursor datasets.  This will not obtain the same level of accuracy as the full LSST system, but it will provide wavelength- and spatially-dependent photometric calibrations that are sufficiently accurate to test our ability to apply those corrections to our measurements.  When the full LSST photometric calibration system is operational, we expect this functionality to continue to play a role in QA even though it will probably not be run as part of Data Release Production.  Obviously, having this capability also serves as risk mitigation in case some aspects of the planned photometric calibration system fail to perfom adequately.
 
 \subsection{Retrieve Diffim Template for a Visit}
 \label{sec:acRetrieveTemplate}
