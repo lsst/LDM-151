@@ -4,13 +4,14 @@
 \titlespacing*{\subsubsection}
 {0pt}{1ex}{0ex}
 
+\XXX{To do: Put in a link for the CBP, and upon first mention say Collimated Beam Projector (CBP)}
 
 \section{Calibration Products Pipeline (\wbsCPP)}
 \label{sec:cpp}
 
-This section details the input data and algorithms required to generate all data-products necessary for the photometric calibration of the survey, but does not cover the details of their application.
+This section details the input data and algorithms required to generate all data products necessary for the photometric calibration of the survey, but does not cover the details of their application.
 
-The various input datasets are covered in \secsymbol\ref{sec:CPP:inputs} and \secsymbol\ref{sec:CPP:auxTelescope:inputs}, which detail the source of the input data, \ie which will be provided by the camera team and which will be measured on the mountain. \secsymbol\ref{sec:CPP:CBP_control} covers miscellaneous algorithms which will be necessary to develop in order to acquire the input datasets with the CBP. Finally, sections \secsymbol\ref{sec:CPP:output} and \secsymbol\ref{sec:CPP:auxTelescope:outputs} list the various output data-products from the Calibration Products Pipeline.
+The various input datasets are covered in \secsymbol\ref{sec:CPP:inputs} and \secsymbol\ref{sec:CPP:auxTelescope:inputs}, which detail the source of the input data, \ie which will be provided by the camera team and which will be measured on the mountain. \secsymbol\ref{sec:CPP:CBP_control} covers miscellaneous algorithms which will be necessary to develop in order to acquire the input datasets with the CBP. Finally, sections \secsymbol\ref{sec:CPP:output} and \secsymbol\ref{sec:CPP:auxTelescope:outputs} list the various output data products from the Calibration Products Pipeline.
 
 \subsection{Key Requirements}
 \label{sec:CPP:keyRequirements}
@@ -21,9 +22,9 @@ The work performed in this WBS serves several complementary roles:
  
  \item It will characterize detector anomalies in such a way that they can be corrected either by the instrument signature removal routines in the Single Frame Processing Pipeline (\wbsSFM) or, if appropriate, elsewhere in the system;
  
- \item It will provide updated values of the crosstalk matrix to the camera DAQ for correction of the raw data;
+ \item It will provide updated values of the crosstalk matrix to the camera DAQ (for AP) and DM (for DRP) for correction of the raw data;
  
- \item It will manage and provide a catalog of optical ghosts and glints to other parts of the system upon demand.
+ \item It will allow for characterization of the optical ghosts and scattered light in the system.
 \end{itemize}
 
 
@@ -54,13 +55,13 @@ The linearity curve for every amplifier, as well as the level above which these 
 
 
 \subsubsection{Darks}\label{sec:CPP:inputs:dark}
-Sets of 300s dark frames.
+Sets of long dark frames (\smalltilde 300s, length TBD based on dark current in delivered sensors) .
 \alg None - these just need to be taken.
 
 
 \subsubsection{Crosstalk}\label{sec:CPP:inputs:crosstalk}
 \cameraTeam
-The crosstalk matrix for every pair of amplifiers in the camera.
+The crosstalk matrix for every pair of amplifiers in the camera, though this will likely be a very sparse.
 \alg None.
 
 
@@ -77,12 +78,12 @@ The lowest level (in electrons), for each amplifier, at which charge bleeds to a
 
 
 \subsubsection{Broadband Flats}\label{sec:CPP:inputs:broadFlat}
-Sets of flats taken through the standard LSST filters. We will need flats taken at a number of flux levels to measure brighter-fatter and check linearity, including sets of ``superflats'', which are sets of high-flux flats with many repeats ($>50$, possibly $>100$) for stacking. Superflats for brighter-fatter characterization will not need to be taken regularly as this effect is not expected to evolve in time.
+Sets of flats taken through the standard LSST filters. We will need flats taken at a number of flux levels to measure brighter-fatter and check linearity, including sets of ``superflats'', which are sets of high-flux flats with many repeats ($>50$, possibly $>100$). Superflats for brighter-fatter characterization will not need to be taken regularly as this effect is not expected to evolve in time.
 \alg None - these just need to be taken.
 
 
 \subsubsection{Monochromatic Flats}\label{sec:CPP:inputs:monoFlat}
-Sets of `monochromatic' (\c 1nm) flat-field screen images taken with no filter in the beam.
+Sets of `monochromatic' (\c 1nm) flat-field screen images taken with no filter/glass in the beam.
 \alg None - these just need to be taken.
 
 
@@ -92,11 +93,11 @@ Sets of Collimated Beam Projector images. The proposed resolutions and steps in 
 
 
 \paragraph{CBP dataset 1}\label{sec:CPP:inputs:CBP:mono}
-Sets of CBP images scanned in wavelength at 1nm resolution every 1nm for a fixed set of spot positions on the camera, and for fixed footprint on M1. No filter should be in the beam.
+Sets of CBP images scanned in wavelength at 1nm resolution\footnote{1nm `resolution' here denotes the bandwith of the light source, and can be this width, or any amount lower. It should, however, be noted that the accuracy on the wavelength calibration of the light source needs to be at the 0.1nm level \XXX{Add a reference to the DESC people saying this is necessary for SN cosmology in LSST.}} every 1nm for a fixed set of spot positions on the camera, and for fixed footprint on M1. No filter should be in the beam.
 	
 	
 \paragraph{CBP dataset 2}\label{sec:CPP:inputs:CBP:spot}
-Sets of CBP images scanned in wavelength at 20nm resolution every 100nm, while rotating the CBP about a pupil to move the spot pattern around the camera for a fixed footprint on M1. No filter should be in the beam.
+Sets of CBP images scanned in wavelength at 20nm bandwidth every 100nm, while rotating the CBP about a pupil to move the spot pattern around the camera for a fixed footprint on M1. No filter should be in the beam.
 
 	
 \paragraph{CBP dataset 3}\label{sec:CPP:inputs:CBP:M1}
@@ -112,12 +113,11 @@ Sets of CBP images scanned in wavelength at 20nm resolution every 20nm for a fix
 
 
 \paragraph {CBP Crosstalk Measurement}\label{sec:CPP:inputs:CBP:crosstalk}
-Sets of CBP images taken with a suitably designed sparse mask to allow us to identify and measure all crosstalk images. The simplest sparse mask would have only a single spot, used to illuminate each amplifier in the camera in turn (but less sparse solutions are probably also possible). The wavelengths used are unimportant, and there are no constraints on beam footprints on M1 or filter choice.
+Sets of CBP images taken with a suitably designed sparse mask to allow us identification and measurement of all crosstalk images. The simplest sparse mask would have only a single spot, used to illuminate each amplifier in the camera in turn (but less sparse solutions are likely also possible). The wavelengths used are unimportant, and there are no constraints on beam footprints on M1 or filter choice. This will be particularly necessary should LSST be operated in a slow-readout mode, for example for use with 30s integrations, as crosstalk coefficients would change considerably.
 
 
 \subsubsection{Filter Transmission}\label{sec:CPP:inputs:filterTransmission}
-\cameraTeam
-Transmission curves for all the filters as a function of position.
+Transmission curves for all the filters as a function of position. \Nb This is to be delivered by the filter vendors rather than the camera team, but is input data which will not be measured by DM. The resolution needs to be (\XXX{We need to check what the proposed wavelength resolution and accuracy the vendors are proposing to use for this is. I spoke to Steve Ritz at the AHM and he seemed very positive about the vendors proposal for this, but we should check what the plan is.}) 1nm or better, in keeping with the resolution of the monochromatic flats.
 \alg None.
 
 
@@ -133,7 +133,7 @@ Known spectra for bright stars in the field of view of all visits.
 
 \subsubsection{Atmospheric Characterization}\label{sec:CPP:inputs:atmosphericData}
 Externally measured parameters of the atmosphere, for example barometric pressure and ozone.
-\alg None, except for interfacing with the site team or whoever is responsible for the equipment, to automate getting these readings in a machine-readable form from the environmental monitors.
+\alg None, except for interfacing with the site team or whoever is responsible for the equipment, to automate getting these readings in a machine-readable form from the environmental monitors, including the satellite ozone data.
 
 
 \subsubsection{Photometric Standards}\label{sec:CPP:inputs:photometricStandards} 
@@ -152,26 +152,26 @@ Photometric standards, of a range of colors. GAIA is a likely source for this da
 This section details the outputs from the Calibration Products Pipeline. Algorithms for the production of each item are outlined, and includes provision for the re-calculation of items previously only listed as ``camera team deliverables''.
 
 \subsubsection{Master Bias}\label{sec:CPP:output:bias}
-Trimmed, overscan subtracted, master bias frame produced by taking the median of several-to-many bias frames for each CCD on the focal plane. \rednote (Including wavefront sensors?)
+Trimmed, overscan subtracted, master bias frame produced by taking the median of several-to-many bias frames for each CCD on the focal plane. \XXX{Including the wavefront sensors?)}
 \alg Given the LSST 2s readout, we do not expect to need to remove cosmic rays explicitly; a robust stacking algorithm should be sufficient. A prototype construction algorithm currently exists in \texttt{pipe\_drivers}. Final version must be configurable to use scalar-, vector- or array-type overscan subtraction. 
 \footnote{If the readout noise in any channels is too low (relative to the
 gain) to properly sample the noise distribution, a simple fix is to add sets of $n$ (\eg 3) bias exposures before creating the stacked image.}
 
 
 \subsubsection{Master Darks}\label{sec:CPP:output:dark}
-Trimmed, overscan and bias-frame subtracted, master dark frames for each CCD on the focal plane. These are produced by taking the median of several-to-many long (c. 300s) dark exposures, and are subsequently scaled to 1 second exposure length. \rednote (Including wavefront sensors?)
+Trimmed, overscan and bias-frame subtracted, master dark frames for each CCD on the focal plane. These are produced by taking the median of several-to-many long (c. 300s) dark exposures, and are subsequently scaled to 1 second exposure length.  \XXX{Including the wavefront sensors?)}
 \alg The individual frames will be run through standard ISR processing (including cosmic ray removal) before
 being combined; the combination may be done using standard LSST image stacking code, and a prototype construction algorithm exists in \texttt{pipe\_drivers}. Final version must be configurable to use scalar-, vector- or array-type overscan subtraction, and be robust to contamination from cosmic rays when coadding.
 
 
 \subsubsection{Master Linearity}\label{sec:CPP:output:linearityCurve}
 Linearity curves; identical to \secsymbol\ref{sec:CPP:inputs:linearityCurve}, unless updated during operations.
-\alg Will need to write algorithmic component to generate the linearity curves from raw data, either from binned flats, CBP data or ``ramp frames''. Requires careful treatment as the \bfeffect can masquerade as non-linearity. Code to apply non-linearity correction during \texttt{isr} is currently being implemented by Russel Owen.
+\alg Will need to write algorithmic component to generate the linearity curves from raw data, either from binned flats, CBP data or ``ramp frames''. Requires careful treatment as the \bfeffect can masquerade as non-linearity. Code to apply non-linearity correction during \texttt{isr} is currently being implemented by Russell Owen.
 
 
 \subsubsection{Master Fringe Frames}\label{sec:CPP:output:fringeFrames}
 Some variety of fringe frames. We hope that these will not be necessary \footnote{\XXX{add footnote briefly saying why}}, but baseline for their existence as a backup.
-\alg Construction of these fringe frames from \hyperref[sec:CPP:output:monoFlat]{monochromatic flats}, likely using the existing algorithm in \texttt{pipe\_drivers}.
+\alg Construction of these fringe frames from \hyperref[sec:CPP:output:monoFlat]{monochromatic flats}, likely using the existing PCA algorithm in \texttt{pipe\_drivers}.
 
 
 \subsubsection{Master Gain Values}\label{sec:CPP:output:gains}
@@ -179,7 +179,7 @@ Per-amplifier gains; identical to \secsymbol\ref{sec:CPP:inputs:gain}, unless up
 \alg Potentially difficult, and needs to be developed. We will have almost arbitrarily accurate gain measurements as an input, but monitoring the evolution of these gains to the required accuracy is currently an unsolved problem.
 
 We will be able to monitor the relative gain within a given CCD by demanding that the flat fields be
-continuous across amplifier boundaries; this is, however, not possible across devices. Ticket \hyperref{https://jira.lsstcorp.org/browse/DM-6030}{}{}{\texttt{DM-6030}} exists to explore the possibility of using cosmic ray muons and the unavoidable radioisotope contamination inside the camera for this purpose. If this fails \footnote{Merlin's estimate is that the likelihood of this is moderate-to-high, Robert disagrees)} then another method will need to be devised. The necessary accuracy of this measurement should be firmly established.
+%continuous across amplifier boundaries; this is, however, more difficult across device boundaries. Ticket \hyperref{https://jira.lsstcorp.org/browse/DM-6030}{}{}{\texttt{DM-6030}} exists to explore the possibility of using cosmic ray muons and the unavoidable radioisotope contamination inside the camera for this purpose. If this fails \footnote{Merlin's estimate is that the likelihood of failure is moderate-to-high, Robert disagrees.} then another method will need to be devised. The necessary accuracy of this measurement should be firmly established.
 
 
 \subsubsection{Master Defects}\label{sec:CPP:output:defectList}
@@ -190,32 +190,33 @@ A list of all bad pixels in each CCD; identical to \secsymbol\ref{sec:CPP:output
 \subsubsection{Saturation Levels}\label{sec:CPP:output:saturationLevel}
 The level (in electrons), for each amplifier, at which charge bleeds to a neighboring pixel; identical to \secsymbol\ref{sec:CPP:output:saturationLevel}, unless updated during operations.
 \alg Measurement is easy using the CBP or or long sky exposures, but we need code to detect saturation and then calculate the threshold level.
-\begin{note}
-	Merlin needs to talk to RHL about what he meant here as bleeding/blooming $\neq$ amplifier saturation. Which does he imagine this was referring to? I believe he means blooming, but others parts imply amplifier saturation so need to clarify.
-\end{note}
+%\begin{note}
+%	Merlin needs to talk to RHL about what he meant here as bleeding/blooming $\neq$ amplifier saturation. Which does he imagine this was referring to? I believe he means blooming, but others parts imply amplifier saturation so need to clarify.
+%\end{note}
 
 
 \subsubsection{Crosstalk}\label{sec:CPP:output:crosstalk}
-The crosstalk matrix element for every pair of amplifiers in the camera; identical to \secsymbol\ref{sec:CPP:output:crosstalk}, unless updated during operations. However, the need for updating is high as the validity of these values depends on them being measured with the camera in its final configuration. The reasoning is that the inter-CCD and inter-raft couplings, though supposedly small (especially in the case of inter-raft coupling), depend on the exact physical locations of all the PCBs and flex cables with respect to one another. We must therefore be able to measure this on the mountain using the CBP.
+The crosstalk matrix element for every pair of amplifiers in the camera; identical to \secsymbol\ref{sec:CPP:output:crosstalk}, unless updated during operations. The probability that we'll need to update is high as the validity of these values depends on them being measured with the camera in its final configuration. The reasoning is that the inter-CCD and inter-raft couplings, though supposedly small (especially in the case of inter-raft coupling), depend on the exact physical locations of all the circuit boards and flex cables with respect to one another. We must therefore be able to measure this on the mountain using the CBP.
 
-Whilst this is not ``hard'' in the intellectual sense, it is a fiddly thing and easy to get wrong, both in the measurement and potentially the correction; the LSST focal plane is likely to be heterogeneous, and the readout direction between the amplifiers differ between the chip flavours, meaning that crosstalk ghosts may appear mirrored in one or more axes. Furthermore, whilst unlikely to exist (nay certain, we are assured), \emph{should} a timing offset exist between REBs or CCDs, the crosstalk ghost positions would change, and a single matrix would be insufficient to describe the correction.
+\XXX{Remove this commentary in final version:} Whilst this is not ``hard'' in the intellectual sense, it is a fiddly thing and easy to get wrong, both in the measurement and potentially the correction; the LSST focal plane is likely to be heterogeneous, and the readout direction between the amplifiers differ between the chip flavours, meaning that crosstalk ghosts may appear mirrored in one or more axes. Furthermore, whilst unlikely to exist (nay certain, we are assured), \emph{should} a timing offset exist between REBs or CCDs, the crosstalk ghost positions would change, and a single matrix would be insufficient to describe the correction.
 \alg In the un-multiplexed limit, this involves dithering a single CBP spot around the focal plane and measuring the crosstalk ghosts (whilst carefully disambiguating these from optical ghosts using CBP trickery). Clearly some multiplexing will be possible using a multi-pinhole CBP mask. We should baseline for a one-spot-per-CCD mask, a one-spot-per-raft-mask, and ideally a one-spot-per-amplifier mask, as well as a single-spot mask.
 
-We will need to write CBP dithering scripts (mask-specific raster scanning routines, and then re-raster scanning at a different M1 position for the previous focal plane positions to differentiate crosstalk and optical ghosts), code to perform this differentiation, and then make the measurement of the coupling coefficients. This will be fiddly as the sensor types will be relevant. \hyperref{http://iopscience.iop.org/article/10.1088/1748-0221/10/05/C05010}{}{}{POC Crosstalk reference} \XXX{add this as a proper citation and insert into bib.}
+\XXX{Change to say just rotating camera. We will have tools for more complex things if necessary anyway.} We will need to write CBP dithering scripts (mask-specific raster scanning routines, and then re-raster scanning at a different M1 position for the previous focal plane positions to differentiate crosstalk and optical ghosts), code to perform this differentiation, and then make the measurement of the coupling coefficients. This will be fiddly as the sensor types will be relevant. \hyperref{http://iopscience.iop.org/article/10.1088/1748-0221/10/05/C05010}{}{}{POC Crosstalk reference} \XXX{add this as a proper citation and insert into bib.}
 
 The measured crosstalk matrix can be checked using either CBP data, saturated stars' bleed trails, or cosmic rays in dark frames.
-\begin{note}
-	See queries on crosstalk which I have put in \secsymbol\ref{sec:calibQuestions}.
-\end{note}
+%\begin{note}
+%	See queries on crosstalk which I have put in \secsymbol\ref{sec:calibQuestions}.
+%\end{note}
 
 
 
 \subsubsection{Impure Monochromatic Flats}\label{sec:CPP:output:monoFlat}
 Sets of `monochromatic' (\c 1nm) trimmed, overscan-subtracted, dark-corrected flat-field images for each filter. These flats will \emph{include} ghost and scattered light.
-\alg Construction algorithm likely almost exists in \texttt{pipe\_drivers}.
+\alg Construction algorithm exists in \texttt{pipe\_drivers}.
 
 
 \subsubsection{Pure Monochromatic Flats}\label{sec:CPP:output:monoPhotoFlat}
+\XXX{Act on: I was planning to use the photometry of the spots (which define the flats we need) and ignoring the CBP ghost data except as a cross-check. I don't believe that the scattering model will be good enough, especially the ghoulies.}
 Sets of `monochromatic' (\c 1nm) trimmed, overscan-subtracted, dark-corrected flat-field images for each filter. These flats will \emph{exclude} ghost and scattered light.
 \alg Constructed from \secsymbol\ref{sec:CPP:output:monoFlat} and the ghost catalog / system optical model.
 
@@ -233,9 +234,9 @@ A low-resolution (in both space and wavelength) version of \secsymbol\ref{sec:CP
 \end{note}
 
 
-\subsubsection{Pixel Sizes}\label{sec:CPP:output:pixelSizeMap} \xxx 
+\subsubsection{Pixel Sizes}\label{sec:CPP:output:pixelSizeMap} 
 A map of the (effective) pixel-size distortions. At worse, this will be a $n_{\mbox{width}}\times n_{\mbox{height}}\times 2$ datacube of floats. Pixel size distortions include small-scale quasi-random size variations, mask-stitching/tiling artifacts, tree-rings, and any other effects not dynamical in nature.
-\alg Algorithm to measure this is currently a (somewhat) unsolved problem. It has been shown by Aaron Roodman \& co. that these can be measured from flat-fields, but the problem is under-constrained, and thus the stability (nay, validity?) of their measurements is questionable, despite seeming to work. Further thought is required to establish whether their method can be used, and if not, devise another one (though it is not obvious how the problem can be made to be well constrained). 
+\alg Algorithm to measure this is currently a (somewhat) unsolved problem. It has been claimed by Aaron Roodman \& co. that these can be measured from flat-fields, but the problem is under-constrained, and thus the stability (nay, validity?) of their measurements is questionable, despite seeming to work. Further thought is required to establish whether their method can be used, and if not, devise another one (though it is not obvious how the problem can be made to be well constrained). 
 \\ \dragons ?
 
 
@@ -254,7 +255,7 @@ Measurement of the charge transfer efficiency for all elements of the camera. At
 
 
 \subsubsection{Filter Transmission}\label{sec:CPP:output:filterTransmission}
-Measurement of filter transmission \emph{in-situ}. As well as the filter transmission measurement from the camera team in \secsymbol\ref{sec:CPP:inputs:filterTransmission}, we further baseline the development of a procedure for measuring the filter response at 1\,nm resolution using the approach described in \cite{Lupton15}.
+Measurement of filter transmission \emph{in-situ}. As well as the filter transmission measurement from the camera team/vendor in \secsymbol\ref{sec:CPP:inputs:filterTransmission}, we further baseline the development of a procedure for measuring the filter response at 1\,nm resolution using the approach described in \cite{Lupton15}.
 \alg Created from measurements in \secsymbol\ref{sec:CPP:inputs:CBP}. \XXX{Check that the method cited above is what you think it is and will therefore be done with the products referenced above. }
 
 
@@ -277,6 +278,9 @@ The procurement of the CBP includes the procurement of the necessary low-level c
 However, it will still remain to write scripts for the CBP, and interfaces with the OCS, to allow making all of the desired measurements, especially as several of these, namely \xxx, \xxx \& \xxx require doing so in concert with the 8.4m.
 \alg As well as writing the necessary scripts to acquire the raw data products outlined in \secsymbol\ref{sec:CPP:inputs}, it will also be necessary to deliver the coordinate transformation and pointing model to allow the CBP to maintain a fixed position on the focal plane whilst illuminating different portions of the pupil (and vice versa.)
 
+\begin{note}
+	Does this include the diffraction spikes? How about local junk due to imperfections in the mirrors?
+\end{note}
 
 
 
