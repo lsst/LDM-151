@@ -166,7 +166,7 @@ being combined; the combination may be done using standard LSST image stacking c
 
 \subsubsection{Master Linearity}\label{sec:CPP:output:linearityCurve}
 Linearity curves; identical to \secsymbol\ref{sec:CPP:inputs:linearityCurve}, unless updated during operations.
-\alg Will need to write algorithmic component to generate the linearity curves from raw data, either from binned flats, CBP data or ``ramp frames''. Requires careful treatment as the \bfeffect can masquerade as non-linearity. Code to apply non-linearity correction during \texttt{isr} is currently being implemented by Russell Owen.
+\alg Will need to write algorithmic component to generate the linearity curves from raw data, either from binned flats, CBP data or ``ramp frames''. Requires careful treatment as the \bfeffect can masquerade as non-linearity. Code to apply non-linearity correction during \texttt{isr} is currently being implemented by Russell Owen. Care must be taken to calculate these after bias subtraction, or be consistent with the way in which they are applied during ISR.
 
 
 \subsubsection{Master Fringe Frames}\label{sec:CPP:output:fringeFrames}
@@ -228,7 +228,7 @@ The linear combination of \secsymbol\ref{sec:CPP:output:monoPhotoFlat} data weig
 
 \subsubsection{Low-res narrow-band flats}\label{sec:CPP:output:monoPhotoFlatLowRes}
 A low-resolution (in both space and wavelength) version of \secsymbol\ref{sec:CPP:output:monoPhotoFlat}.
-\alg Scripting to perform the necessary sweeps of the laser light source, and characterization of its output as the pulse energy will likely need to be normalized to.
+\alg Scripting to perform the necessary sweeps of the laser light source, and characterization of its output as the pulse energy will likely need to be normalized to.	
 \begin{note}
 	{Not clear to Merlin a) exactly why these exist and b) what a ``low spatial resolution'' \emph{flat field image} actually means. Construction shouldn't be hard though.}
 \end{note}
@@ -242,25 +242,26 @@ A map of the (effective) pixel-size distortions. At worse, this will be a $n_{\m
 
 \subsubsection{Brighter-Fatter Coefficients}\label{sec:CPP:output:brighterFatterCoeffs}
 Coefficients needed to model the brighter-fatter effect. We hope that these are a small number of floats per CCD, but this is not yet entirely clear. The input data necessary to calculate these will likely only be \hyperref[sec:CPP:inputs:broadFlat]{superflats} at various flux levels, with the possible addition of some \hyperref[sec:CPP:inputs:CBP]{CBP data}, likely for confirmation of the calculation.
-\alg A number of techniques exist to measure these (mostly developed by members of the DESC SAWG). One or more of these will need to be implemented in the DM framework. 
+\alg A number of techniques exist to measure these (mostly developed by members of the DESC SAWG). Code already exists to estimate the kernel/coefficients, and apply the correction.
 \\ \dragons ?
 
 
 \subsubsection{CTE Measurement}\label{sec:CPP:output:CTE}
-Measurement of the charge transfer efficiency for all elements of the camera. At ``best'' this is a single number per amplifier, but this case is the worst for science as it means the dominant trap is in the serial register and thus affecting all columns equally. At ``worst'' with respect to data-product size (or at ``best'' for science) this is a number per column in the simple case, though one could imagine characterizing the specific defects and their locations on the chips, in which case this is a per-pixel product (though could be simplified using bounding-boxes as with defect maps). Nominal case should be considered as per-column. Furthermore, if the number of columns with significant effects is small, these columns would most likely be masked out rather than corrected.
+\XXX{Rewrite this section}
+Measurement of the charge transfer efficiency for each amplifier/column in the camera. In the most simplistic case this would be a single number per amplifier, but this case is the worst for science as it means the dominant trap is in the close to the amplifier in the serial register and thus affects all columns equally. At worst with respect to data-product size (or at best for science) this is a number per column in the simple case, though one could imagine characterizing the specific defects and their locations on the chips, in which case this is a per-pixel product (though could be simplified using bounding-boxes as with defect maps). The nominal case should be considered as per-column. Furthermore, if the number of columns with significant effects is small, these columns would most likely be masked out rather than corrected.
 \alg Measurement of CTE is subtle, but not hard, and several established methods exist for doing this. Using the \fefiftyfive method won't be possible due to the lack of a radioisotope source in the camera, but the flat-field overscan excess measurement method and flat-field correlation method would both be possible using existing input data products. See \XXX{} for further reading on these methods, one of which would need to be implemented within the DM framework.
-\begin{note}[Backport to RHL's doc]
-	CTE measurement and correction sections needs to be added to RHL's calibration documents. This is looking like it may not be a negligible effect for photometry, astrometry and shape measurement, and I don't think it's currently mentioned anywhere in those.
-\end{note}
+%\begin{note}[Backport to RHL's doc]
+%	CTE measurement and correction sections needs to be added to RHL's calibration documents. This is looking like it may not be a negligible effect for photometry, astrometry and shape measurement, and I don't think it's currently mentioned anywhere in those.
+%\end{note}
 
 
 \subsubsection{Filter Transmission}\label{sec:CPP:output:filterTransmission}
-Measurement of filter transmission \emph{in-situ}. As well as the filter transmission measurement from the camera team/vendor in \secsymbol\ref{sec:CPP:inputs:filterTransmission}, we further baseline the development of a procedure for measuring the filter response at 1\,nm resolution using the approach described in \cite{Lupton15}.
-\alg Created from measurements in \secsymbol\ref{sec:CPP:inputs:CBP}. \XXX{Check that the method cited above is what you think it is and will therefore be done with the products referenced above. }
+Monitoring of filter transmission \emph{in-situ}. As well as the filter transmission measurement from the camera team/vendor in \secsymbol\ref{sec:CPP:inputs:filterTransmission}, we further baseline the development of a procedure for monitoring the filter response at 1\,nm resolution using the approach described in \cite{Lupton15}, \ie by making suitable CBP measurements with and without the filter in the beam, doing averaging over the angles.
+\alg Created from measurements in \secsymbol\ref{sec:CPP:inputs:CBP}.
 
 
 \subsubsection{Ghost catalog}\label{sec:CPP:output:GhostCatalog}
-A catalog of optical ghosts and glints which is available for use in other parts of the system. Detailed characterization of ghosts in the LSST system will only be possible when the system is operational. Our baseline design therefore calls for this system to be prototyped using data from precursor instrumentation; we note that ghosts in \eg HSC are well known and more significant than are expected in LSST.
+A catalog of optical ghosts and glints which is available for use in other parts of the system. Detailed characterization of ghosts in the LSST system will only be possible when the system is operational. Our baseline design therefore calls for this system to be prototyped using data from precursor instrumentation; we note that ghosts and ghoulies in \eg HSC are well known and more significant than are expected in LSST.
 \begin{note}
 It is not currently clear where the responsibility for characterizing ghosts and glints in the system lies. We assume it is outside this WBS. RHL instructed to note that this is a possible new entry to the risk registry.
 \end{note}
@@ -277,10 +278,6 @@ The procurement of the CBP includes the procurement of the necessary low-level c
 
 However, it will still remain to write scripts for the CBP, and interfaces with the OCS, to allow making all of the desired measurements, especially as several of these, namely \xxx, \xxx \& \xxx require doing so in concert with the 8.4m.
 \alg As well as writing the necessary scripts to acquire the raw data products outlined in \secsymbol\ref{sec:CPP:inputs}, it will also be necessary to deliver the coordinate transformation and pointing model to allow the CBP to maintain a fixed position on the focal plane whilst illuminating different portions of the pupil (and vice versa.)
-
-\begin{note}
-	Does this include the diffraction spikes? How about local junk due to imperfections in the mirrors?
-\end{note}
 
 
 
@@ -307,20 +304,20 @@ However, it will still remain to write scripts for the CBP, and interfaces with 
 This section details the input data required to calibrate the \auxtelescope itself. Broadly, this will include most of the ingredients listed in \secsymbol\ref{sec:CPP:inputs}, but namely:
 
 \begin{itemize}
-	\item Gain values
+	\item Gain values \footnote{Less accuracy is needed here than for the main camera; a PTC-based measurement will be sufficient.}
 	\item Crosstalk matrix
-	\item Linearity curve
+	\item Linearity curves for each amplifier
 	\item Defect map
 	\item Saturation levels
 	\item Bias frames
 	\item Dark frames
 	\item Broadband flat-fields
-	\item Narrowband flat-fields \footnote{It is now part of the baseline design that there will be both broadband and narrowband light sources at the \auxtelescope.} \rednote{What is required in this respect? See \secsymbol\ref{sec:calibQuestions}}.
+	\item Narrowband flat-fields\footnote{ It is confirmed to be part of the baseline design that there will be both broadband and narrowband light sources at the \auxtelescope.}.
 	\item Filter/grating/grism transmissions
 \end{itemize}
 
-Further to these ``standard'' camera calibration ingredients, the following will also be required as inputs:
-\XXX{Need to think about whether anything else is required for the calibration of the \auxtelescope. Any mention of Stubbs' \emph{absolute} photometry games?}
+Further to these ``standard'' camera calibration ingredients, we will also require an illumination/ghost correction, which will either be derived from star field observations or using the final CBP prototype for direct measurement.
+
 
 
 
@@ -339,20 +336,22 @@ This section details the calibrated outputs from the \auxtelescope, which, like 
 
 
 \subsubsection{Atmospheric Absorption}\label{sec:CPP:aux:atmosphericAbsorption}
+\XXX{Add here about how you flat field a dispersed image. (flat fielding is tricky.  Find the 0-order image.  Subtract a (scaled) direct image without flat fielding either dataset.  Construct a flat from monochromatic flats, knowing what wavelength falls where.  flatfield.)}
 The atmospheric absorption as a function of wavelength (at moderate spectral resolution) for almost each visit.
-\alg Broadly speaking, exposures are calibrated using the input data products in \secsymbol\ref{sec:CPP:auxTelescope:inputs}, using a variant of the standard processing pipeline (bias subtraction, flat-fielding, ISR, CR rejection \etc). Spectrophotometry is then performed by fitting and measuring the spectra of bright stars in these dispersed images. Then, by comparing these extracted spectra with the known spectrum of each source (or using a bootstrapping technique if the necessary population of calibrated standards does not exist) the atmospheric extinction as a function of wavelength is obtained for that visit.
+\alg Broadly speaking, exposures are calibrated using the input data products in \secsymbol\ref{sec:CPP:auxTelescope:inputs}, using a variant of the standard processing pipeline (bias subtraction, flat-fielding, CR rejection \etc). Spectrophotometry is then performed by fitting and measuring the spectra of bright stars in these dispersed images. Then, by comparing these extracted spectra with the known spectrum of each source (or using a bootstrapping technique if the necessary population of calibrated standards does not exist) the atmospheric extinction as a function of wavelength is obtained for that visit.
 
-Further implementation details/refinement will likely include the addition of \hyperref[sec:CPP:inputs:atmosphericData]{barometric pressure and ozone data}, as well as fitting the measured spectrum to an extended atmospheric modeling framework \eg MODTRAN. \XXX{Probably insert a citation here, and/or mention Stubbs/Guyonet.}
+Further implementation details/refinement will likely include the addition of \hyperref[sec:CPP:inputs:atmosphericData]{barometric pressure and ozone data and temperature}, as well as fitting the measured spectrum to an atmospheric modeling framework \eg MODTRAN, extended to handle a variable aerosol index. \XXX{Probably insert a citation here, and/or mention Stubbs/Guyonet.}
 
 
  
 \subsubsection{Night Sky Spectrum}\label{sec:CPP:aux:nightSkySpectrum}
-Spectrum of the night sky near the \auxtelescope boresight, with $R \sim 200$\footnote{It is not entirely clear yet whether these will be taken on the Calypso or 8.4m boresight.}, used to synthesize flat-field images matching the sky's SED from the \hyperref[sec:CPP:output:monoFlat]{monochromatic dome flats}.
-\alg Assuming we have a sky spectrograph this is simple.
+Although the acquisition of a night sky spectrograph is uncertain, in the eventuality that we obtain the instrument, we provision for the determination of the spectrum of the night sky near the \auxtelescope boresight, with $R \sim 200$\footnote{It is not entirely clear yet whether these will be taken on the Calypso or 8.4m boresight.}, used to synthesize flat-field images matching the sky's SED from the \hyperref[sec:CPP:output:monoFlat]{monochromatic dome flats}.
+\alg Assuming we have a sky spectrograph this is simple. In the absence of a sky spectrograph, an $R \sim 10$ spectrum will be acquired using standard/narrowband filters.
 
-\begin{note}[Input required]
-	Need to add a proper description of each of these pipelines, and of any other input data they require. Probably need to speak to Stubbs about these. I believe RHL has contacted him about this already, but he is quite busy over the summer.
-\end{note}
+
+
+
+
 
 
 
@@ -378,13 +377,13 @@ While parts of the Calibration Products Pipeline have been prototyped by the LSS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Overview of calibration procedure}
-This section, whilst not strictly concerning the \emph{production} of the calibration products themselves, aims to give a broad overview of how these products will be used and why. 
-\begin{note}
-Whilst this isn't technically part of the CPP remit, without it, all that is here is a list of ingredients, (and how to make the compound ingredients), with no overview of the recipe, which makes for a strange section in a cookbook. If this is no desired or should live somewhere else then feel free to move or \emph{re}move it, but I felt like it should be in here as this stuff is not easy to get ones head around at the best of times.
-\end{note}
-
-\XXX{Overview goes here!}
+%\subsection{Overview of calibration procedure}
+%This section, whilst not strictly concerning the \emph{production} of the calibration products themselves, aims to give a broad overview of how these products will be used and why. 
+%\begin{note}
+%Whilst this isn't technically part of the CPP remit, without it, all that is here is a list of ingredients, (and how to make the compound ingredients), with no overview of the recipe, which makes for a strange section in a cookbook. If this is no desired or should live somewhere else then feel free to move or \emph{re}move it, but I felt like it should be in here as this stuff is not easy to get ones head around at the best of times.
+%\end{note}
+%
+%\XXX{Overview goes here!}
 
 %\paragraph{Instrumental sensitivity}
 %
@@ -456,31 +455,31 @@ Whilst this isn't technically part of the CPP remit, without it, all that is her
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{UNSTRUCTURED OPEN QUESTIONS \\ a.k.a. Merlin's random thoughts/ramblings}\label{sec:calibQuestions}
+%\subsection{UNSTRUCTURED OPEN QUESTIONS \\ a.k.a. Merlin's random thoughts/ramblings}\label{sec:calibQuestions}
 
-This section is just things that I thought of whilst working through this document. They probably don't belong in here at all, but I wanted to capture them and this seemed a semi-relevant place (and Jim started it!).
-\begin{itemize}
-	\item Flat fielding the auxiliary telescope: What is required? What are the plans? We have a flat-field screen in this dome, correct? (Now confirmed) Regarding the bandpasses, what do we have in terms of filters? (Answer: full LSST set on the imager) What do we need? Is it not necessary get an accurate throughput determination at 1nm resolution by taking the CBP or at least the monochromatic laser source over there for a one-off characterization? (Answer: the laser is not going to happen but there is a monochromatic light source in the \auxtelescope\ baseline.) If not, how are we accurately characterizing the response of the detector which will itself be doing the $R \sim 200$ spectrophotometry of the standard stars?
-	\begin{note}
-		Need to go back and add in doing monochromatic composite flat-fielding of this telescope, \emph{and} add that these need to be applied somewhere/somehow. The application of \emph{these} to the \auxtelescope\ data really doesn't belong in AP or DRP as all the other photocal stuff does.
-	\end{note}
+%This section is just things that I thought of whilst working through this document. They probably don't belong in here at all, but I wanted to capture them and this seemed a semi-relevant place (and Jim started it!).
+%\begin{itemize}
+%	\item Flat fielding the auxiliary telescope: What is required? What are the plans? We have a flat-field screen in this dome, correct? (Now confirmed) Regarding the bandpasses, what do we have in terms of filters? (Answer: full LSST set on the imager) What do we need? Is it not necessary get an accurate throughput determination at 1nm resolution by taking the CBP or at least the monochromatic laser source over there for a one-off characterization? (Answer: the laser is not going to happen but there is a monochromatic light source in the \auxtelescope\ baseline.) If not, how are we accurately characterizing the response of the detector which will itself be doing the $R \sim 200$ spectrophotometry of the standard stars?
+%	\begin{note}
+%		Need to go back and add in doing monochromatic composite flat-fielding of this telescope, \emph{and} add that these need to be applied somewhere/somehow. The application of \emph{these} to the \auxtelescope\ data really doesn't belong in AP or DRP as all the other photocal stuff does.
+%	\end{note}
 	
-	\item Crosstalk coupling: depending on where this happens in the electronic chain, this may be ``conservative" or ``generative", \ie\ if the crosstalk is from a capacitive coupling at an early stage of the readout then the crosstalk which is removed from the victims should be added back in to the aggressors, as this is signal which has been \emph{lost}. However, if it occurs after a significant amount of amplification (likely), then it should just be removed. Again, I'm sure this is known but I'd just like to check as this matters at the sub 1\% level. \rednote{Answer: Very likely generative, but the reasoning for this assumes a low impedance on the output analog lines (such that the voltage does not drop when capacitive coupling occurs) but this is actually not necessarily the case, and perhaps should be checked more thoroughly. Can likely persuade POC/AN/HP to investigate if necessary.}
+%	\item Crosstalk coupling: depending on where this happens in the electronic chain, this may be ``conservative" or ``generative", \ie\ if the crosstalk is from a capacitive coupling at an early stage of the readout then the crosstalk which is removed from the victims should be added back in to the aggressors, as this is signal which has been \emph{lost}. However, if it occurs after a significant amount of amplification (likely), then it should just be removed. Again, I'm sure this is known but I'd just like to check as this matters at the sub 1\% level. \rednote{Answer: Very likely generative, but the reasoning for this assumes a low impedance on the output analog lines (such that the voltage does not drop when capacitive coupling occurs) but this is actually not necessarily the case, and perhaps should be checked more thoroughly. Can likely persuade Paul O'Connor/Andrei Nomerotski/Hyeyun Park to investigate if necessary.}
 	
-	\item Crosstalk (again): I am lead to believe that crosstalk correction will be applied in the DAQ. If this is correct, then this point is just to note that the calibration system needs to be able to disable this and access the truly raw images in order to make the crosstalk matrix measurements using CBP spots. It will also need to be able to push a new crosstalk matix to the DAQ to confirm meaurements (and to update the system in general). \rednote{RHL says this is already captured somewhere relevant.}
+%	\item Crosstalk (again): I am lead to believe that crosstalk correction will be applied in the DAQ. If this is correct, then this point is just to note that the calibration system needs to be able to disable this and access the truly raw images in order to make the crosstalk matrix measurements using CBP spots. It will also need to be able to push a new crosstalk matix to the DAQ to confirm meaurements (and to update the system in general). \rednote{RHL says this is already captured somewhere relevant.}
 	
-	\item Crosstalk (yet again): Has anyone considered the nightmare scenario where crosstalk is a function of alt, az and rotator position due to changes in these couplings from cable movement? Or is this certain to be only a 1\% change in a 1\% effect, and therefore not a concern? \rednote{Answer: Turns out that it really is very unlikely indeed, as almost everything comes from intra-flex-cable coupling and wire-bond coupling, which won't move when the camera is repositioned.}
+%	\item Crosstalk (yet again): Has anyone considered the nightmare scenario where crosstalk is a function of alt, az and rotator position due to changes in these couplings from cable movement? Or is this certain to be only a 1\% change in a 1\% effect, and therefore not a concern? \rednote{Answer: Turns out that it really is very unlikely indeed, as almost everything comes from intra-flex-cable coupling and wire-bond coupling, which won't move when the camera is repositioned.}
 	
-	\begin{note}
-		Need to include algorithm for applying crosstalk corrections after the fact in the event that the data-buffer overflows in the case of internet outages between the summit and the US. The also implies that a time history of the measured crosstalk matrices needs to be stored somewhere.
-	\end{note}
+%	\begin{note}
+%		Need to include algorithm for applying crosstalk corrections after the fact in the event that the data-buffer overflows in the case of internet outages between the summit and the US. The also implies that a time history of the measured crosstalk matrices needs to be stored somewhere.
+%	\end{note}
 		
-	\item Does bleeding occur only in the serial register? (surely not) If not then why do we expect it to be a per-amplifier thing particularly, rather than a per pixel effect, as it is presumably defined by the depth of each well? This is surely known, but I should discuss with someone. \rednote{Answer: There is more than one thing here: bleeding/blooming $\neq$ saturation. Blooming levels are a per-pixel effect (though likely very similar throughout a chip), whilst ``saturation'' is in the amplifier/ADC, which is obviously per-channel. }
+%	\item Does bleeding occur only in the serial register? (surely not) If not then why do we expect it to be a per-amplifier thing particularly, rather than a per pixel effect, as it is presumably defined by the depth of each well? This is surely known, but I should discuss with someone. \rednote{Answer: There is more than one thing here: bleeding/blooming $\neq$ saturation. Blooming levels are a per-pixel effect (though likely very similar throughout a chip), whilst ``saturation'' is in the amplifier/ADC, which is obviously per-channel. }
 	
-	\item Pulse-to-pulse variation in the narrowband laser. When averaged over, what is the RMS? And how stable is the mean over time? (I have met lasers which drift \bfeffect{like crazy}). How do these properties change as one sweeps the wavelength around as would be required for taking the 20nm width flats?
+%	\item Pulse-to-pulse variation in the narrowband laser. When averaged over, what is the RMS? And how stable is the mean over time? (I have met lasers which drift \bfeffect{like crazy}). How do these properties change as one sweeps the wavelength around as would be required for taking the 20nm width flats?
 	
-	\item Note to self about idea of using CBP to induce bleeding to measure the pixel area variations directly (well `depth' $\propto$ pixel area), to solve the unsolved problem in \secsymbol\ref{sec:CPP:output:pixelSizeMap}. Need to think about this in more detail as this just came to me - does it provide extra information to make this problem well-constrained? Or is this completely unhelpful?
-\end{itemize}
+
+%\end{itemize}
 
 
 

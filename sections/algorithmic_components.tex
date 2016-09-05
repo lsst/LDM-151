@@ -3,67 +3,66 @@
 
 \subsection{Instrument Signature Removal}
 \label{sec:acISR}
-Four variants of the instrument signature removal (ISR) pipeline will exist; two for the main camera, with difference arising from the different requirements for AP and DRP, and one each for the wavefront sensors in the main camera, and for the \auxtelescope. Of these, baseline design is for the main camera for DRP, with some steps removed for AP.
+
+Two variants of the instrument signature removal (ISR) pipeline will exist for the main camera, with the difference arising from the real-time processing constraints placed by AP. This section outlines the baseline design for DRP, with the differences for AP given in \secsymbol\ref{sec:acISR_AP}.
+
+%Four variants of the instrument signature removal (ISR) pipeline will exist; two for the main camera, with the difference arising from the different requirements for AP and DRP, and one each for the wavefront sensors in the main camera, and for the \auxtelescope. Of these, baseline design is for the main camera for DRP, with some steps removed for AP.
+
 \begin{itemize}
 
-\item Overscan subtraction: per-amplifier subtraction of the overscan levels, as either a scalar, vector or array offset. After cropping out the first one or two overscan rows to avoid any potential contamination from CTI, the median will be subtracted if using a scalar subtraction, and a row-wise median subtracted if using a vector subtraction. If array subtraction turns out to be necessary (unlikely, especially given the subtraction of a master bias frame later in the process), some thought should be given as to how to avoid introducing extra noise to the image.
+\item Overscan subtraction: per-amplifier subtraction of the overscan levels, as either a scalar, vector or array offset. After cropping out the first one or two overscan rows to avoid any potential contamination from CTI or transients, a clipped mean or median will be subtracted if using a scalar subtraction (to avoid contamination by cosmics or bleed trails), and a row-wise median subtracted if using a vector subtraction. If array subtraction turns out to be necessary (unlikely, especially given the subtraction of a master bias frame later in the process), some thought should be given as to how to avoid introducing extra noise to the image.
 
 \item Assembly: per-amplifier treatment of each CCD flavor (e2v and ITL sensors assembly differently). Per-CCD / per-raft assembly of CCDs onto focal plane. Application of \texttt{EDGE/SUSPECT} mask-bit to appropriate regions of CCDs (edges of both sensor flavors, and around the midline region of e2v sensors due to distortions from the anti-blooming implant).
 
 \item Linearity: apply linearity correction using the \hyperref[sec:CPP:output:linearityCurve]{master linearity table}, marking
 regions where the linearity is considered unreliable as \texttt{SUSPECT}.
 
-\item Gain correction: divide (or multiply, \XXX{check definition of gain}) by the \hyperref[sec:CPP:output:gains]{absolute gains} to convert from ADUs to electrons.
+\item Gain correction for CBP measurements where flat-fielding is not performed: multiply by the \hyperref[sec:CPP:output:gains]{absolute gains} to convert from ADUs to electrons, and estimate the per-pixel variance.
 
-\item Crosstalk: default action for AP is none, as crosstalk is initially corrected in the DAQ. However, in the event of network outages where the local data buffer overflows and the crosstalk-corrected data is lost, crosstalk correction will need to be applied. The baseline design for DRP is to apply its own crosstalk correction to the raw data-stream from the DAQ. Both of these will use the \hyperref[sec:CPP:output:crosstalk]{master crosstalk matrix}.
+\item Crosstalk: The baseline design for DRP is to apply its own crosstalk correction to the raw data-stream from the DAQ using the appropriate version of the \hyperref[sec:CPP:output:crosstalk]{master crosstalk matrix}.
+
+\item Mask defects and saturation: application of \hyperref[sec:CPP:output:defectList]{master defect list} and \hyperref[sec:CPP:output:saturationLevel]{master saturation levels} to set the \texttt{BAD/SAT} bit(s) in the maskplane.
 
 \item Full frame corrections:
 	\mysubitem Bias: Subtract the \hyperref[sec:CPP:output:bias]{master bias frame}.
-	\mysubitem Dark: Subtract an exposure length multiple of the \hyperref[sec:CPP:output:dark]{master dark frame}.
+	\mysubitem Dark: Subtract an exposure length multiple of the \hyperref[sec:CPP:output:dark]{master dark frame}, perhaps including the slew time, depending on when the array is cleared.
 	\mysubitem Flats: Divide by the appropriate linear combination of  \hyperref[sec:CPP:output:monoPhotoFlat]{master flat(s)}.
-	\mysubitem Fringe frames: The exact plan for this has yet to be fully established yet, but will likely involve composing a fringe frame from a combination of \hyperref[sec:CPP:output:monoFlat]{monochromatic flats} to match the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} and the filter in use at the time of observation. This will also presumably be a point where AP and DRP diverge, as the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} be not be available to AP as this would put a real-time constraint on the production of \secsymbol\ref{sec:CPP:aux:nightSkySpectrum}.
-\begin{note}[Question for RHL]
-	The ``appropriate linear combination of  \hyperref[sec:CPP:output:monoPhotoFlat]{master flat(s)}'' referred to in the 'Flats' item above will take care of the fringing for DRP, right, as the `appropriate' combination is the one which matches the sky's SED and the filter, correct? Fringe frames of some sort will still need to be included separately as these will be necessary in \emph{some} form for AP, as far as I can see, due to the time constraint. Do you agree, or am I missing something? (It will likely still be a combination of the monochromatic flats, but just for some nominal sky SED, unless you have something smarter in mind.)
-\end{note}
+	\mysubitem Fringe frames: this will involve the subtraction of a fringe frame composed of some combination of \hyperref[sec:CPP:output:monoFlat]{monochromatic flats} to match the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} and the filter in use at the time of observation, though the plan for how this combination will be derived is to be determined.
 
-\item Mask defects and saturation: application of \hyperref[sec:CPP:output:defectList]{master defect list}and \hyperref[sec:CPP:output:saturationLevel]{master saturation levels} to set the \texttt{BAD/SAT} bit(s) in the maskplane.
 
 \item Pixel level corrections:
-	\mysubitem The \bfeffect: Apply brighter fatter correction using the coefficients from \secsymbol\ref{sec:CPP:output:brighterFatterCoeffs}. \XXX{To do: need to add proper section about this somewhere as this is a non-trivial ISR algorithm. Is this the right place for it, or should it have its own section outside ISR?}
-	\mysubitem Static pixel size effects: Correction of static effects such as tree rings, spider legs \etc using data from \secsymbol\ref{sec:CPP:output:pixelSizeMap}. \XXX{To do: need to add proper section on these somewhere (here?) as this is another non-trivial ISR algorithm.}
+	\mysubitem The \bfeffect: Apply brighter fatter correction using the coefficients from \secsymbol\ref{sec:CPP:output:brighterFatterCoeffs}. \XXX{Need to add proper section about this somewhere as this is a non-trivial ISR algorithm. Is this the right place for it, or should it have its own section outside ISR?}
+	
+	\mysubitem Static pixel size effects: Correction of static effects such as tree rings, spider legs \etc using data from \secsymbol\ref{sec:CPP:output:pixelSizeMap}. \XXX{Need to add a proper section on these somewhere as this is another non-trivial ISR algorithm. It might be just a paper reference though.}
 
-\item CTE correction: Just added this, but this is looking increasingly necessary. What is the current state of the art for this? RHL insists that this is trivial, but it seems to be a topic of research (at least for HST where CTE is both poor and evolving in time). Is it true that for relatively unchanging CTE that correction is easy? And should this be lumped in with the ``pixel level corrections'' above? I am guessing not.
-
-\begin{note}
-	What is the current status of these in the stack? I believe there is currently a \bfeffect correction implemented - is this correct? Do we have a tree-ring / static pixel effect correction at this point? 
-\end{note}
+\item CTE correction: The method used to correct for CTE will depend on what was needed to fully characterize the charge transfer (see \secsymbol\ref{sec:CPP:output:CTE}).
 
 \item Interpolation over defects and saturation: interpolate over defects previously identified using the PSF, and set \texttt{INTERP} bit in the mask plane.
 
 \item Cosmic rays: identification of cosmic rays (see \secsymbol\ref{sec:acMorphologicalArtifactDetection}), interpolation over cosmic rays using PSF, and setting of \texttt{CR/INTERP} bit(s) in the mask plane.
 
-\item Generate snap difference: simple pixel-wise differencing of snaps to identify cosmic rays and fast moving transients for removal.
+\item Generate snap difference: simple pixel-wise differencing of snaps to identify cosmic rays and fast moving transients for removal is baselined, though a more complex process could be involved (see \secsymbol\xxx\footnote{Zeljko, on your full read-through could you find where this is and insert the link please?} for discussion).
 
-\item Snap combination: baseline design is for a simple pixel-wise addition of snaps to create the full-depth exposure for the visit. However, provision should be made for a less simplistic treatment in the event that there is non-negligible mis-registration of the snaps.
+\item Snap combination: baseline design is for a simple pixel-wise addition of snaps to create the full-depth exposure for the visit. However, provision should be made for a less simplistic treatment in the event that there is non-negligible mis-registration of the snaps arising from either the telescope pointing or atmospheric effects \eg in the dome/ground layer.
+
+\end{itemize}
+
+\subsubsection{ISR for Alert Production}
+\label{sec:acISR_AP}
+The ISR for the AP pipeline differs slightly to the one used in DRP due to the realtime processing constraint.
+
+Crosstalk correction will be performed inside the DAQ, where the most recent crosstalk matrix will have been loaded. However, whilst there is therefore no default action for AP, in the event of network outages where the local data buffer overflows and the crosstalk-corrected data is lost, crosstalk correction would need to be applied.\footnote{ This assumes that alerts are still being generated in this eventuality.}
+
+Flat fielding will be performed as for DRP, but because the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} will not be available to AP, the fringe frame subtracted will likely be constructed based on a look-up table which crudely describes the expected night sky spectrum based on the position and phase of the moon at the time of observation.
+
+
 
 \begin{note}
-	Are we responsible for applying ISR to the wavefront sensors?
+	Does AP plan on performing \bfeffect and tree-ring corrections? No reason why it shouldn't I don't think (and it would likely need to if they were of DECam's magnitude), I am just not sure and should include here if it won't.
 \end{note}
-\end{itemize}
-
-\subsubsection{AP: just skip some steps?}
-AUTHOR: Merlin\\%marker
-Two factors require that AP performs a slightly simplified ...Due to the both time constraints
-\begin{itemize}
-\item Indicate steps to be done by camera
-\item call out other steps that are omitted/modified relative to the DRP version
 
 
-\end{itemize}
 
-\subsubsection{DRP: do all the steps}
-AUTHOR: Merlin\\
-This section really is just \emph{do all the steps} from \secsymbol\ref{sec:acISR}. Presumably it would be better to arrange this differently. I suggest putting this section above the AP ISR section, putting everything from \secsymbol\ref{sec:acISR} in here \emph{instead}, thus making it the main definition of ISE, and then putting the AP ISR section afterwards, where all the skipped-steps/differences-from the DRP ISR are outlined. I will do this on the next iteration unless someone laid it out like this fo good reason.
 
 
 \subsection{Artifact Detection}
