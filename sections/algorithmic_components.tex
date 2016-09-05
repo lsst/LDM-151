@@ -10,24 +10,24 @@ Two variants of the instrument signature removal (ISR) pipeline will exist for t
 
 \begin{itemize}
 
-\item Overscan subtraction: per-amplifier subtraction of the overscan levels, as either a scalar, vector or array offset. After cropping out the first one or two overscan rows to avoid any potential contamination from CTI or transients, a clipped mean or median will be subtracted if using a scalar subtraction (to avoid contamination by cosmics or bleed trails), and a row-wise median subtracted if using a vector subtraction. If array subtraction turns out to be necessary (unlikely, especially given the subtraction of a master bias frame later in the process), some thought should be given as to how to avoid introducing extra noise to the image.
+\item Overscan subtraction: per-amplifier subtraction of the overscan levels, as either a scalar, vector or array offset. After cropping out the first one or two overscan rows to avoid any potential contamination from CTI or transients, a clipped mean or median will be subtracted if using a scalar subtraction (to avoid contamination by cosmic rays or bleed trails), and a row-wise median subtracted if using a vector subtraction. If array subtraction turns out to be necessary (unlikely, especially given the subtraction of a master bias frame later in the process), some thought should be given as to how to avoid introducing extra noise to the image.
 
-\item Assembly: per-amplifier treatment of each CCD flavor (e2v and ITL sensors assembly differently). Per-CCD / per-raft assembly of CCDs onto focal plane. Application of \texttt{EDGE/SUSPECT} mask-bit to appropriate regions of CCDs (edges of both sensor flavors, and around the midline region of e2v sensors due to distortions from the anti-blooming implant).
+\item Assembly: per-amplifier treatment of each CCD flavor (e2v and ITL sensors assembly differently) followed by per-CCD / per-raft assembly of the CCDs onto the focal plane. Application of \texttt{EDGE} mask-bit to appropriate regions of the CCDs, \ie around the edges of both sensor flavors, and around the midline region of e2v sensors due to distortions from the anti-blooming implant.
 
 \item Linearity: apply linearity correction using the \hyperref[sec:CPP:output:linearityCurve]{master linearity table}, marking
 regions where the linearity is considered unreliable as \texttt{SUSPECT}.
 
-\item Gain correction for CBP measurements where flat-fielding is not performed: multiply by the \hyperref[sec:CPP:output:gains]{absolute gains} to convert from ADUs to electrons, and estimate the per-pixel variance.
+\item Gain correction: applied for CBP measurements where flat-fielding is not performed; multiply by the \hyperref[sec:CPP:output:gains]{absolute gains} to convert from ADUs to electrons, and estimate the per-pixel variance.
 
-\item Crosstalk: The baseline design for DRP is to apply its own crosstalk correction to the raw data-stream from the DAQ using the appropriate version of the \hyperref[sec:CPP:output:crosstalk]{master crosstalk matrix}.
+\item Crosstalk: Apply crosstalk correction to the raw data-stream from the DAQ using the appropriate version of the \hyperref[sec:CPP:output:crosstalk]{master crosstalk matrix}.
 
 \item Mask defects and saturation: application of \hyperref[sec:CPP:output:defectList]{master defect list} and \hyperref[sec:CPP:output:saturationLevel]{master saturation levels} to set the \texttt{BAD/SAT} bit(s) in the maskplane.
 
-\item Full frame corrections:
+\item Full frame corrections:	
 	\mysubitem Bias: Subtract the \hyperref[sec:CPP:output:bias]{master bias frame}.
 	\mysubitem Dark: Subtract an exposure length multiple of the \hyperref[sec:CPP:output:dark]{master dark frame}, perhaps including the slew time, depending on when the array is cleared.
-	\mysubitem Flats: Divide by the appropriate linear combination of  \hyperref[sec:CPP:output:monoPhotoFlat]{master flat(s)}.
-	\mysubitem Fringe frames: this will involve the subtraction of a fringe frame composed of some combination of \hyperref[sec:CPP:output:monoFlat]{monochromatic flats} to match the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} and the filter in use at the time of observation, though the plan for how this combination will be derived is to be determined.
+	\mysubitem Flats: Divide by the appropriate linear combination of  \hyperref[sec:CPP:output:monoPhotoFlat]{master flats}.
+	\mysubitem Fringe frames: this will involve the subtraction of a fringe frame composed of some combination of \hyperref[sec:CPP:output:monoFlat]{monochromatic flats} to match the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} and the filter in use at the time of observation, though the plan for how this combination will be derived remains to be determined.
 
 
 \item Pixel level corrections:
@@ -37,13 +37,13 @@ regions where the linearity is considered unreliable as \texttt{SUSPECT}.
 
 \item CTE correction: The method used to correct for CTE will depend on what was needed to fully characterize the charge transfer (see \secsymbol\ref{sec:CPP:output:CTE}).
 
-\item Interpolation over defects and saturation: interpolate over defects previously identified using the PSF, and set \texttt{INTERP} bit in the mask plane.
+\item Interpolation over defects and saturation: interpolate over defects previously identified using the PSF, and set the \texttt{INTERP} bit in the mask plane.
 
 \item Cosmic rays: identification of cosmic rays (see \secsymbol\ref{sec:acMorphologicalArtifactDetection}), interpolation over cosmic rays using PSF, and setting of \texttt{CR/INTERP} bit(s) in the mask plane.
 
 \item Generate snap difference: simple pixel-wise differencing of snaps to identify cosmic rays and fast moving transients for removal is baselined, though a more complex process could be involved (see \secsymbol\xxx\footnote{Zeljko, on your full read-through could you find where this is and insert the link please?} for discussion).
 
-\item Snap combination: baseline design is for a simple pixel-wise addition of snaps to create the full-depth exposure for the visit. However, provision should be made for a less simplistic treatment in the event that there is non-negligible mis-registration of the snaps arising from either the telescope pointing or atmospheric effects \eg in the dome/ground layer.
+\item Snap combination: the baseline design is for a simple pixel-wise addition of snaps to create the full-depth exposure for the visit. However, provision should be made for a less simplistic treatment in the event that there is a non-negligible mis-registration of the snaps arising from either the telescope pointing or atmospheric effects \eg in the dome/ground layer.
 
 \end{itemize}
 
