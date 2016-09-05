@@ -8,30 +8,66 @@ We will need reference catalogs of various types for all sorts of calibration, c
 
 \subsection{Instrument Signature Removal}
 \label{sec:acISR}
-AUTHOR: Merlin
+
+Two variants of the instrument signature removal (ISR) pipeline will exist for the main camera, with the difference arising from the real-time processing constraints placed by AP. This section outlines the baseline design for DRP, with the differences for AP given in \secsymbol\ref{sec:acISR_AP}.
+
+%Four variants of the instrument signature removal (ISR) pipeline will exist; two for the main camera, with the difference arising from the different requirements for AP and DRP, and one each for the wavefront sensors in the main camera, and for the \auxtelescope. Of these, baseline design is for the main camera for DRP, with some steps removed for AP.
+
 \begin{itemize}
-\item Mask defects and saturation
-\item Assembly
-\item Overscan
-\item Linearity
-\item Crosstalk
-\item Full frame corrections: Dark, Flats (includes fringing)
-\item Pixel level corrections: Brighter fatter, static pixel size effects
-\item Interpolation of defects and saturation
-\item CR rejection
-\item Generate snap difference
-\item Snap combination
+
+\item Overscan subtraction: per-amplifier subtraction of the overscan levels, as either a scalar, vector or array offset. After cropping out the first one or two overscan rows to avoid any potential contamination from CTI or transients, a clipped mean or median will be subtracted if using a scalar subtraction (to avoid contamination by cosmic rays or bleed trails), and a row-wise median subtracted if using a vector subtraction. If array subtraction turns out to be necessary (unlikely, especially given the subtraction of a master bias frame later in the process), some thought should be given as to how to avoid introducing extra noise to the image.
+
+\item Assembly: per-amplifier treatment of each CCD flavor (e2v and ITL sensors assembly differently) followed by per-CCD / per-raft assembly of the CCDs onto the focal plane. Application of \texttt{EDGE} mask-bit to appropriate regions of the CCDs, \ie around the edges of both sensor flavors, and around the midline region of e2v sensors due to distortions from the anti-blooming implant.
+
+\item Linearity: apply linearity correction using the \hyperref[sec:CPP:output:linearityCurve]{master linearity table}, marking
+regions where the linearity is considered unreliable as \texttt{SUSPECT}.
+
+\item Gain correction: applied for CBP measurements where flat-fielding is not performed; multiply by the \hyperref[sec:CPP:output:gains]{absolute gains} to convert from ADUs to electrons, and estimate the per-pixel variance.
+
+\item Crosstalk: Apply crosstalk correction to the raw data-stream from the DAQ using the appropriate version of the \hyperref[sec:CPP:output:crosstalk]{master crosstalk matrix}.
+
+\item Mask defects and saturation: application of \hyperref[sec:CPP:output:defectList]{master defect list} and \hyperref[sec:CPP:output:saturationLevel]{master saturation levels} to set the \texttt{BAD/SAT} bit(s) in the maskplane.
+
+\item Full frame corrections:	
+	\mysubitem Bias: Subtract the \hyperref[sec:CPP:output:bias]{master bias frame}.
+	\mysubitem Dark: Subtract an exposure length multiple of the \hyperref[sec:CPP:output:dark]{master dark frame}, perhaps including the slew time, depending on when the array is cleared.
+	\mysubitem Flats: Divide by the appropriate linear combination of  \hyperref[sec:CPP:output:monoPhotoFlat]{master flats}.
+	\mysubitem Fringe frames: this will involve the subtraction of a fringe frame composed of some combination of \hyperref[sec:CPP:output:monoFlat]{monochromatic flats} to match the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} and the filter in use at the time of observation, though the plan for how this combination will be derived remains to be determined.
+
+
+\item Pixel level corrections:
+	\mysubitem The \bfeffect: Apply brighter fatter correction using the coefficients from \secsymbol\ref{sec:CPP:output:brighterFatterCoeffs}. \XXX{Need to add proper section about this somewhere as this is a non-trivial ISR algorithm. Is this the right place for it, or should it have its own section outside ISR?}
+	
+	\mysubitem Static pixel size effects: Correction of static effects such as tree rings, spider legs \etc using data from \secsymbol\ref{sec:CPP:output:pixelSizeMap}. \XXX{Need to add a proper section on these somewhere as this is another non-trivial ISR algorithm. It might be just a paper reference though.}
+
+\item CTE correction: The method used to correct for CTE will depend on what was needed to fully characterize the charge transfer (see \secsymbol\ref{sec:CPP:output:CTE}).
+
+\item Interpolation over defects and saturation: interpolate over defects previously identified using the PSF, and set the \texttt{INTERP} bit in the mask plane.
+
+\item Cosmic rays: identification of cosmic rays (see \secsymbol\ref{sec:acMorphologicalArtifactDetection}), interpolation over cosmic rays using PSF, and setting of \texttt{CR/INTERP} bit(s) in the mask plane.
+
+\item Generate snap difference: simple pixel-wise differencing of snaps to identify cosmic rays and fast moving transients for removal is baselined, though a more complex process could be involved (see \secsymbol\xxx\footnote{Zeljko, on your full read-through could you find where this is and insert the link please?} for discussion).
+
+\item Snap combination: the baseline design is for a simple pixel-wise addition of snaps to create the full-depth exposure for the visit. However, provision should be made for a less simplistic treatment in the event that there is a non-negligible mis-registration of the snaps arising from either the telescope pointing or atmospheric effects \eg in the dome/ground layer.
+
 \end{itemize}
 
-\subsubsection{AP: just skip some steps?}
-AUTHOR: Simon
-\begin{itemize}
-\item Indicate steps to be done by camera
-\item call out other steps that are omitted/modified relative to the DRP version
-\end{itemize}
+\subsubsection{ISR for Alert Production}
+\label{sec:acISR_AP}
+The ISR for the AP pipeline differs slightly to the one used in DRP due to the realtime processing constraint.
 
-\subsubsection{DRP: do all the steps}
-AUTHOR: Merlin
+Crosstalk correction will be performed inside the DAQ, where the most recent crosstalk matrix will have been loaded. However, whilst there is therefore no default action for AP, in the event of network outages where the local data buffer overflows and the crosstalk-corrected data is lost, crosstalk correction would need to be applied.\footnote{ This assumes that alerts are still being generated in this eventuality.}
+
+Flat fielding will be performed as for DRP, but because the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} will not be available to AP, the fringe frame subtracted will likely be constructed based on a look-up table which crudely describes the expected night sky spectrum based on the position and phase of the moon at the time of observation.
+
+
+
+\begin{note}
+	Does AP plan on performing \bfeffect and tree-ring corrections? No reason why it shouldn't I don't think (and it would likely need to if they were of DECam's magnitude), I am just not sure and should include here if it won't.
+\end{note}
+
+
+
 
 
 \subsection{Artifact Detection}
