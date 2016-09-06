@@ -59,9 +59,6 @@ Alert Production is designed as five separate components: single frame processin
 
 In this document we do not address estimation of the selection function for alert generation through the injection of simulated sources. Such a process could be undertaken in batch mode as part of the DRP. Source detection thresholds can be estimated through the use of sky sources (PSF photometry measurements positioned in areas of blank sky).
 
-
- in a parallel processing string that starts from the generation of the CalExp images. 
-
 \subsection{Single Frame Processing Pipeline (\wbsSFM)}
 \label{sec:apSingleFrameProcessing}
 
@@ -130,8 +127,6 @@ Instrumental Signature Removal characterizes, corrects, interpolates and flags t
 \item Generate a summed and difference image from the individual snaps propagating the union of the mask pixels in each snap
 \end{itemize}
 
-\begin{note} What will we know about the PSF prior to measuring it - will we need to rerun interpolation after deriving the PSF or can we use a previously defined PSF. Do we interpolate CRs \end{note}
-
 Dependent on the properties of the delivered LSST image quality for 15 second snaps it may be required to model any bulk motion between snaps prior to combination (e.g.\ if dome seeing or the ground layer dominate the lower order components of the seeing).
 
 
@@ -168,7 +163,7 @@ For the \Source catalog generated in \ref{sec:apPSFBackground}, source propertie
 \item PSF photometry given in \ref{sec:acPSFPhotometry} assuming a static PSF model fit
 \item  An aperture correction estimated assuming a static PSF model and measurement of the curve of growth for  detected sources as given in \ref{sec:apertureCorrection}
 \end{itemize}
-\begin{note} why only one or two radii \end{note}
+%\begin{note} why only one or two radii \end{note}
 
 
 \subsubsection{Photometric and Astrometric calibration}~ 
@@ -181,7 +176,6 @@ The photometric and astrometric calibration is expected to be performed at the s
 The procedures used to match and calibrate the data are,
 \begin{itemize}
 \item CCD level source association between the DRP reference catalog (or external catalog) and \Sources detected during the PSF and background estimation stage will use a simplified Optimistic B approach described in \ref{sec:acSingleCCDReferenceMatching}. Given an astrometric accuracy of $<0.5$ milliarcseconds from external catalogs such as Gaia (for a $V=19$ G2V star) or  an accuracy of $<50$ milliarcseconds for the DRP catalogs the search radii for sources will be dominated by the uncertainties in the pointing of the telescope and the rotation angle of the camera.
-\begin{note} check DRP accuracy \end{note}
 \item Generation of a photometric solution on the scale of a single CCD as described in \ref{sec:acSingleCCDPhotometricFit}
 \item Fitting of a WCS astrometric model for a single CCD  using the algorithms given in \ref{sec:acSingleCCDAstrometricFit}. The WCS model is expected to be composed of a sum of transforms or astrometric components (e.g.\ a optical model for the telescope, a lookup table or model for sensor effects such as tree rings).  
 \item Persistance of the astrometric, PSF, and photometric solutions for possible use by the Telescope Control system (TCS) (see \ref{sec:apSFMoutput})
@@ -363,7 +357,7 @@ The AlertDB will have an interface that can be queried (to enable historical sea
 
 \subsection{Precovery and Forced Photometry Pipeline}
 
-The precovery and forced photometry  pipeline performs two tasks (see Figure~\ref{fig:apForcedPrecovery}). Forced PSF photometry is undertaken for all \DIAObjects that have a detected \DIASource within a window of time from the observation (default 1 year).  Within 24 hours, precovery forced photometry is performed on all unassociated DIASources within an image (i.e.\ new \DIAObjects). For each DIAObject forced (PSF) photometry will be measured at the position of the source in the preceding DiffExps (for a 30-day window prior to the observation). 
+The precovery and forced photometry  pipeline performs two tasks (see Figure~\ref{fig:apForcedPrecovery}). Forced PSF photometry is undertaken for all \DIAObjects that have a detected \DIASource within a, default 1 year, window of time from the observation.  Second, within 24 hours, precovery forced photometry is performed on all unassociated DIASources within an image (i.e.\ new \DIAObjects). For each new \DIAObject, forced (PSF) photometry will be measured at the position of the source in each of the preceding  30-days of DiffExps.
 
 Forced photometry is not required prior to alert generation. Completion of the precovery photometry is required within 24 hours of the completion of the observations. Forced and precovery can be undertaken as part of the nightly workflow if they do not impact the time required to distribute the alerts.
 
@@ -374,34 +368,35 @@ Forced photometry is not required prior to alert generation. Completion of the p
 \end{center}
 \end{figure} 
 
+\begin{note}{For ZI: I moved the precovery to a single pipeline}\end{note}
 \subsubsection{Input Data}
 
-\paragraph*{Difference images:} A cache of DiffExps within finite time interval (default 30 days) of the previous nights observations (including the previous nights data)
+\paragraph*{Difference images:} A cache of DiffExps within a finite time interval (default 30 days) of the previous nights observations (inclusive of the previous nights data)
 
 \paragraph*{DIAObject Database:} All \DIAObjects with a \DIASource detection within the last 12 months and all unassociated (new) DIAObjects observed within the previous night
 
-\begin{note} We associate (measure forward) for 12 months but look back for 30 days\end{note}
+%\begin{note} We associate (measure forward) for 12 months but look back for 30 days\end{note}
 
 \subsubsection{Output Data}
 
-\paragraph*{DIAForcedSource Databases:} Forced PSF photometry at the centroid (from the aggregated individual \DIASource centroids) of a \DIAObject. The forced photometry is undertaken on the previous night's DiffExp for all \DIAObjects with \DIASources detected within the last year, and on the previous 30 days of DiffExp for all newly detected \DIASources.
+\paragraph*{DIAForcedSource Databases:} Forced PSF photometry at the centroid (from the aggregated individual \DIASource centroids) of a \DIAObject. The forced photometry is undertaken on the current night's DiffExp for all \DIAObjects with \DIASources detected within the last year, and on the previous 30 days of DiffExp for all newly detected \DIASources.
 
 
 \subsubsection{Forced Photometry on all DIAObjects}~
 
-Generate forced (PSF) photometry on the DiffExp for all DIAObjects that overlap with the footprint of the CCD. Forced photometry is only generated for DIAObjects for which there has been a DISource detection within the last 12 months. The forced photometry is persisted in the forced photometry table in the level 1 database. Alerts are released prior to the generation of forced photometry and forced photometry is not released as apart of an alert which means that this component of the processing is not subject to the 60 second processing requirements for nightly processing.
+Generate forced (PSF) photometry on the DiffExp for all DIAObjects that overlap with the footprint of the CCD. Forced photometry is only generated for DIAObjects for which there has been a \DIASource detection within the last 12 months. The forced photometry is persisted in the forced photometry table in the Level 1 database. Alerts are released prior to the generation of forced photometry and forced photometry is not released as apart of an alert which means that this component of the processing is not subject to the 60 second processing requirements for nightly processing.
 
 \paragraph{Pipeline Tasks}
 
 \begin{itemize}
-\item Extract all DIAObjects within the level 1 database for which these is no associated DIAObject. This information is available from the DIASource and DIAObject association.  DIAObjects within the last 12 months for which there have been no DIASource detections will be excluded from the forced photometry calculation
-\item For the aggregate positions within the DIAObject undertake a PSF forced measurement as described in section \hyperref[sec:acForcedMeasurement]{}
-\item Update the forced photometry tables in the level 1 database.
+\item Extract all DIAObjects within the Level 1 database with a detected \DIASource within the last year (including the current nights observations). This information is available from the DIASource and DIAObject association.  
+\item For the aggregate positions within the DIAObject undertake a PSF forced measurement as described in section \ref{sec:acForcedMeasurement}
+\item Update the forced photometry tables in the Level 1 database.
 \end{itemize}
 
 
 
-\paragraph*{DIAObject Forced Photometry:} 
+\subsubsection{DIAObject Forced Photometry:} 
 
 Updated forced photometry table for all new DIAObjects
 
@@ -409,7 +404,7 @@ Updated forced photometry table for all new DIAObjects
 \paragraph{Pipeline Tasks}
 
 \begin{itemize}
-\item Extract from the Level 1 database all DIAObjects that were unassociated (i.e.\ new DIASource detections) from the previous nights reduction
+\item Extract from the Level 1 database all DIAObjects that were unassociated (i.e.\ new DIASource detections) from the previous nights reduction. Filtering of the \DIAObjects will need to account for cases where new \DIASources are observed more than once within a night (where the second or subsequent observations do not result in a new \DIAObject).
 \item Extract DiffExps within a  default 30 day window prior to the observation
 \item Force photometer the extracted images as described in \ref{sec:acForcedMeasurement} using a PSF model and the centroid defined in the DIAObject
 \item Update the forced photometry table within the Level 1 database
@@ -420,12 +415,9 @@ Updated forced photometry table for all new DIAObjects
 
 \subsection{Moving Object Pipeline (\wbsMOPS)}
 
-The Moving Object Pipeline (MOPS) is responsible for generating and managing the Solar System data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% of all Solar System objects that meet the findability criteria as defined in the \OSS\@. 
-\begin{note} where is this definition \end{note}
+The Moving Object Pipeline (MOPS) is responsible for generating and managing the Solar System data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% of all Solar System objects that meet the findability criteria as defined in the \OSS\@. Each visit within 10 degrees of the Ecliptic will detect approximately 4,000 asteroids.
 
-Components of MOPS are run during and separately from nightly processing (see Figure~\ref{fig:apMOPS}). MOPS for nightly processing is described in \ref{sec:apSourceAssoc} as part of the source association. ``Day MOPS'' processes the newly detected DIASources (or DIAObjects) to search for candidate asteroid tracks. The procedure for ``Day MOPS'' is to link DIASource detections within a night (called tracklets), to link these tracklets across multiple nights (into tracks), to fit the tracks with an orbital model to identify those tracks that are consistent with an asteroid orbit, to match these new orbits with existing SSObjects, and to update the SSObject table. By its nature this process is iterative with DIASources being associated and disassociated with SSObjects. The frequency of the iterations is an open area.
-
-\begin{note} Specify the expected number of sources \end{note}
+Components of MOPS are run during and separately from nightly processing (see Figure~\ref{fig:apMOPS}). MOPS for nightly processing is described in \ref{sec:apSourceAssoc} as part of source association. ``Day MOPS'' processes newly detected DIAObjects to search for candidate asteroid tracks. The procedure for Day-MOPS is to link DIASource detections within a night (called tracklets), to link these tracklets across multiple nights (into tracks), to fit the tracks with an orbital model to identify those tracks that are consistent with an asteroid orbit, to match these new orbits with existing SSObjects, and to update the SSObject table. By its nature this process is iterative with DIASources being associated and disassociated with SSObjects. It is expected that a frequency of one day for these iterations (i.e.\ the \SSObjects will be update each day) will be sufficient. 
 
 \begin{figure}[th]
 \begin{center}
@@ -436,7 +428,7 @@ Components of MOPS are run during and separately from nightly processing (see Fi
 
 \subsubsection{Input Data}
 
-\paragraph*{DIAObject Database: } Unassociated \DIASources from the previous night of observing.  This means \DIAObjects that were newly created during the previous night because they could not be associated with am existing known \DIAObject.  \DIASources associated with an \SSObject in the night are still passed through the MOPS machinery
+\paragraph*{DIAObject Database: } Unassociated \DIASources from the previous night of observing.  This means \DIAObjects that were newly created during the previous night because they could not be associated with known \DIAObjects.  \DIASources associated with an \SSObject in the night are still passed through the MOPS machinery
 
 \paragraph*{SSObject Database: } The catalog of known solar system sources
 
@@ -447,17 +439,19 @@ Components of MOPS are run during and separately from nightly processing (see Fi
 
 \paragraph*{SSObject Database: } An updated SSObject database with SSObjects both added and pruned as the orbital fits are refined
 
-\paragraph*{DIASource Database:} A updated DIASource database with DIASources assigned and unassigned to SSObjects
+\paragraph*{DIASource Database:} A updated DIASource database with DIASources assigned and unassigned to SSObjects 
 
+\paragraph*{Tracklet Database:} A temporary database of tracklets measured during a night. This database will be persisted for at least a lunation.
 
 \subsubsection{Tracklet identification}~
-From multiple visits within a night, link unassociated DIASources to form pairs (or more) of DIASources
+From multiple visits within a night, link unassociated DIASources to form tuples (or ntuples) of DIASources
 
 \paragraph{Pipeline Tasks}
 
 \begin{itemize}
 \item Extract unassociated DIASources from the Level 1 database
-\item Link DIASources into tracklets assuming a maximum velocity for the moving sources. The maximum velocity will be based on a prior as described in  \cite{kubica05}. For each tracklet a velocity vector will be calculated to enable pruning or merging of degenerate tracklets within a data set. Tracklets can contain multiple points. In the process of merging tracklets DIASources that are not a good fit for the merged tracklet will be remove and their associated tracklets returned to the tracklet database.  Moving or trailed sources will incorporate the position angle of the source when linking. Details of the implementation of the DIASource linkage is described in \ref{sec:acMakeTracklets}
+\item Link DIASources into tracklets assuming a maximum velocity for the moving sources. The maximum velocity will be based on a prior as described in  \cite{kubica05}. For each tracklet a velocity vector will be calculated to enable pruning or merging of degenerate tracklets within a data set. 
+\item Merge tracklets by clustering in velocity and position (propagated to a common visit time). Tracklets can contain multiple points and all permutations of the asteroid tuples will be stored. In the process of merging tracklets DIASources that are not a good fit for the merged tracklet will be remove and their associated tracklets returned to the tracklet database.  Moving or trailed sources will incorporate the position angle of the source when linking. Details of the implementation of the DIASource linkage is described in \ref{sec:acMakeTracklets}
 \item Temporarily persist a database of tracklets. This database will be required for at least 30 days of data but, depending on resources available, may persist for longer.
 \end{itemize}
 
@@ -470,8 +464,8 @@ Tracklets are matched and merged with existing \SSObjects and removed from the T
 \begin{itemize}
 \item Return all tracklets identified within a given night of observations
 \item Return the footprints of each visit and the time of the observation
-\item Extract SSObjects from the SSObject database and propagated those orbits to the position and time of a visit. Details of this orbit propagation for precovery are described in \ref{sec:acEphemerisCalculation}. The computational requirements for this precovery are substantial and efficient mechanisms for indexing the SSObject orbits will be necessary. Trajectories of known asteroids could be pre-calculated and modelled as polynomials to enable fast interpolation during day MOPS.
-\begin{note}What are the numbers for the SSObject propagation and number of tracklets per visit\end{note}
+\item Extract \SSObjects from the \SSObject database and propagated those orbits to the position and time of a visit. Details of this orbit propagation for precovery are described in \ref{sec:acEphemerisCalculation}. 
+%\begin{note}What are the numbers for the SSObject propagation and number of tracklets per visit\end{note}
 \item Merge (precovery) the tracklets with the projected SSObject trajectories and refit  the SSObject orbit model. DIASources previously associated with an SSObject may no longer fit the updated SSObject orbits. These DIASources will be removed from the SSObject and returned as unassociated DIAObjects to the level 1 database. All tracklets associated with these DIAObjects will be  returned to the tracklet database. Details of this attribution and precovery are described in \ref{sec:acAttributionAndPrecovery}
 \end{itemize}
 
@@ -484,7 +478,7 @@ Given a database of tracklets constructed from a window (default 30 days) of tim
 \begin{itemize}
 \item Extract all tracklets from the tracklet database for a specified window in time (default 30 days)
 \item Merge tracklets into tracks based on their velocities and accelerations. Candidate tracks are pruned by fitting a quadratic relation to the positions (after applying a topocentric correction to the positions of the sources). Efficiency in this matching procedure is provided by a spatial index such as a kd-tree (see \ref{sec:acOrbitFitting}). 
-\item Fit an orbit to each candidate track using a tool such as OOrb (https://github.com/oorb/oorb) and, for poorly fitting  points, return the DIASources and associated tracklets to their respective databases for subsequent reprocessing.
+\item Fit an orbit to each candidate track using a tool such as OOrb \\(https://github.com/oorb/oorb) and, for poorly fitting  points, return the DIASources and associated tracklets to their respective databases for subsequent reprocessing.
 \item Merge SSObjects that have similar orbital parameters based on range searches within the six dimensional orbital parameter space.  Merged SSObjects will need to be refit and any poorly fitting DIASources (and associated tracklets) returned  to their respective databases for subsequent reprocessing. Details of this procedure are given in \ref{sec:acOrbitMerging}
 \end{itemize}
 
@@ -497,11 +491,15 @@ For all new or updated SSObjects propagate the orbits to the positions and times
 \item Return all tracklets identified within a given night of observations
 \item Return the footprints of each visit and the time of the observation
 \item Extract orbits for all new or updated SSObjects and propagate the positions to the times of the observations for all visits covering the extent of the tracklet database, default 30 days, (see \ref{sec:acEphemerisCalculation})
-\item Merge the tracklets with the projected SSObject positions and refit the SSObject orbit model. Poorly fitting DIASources (and associated tracklets) will be removed from the SSObject and returned as unassociated DIAObjects to the Level 1 database (as described in\ref{sec:acAttributionAndPrecovery}).
+\item Merge the tracklets with the projected SSObject positions and refit the SSObject orbit model. Poorly fitting DIASources (and associated tracklets) will be removed from the SSObject and returned as unassociated DIAObjects to the Level 1 database (as described in \ref{sec:acAttributionAndPrecovery}).
 \end{itemize}
 
 
-The process for precovery and updating of the SSObject models is naturally iterative (given the pruning of poorly fitting DIAObjects and tracklets). Updates of the SSObjects as part of each night of operations should enable sufficient iterations without requiring Day-MOPS to be rerun multiple times per day. The computationally expensive operations in this pipeline are the orbit propagation and the orbit fitting. Resources required for orbit propagation could be reduced be removing the initial precovery stage but at the cost of increasing the number of tracklets that would be available for matching into tracks. Extending the Global precovery to include singleton DIASources (i.e.\ one that are not merged into tracklets) would enable the identification of asteroids at the edge of the nightly footprint (where an object moves outside of the nightly survey footprint prior to the second visit or a second visit is not obtained for a given field).
+The process for precovery and updating of the SSObject models is naturally iterative (given the pruning of poorly fitting \DIAObjects and tracklets). Updates of the SSObjects as part of each night of operations should enable sufficient iterations without requiring Day-MOPS to be rerun multiple times per day. The computationally expensive operations in this pipeline are the orbit propagation and the orbit fitting. Resources required for orbit propagation could be reduced be removing the initial precovery stage but at the cost of increasing the number of tracklets that would be available for matching into tracks. Orbital trajectories could be pre-calculated and modelled as polynomials to enable fast interpolation during Day-MOPS.
+
+
+
+Extending the Global Precovery to include singleton DIASources (i.e.\ one that are not merged into tracklets) would enable the identification of asteroids at the edge of the nightly footprint (where an object moves outside of the nightly survey footprint prior to the second visit or a second visit is not obtained for a given field).
 
 \subsubsection{Prototype Implementation}
 
