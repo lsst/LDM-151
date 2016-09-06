@@ -181,12 +181,11 @@ Astrometric and photometric solutions  within crowded fields will utilize the br
 \subsection{Alert Generation Pipeline (\wbsDiffim)}
 \label{sec:apAlertGeneration}
 
-Alert Generation identifies variable, moving, and transient sources within a calibrated exposure by subtracting a deeper template image (see Figure~\ref{fig:apAlertgen}). Sources, DIASources, detected on a DiffExp are associated with known DIAObjects and Objects (including SSObjects that have been propagated to the date of the CalExp exposure) and their properties measured. The resulting DiffExps and DIAObjects will be persisted by the Alert Generation pipeline.
-\begin{note} Check we match to objects for nearest neighbor searches \end{note}
+The Alert Generation pipeline identifies variable, moving, and transient sources within a calibrated exposure by subtracting a deeper template image (see Figure~\ref{fig:apAlertgen}). The \DIASources detected on a DiffExp are associated with known DIAObjects and SSObjects (that have been propagated to the date of the CalExp exposure) and their properties measured. The process for image differencing requires the creation or retrieval of a TemplateCoadd, the matching of the  astrometry and PSF of the TemplateCoadd to a CalExp, and subtracting the template image from the CalExp. Spurious \DIASources will be removed using morphological and environment based classification algorithms. 
 
-The Alert Generation pipeline is required to difference, detect and characterize, and distribute sources within 60s second design goal for nightly processing. For the current allocation of timing (see \hyperref[]{}) the time to image difference, detect and characterize  \DIASources is 24 seconds (allowing for multiple cores and multithreading of the processing). The requirement on the algorithms for purity and completeness of the sample is given by the \DMSR\@. Image differencing shall perform as well in crowded as in uncrowded fields. 
+The Alert Generation pipeline is required to difference, and detect and characterize \DIASource sources within 24s (allowing for multiple cores and multithreading of the processing). 
+%The requirement on the algorithms for purity and completeness of the sample is given by the \DMSR\@. Image differencing shall perform as well in crowded as in uncrowded fields. 
 
-The process for image differencing requires the creation or retrieval of a TemplateCoadd, and the matching of the  astrometry and PSF of a CalExp to the TemplateCoadd and subtracting the template image from the CalExp. This will require accounting for the relative differences in image quality and noise between the Dependent on the density of sources deblending of \DIASources may be necessary. Measurement of \DIASources will account for whether the CalExp image was preconvolved or not and spurious \DIASources will be removed using morphological and environment based classification algorithms. 
 
 \begin{figure}[th]
 \begin{center}
@@ -201,58 +200,56 @@ The process for image differencing requires the creation or retrieval of a Templ
 
 \paragraph*{Coadd Images:} TemplateCoadd images that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This coadded image is optimized for image subtraction and is expected to be characterized in terms of a tract/patch/filter. Generation of this template may account for differential chromatic refraction or be generated for a limited range of airmass, seeing, and parallactic angles.
 
-\paragraph*{Object Databases:} \Objects that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This \Object catalog will provide the source list for determining nearest neighbors to the detected DIASources. 
+\paragraph*{Object Databases:} \Objects that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This \Object catalog will provide the source list for determining nearest neighbors to the detected \DIASources. 
 
-\begin{note} We should selected nearest 3 stars and nearest 3 galaxies \end{note}
 
-\paragraph*{DIAObject Databases:} \DIAObjects that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This DIAObject catalog will provide the association  list against which the DIASources will be matched. 
+\paragraph*{DIAObject Databases:} \DIAObjects that spatially overlap with the CalExp images processed through \ref{sec:apSingleFrameProcessing}. This \DIAObject catalog will provide the association  list against which the DIASources will be matched. 
 
 \paragraph*{SSObject Databases:} The \SSObject list at the time of the observation. The SSObject positions will be propagated to the date of the CalExp observations and will provide an association  list for cross-matching against the detected \DIASources to identify known Solar System objects.
 
-\paragraph*{Reference classification catalogs:} Classification of \DIASources based on their morphological features (and possibly estimates of the local density or  environment associated with the DIASource) will be undertaken prior to association in order to reduce the number of false positives. The data structures that define these classifications will be required as an input to this spuriousness analysis. 
+\paragraph*{Reference classification catalogs:} Classification of \DIASources based on their morphological features (and possibly estimates of the local density or  environment associated with the \DIASource) will be undertaken prior to association in order to reduce the number of false positives. The data structures that define these classifications will be required as an input to this spuriousness analysis. 
 
 
 
 \subsubsection{Output Data}
 \label{sec:apADOutput}
 
-\paragraph*{DiffExp Images:} Image differences (DiffExp) derived by subtracting a CalExp from a TemplateCoadd image.
+\paragraph*{DiffExp Images:} Image differences derived by subtracting a TemplateCoadd from a CalExp image.
 
-\paragraph*{DIASource Databases:} Sources detected and measured from the DiffExps (DIASources) using the set of parameters described in table \hyperref[table:ap_features] will be persisted.
+\paragraph*{DIASource Databases:} \DIASources detected and measured from the DiffExps using the set of parameters described in Table~\ref{table:ap_features} will be persisted.
 
 
-\paragraph*{DIAObject Databases:} DIASource will be associated with existing DIAObjects and persisted. New DIASource (i.e.\ those not persisted) will generate a new instance of a DIAObject.
+\paragraph*{DIAObject Databases:} \DIASource will be associated with existing \DIAObjects and persisted. New \DIASource (i.e.\ those not associated) will generate a new instance of a \DIAObject.
 
 
 \subsubsection{Template Generation}~
 \label{sec:apCRTemplates}
-Template generation requires the creation or retrieval (see \ref{sec:acRetrieveTemplate}) of a TemplateCoadd that is matched to the position and spatial extent of the input CalExp. Generation of the TemplateCoadd could be from a persisted Coadd that was generated from CalExp exposures with comparable (within a predefined tolerance) airmass and parallactic angles, or from a model that corrects for the effect of  differential chromatic refraction (see \ref{sec:acDCRTemplates}). It is expected that these operations would be undertaken on a CCD level but for efficiency the TemplateCoadd might be returned for a full focal plane or a {\it patch}  or {\it tract}. 
+Template generation requires the creation or retrieval (see \ref{sec:acRetrieveTemplate}) of a TemplateCoadd that is matched to the position and spatial extent of the input CalExp. Generation of the TemplateCoadd could be from a persisted Coadd that was generated from CalExp exposures with comparable (within a predefined tolerance) airmass and parallactic angles, or from a model that corrects for the effect of  differential chromatic refraction (see \ref{sec:acDCRTemplates}). It is expected that these operations would be undertaken on a CCD level but for efficiency the TemplateCoadd might be returned for a full focal plane or a series of {\it patches}  or a {\it tract}. 
 
 
 \paragraph{Pipeline Tasks}
 
 \begin{itemize}
 \item Query for a TemplateCoadd images that are within a given time interval of the CalExp  (default 2 years) of the current CCD image, and are within a specified airmass and parallactic angle.
-\item (optional) Derive a seeing and DCR corrected TemplateCoadd from a model (see DCR template generation in \ref{sec:acDCRTemplates}). The current prototype approach assumes that the TemplateCoadd coadd will be derived for the zenith and will comprise a data cube with spatial and wavelength dimensions (a low resolution spectrum per pixel). Propagating to the observation will require aligning the DCR correction in the direction of the parallactic angle of the CalExp.
+\item (optional) Derive a seeing and DCR corrected TemplateCoadd from a model (see DCR template generation in \ref{sec:acDCRTemplates}). The current prototype approach assumes that the TemplateCoadd  will be derived for the zenith and will comprise a data cube with spatial and wavelength dimensions (a low resolution spectrum per pixel). Propagating to the observation will require aligning the DCR correction in the direction of the parallactic angle of the CalExp.
 \end{itemize}
 
 \subsubsection{Image differencing}~
-Image differencing incorporates the matching of a CalExp to a TemplateCoadd (astrometrically and in terms of image quality), subtraction of the template image, detection and measurement of \DIASources, removal of spurious \DIASources, and association of the DIASources with previously identified DIAObjects, Objects, and SSObjects. 
+Image differencing incorporates the matching of a TemplateCoadd to a CalExp (astrometrically and in terms of image quality), subtraction of the template image, detection and measurement of \DIASources, removal of spurious \DIASources, and association of the DIASources with previously identified \DIAObjects, and \SSObjects. 
 
 \paragraph{Pipeline Tasks}
 
 \begin{itemize}
 \item Determine a relative astrometric solution from the WCS of the TemplateCoadd image and CalExp image
-\item Match the DRP \Sources for the TemplateCoadd (see \ref{sec:drpFinalImChar}) against \Sources from SFM (see \ref{sec:apSingleFrameProcessing}) of the raw images.
-\item Warp or resample the TemplateCoadd (as described in \ref{sec:acWarping}) to match the astrometry of the CalExp. It is possible that astrometrically matching the TemplateCoadd and CalExp using faint source will need to be undertaken dependent on the accuracy of the WCS.
-\item For CalExp images with an image quality that is better than the TemplateCoadd preconvolve the CalExp image with the PSF use a  convolution kernel (see \ref{sec:spKernels}) matched to the detection kernel. This reduces the significance of any deconvolution in the PSF matching (see \ref{sec:acImageSubtraction})
+\item Match the DRP \Sources for the TemplateCoadd (see \ref{sec:drpFinalImChar}) against \Sources from the SFM pipeline (see \ref{sec:apSingleFrameProcessing}) of the raw images.
+\item Warp or resample the TemplateCoadd using a Lanczos filter  (as described in \ref{sec:acWarping}) to match the astrometry of the CalExp. It is possible that astrometrically matching the TemplateCoadd and CalExp using faint source will need to be undertaken dependent on the accuracy of the WCS.
+\item For CalExp images with an image quality that is better than the TemplateCoadd preconvolve the CalExp image with the PSF. Use a  convolution kernel (see \ref{sec:spKernels}) that is matched to the source detection kernel. This reduces the need for deconvolution in the PSF matching (see \ref{sec:acImageSubtraction})
 \item Match the PSF of the CalExp and TemplateCoadd images as described in \ref{sec:acDiffImDecorrelation} and construct a spatial model for the matching kernel. This approach may include matching to a common PSF through homogenization of the PSF (see \ref{sec:acPSFHomogenization}.
-\item Apply the matching kernel and subtract the images to generate a DiffExp (as described in \ref{sec:acImageSubtraction}). Dependent on the relative signal-to-noise in the science and template image decorrelation of the template image due to the convolution of the template with a matching kernel may be necessary (see \ref{sec:acDiffImDecorrelation})
-\item Detect DIASources on the DiffExp using the algorithms described in \ref{sec:acSourceDetection}. Convolution with a detection kernel will depend on whether the CalExp was preconvolved in item 4. 
-\item Measurements of the \DIASources on the DiffExp will include dipole models and trailed PSF models (see  \ref{sec:acDipoleModels} and \ref{sec:acTrailedPointSourceModels}. The specific algorithms used for measurement of \DIASources will depend on whether the CalExp image was preconvolved.  
-\item Measurement of the PSF flux on snap sum and difference images for all \DIASources.
-\begin{note} Are we measuring on snap sum and difference - check DPDD\end{note}
-\item The application of spuriousness algorithms, also known as ``real-bogus'', may have to be applied at this time dependent on the number of false positives (see \ref{sec:acSpuriousnessAlgorithms}). \DIASources classified as spurious at this stage may not be persisted (dependent on the density of the false positives). The default technique will be based on a trained random forest classifier. It is likely that the training of this classifier will need to be conditioned on the image quality and airmass of the observations.
+\item Apply the matching kernel to the TempCoadd and subtract the images to generate a DiffExp (as described in \ref{sec:acImageSubtraction}). Dependent on the relative signal-to-noise in the science and template image decorrelation of the template image due to the convolution of the template with a matching kernel may be necessary (see \ref{sec:acDiffImDecorrelation})
+\item Detect \DIASources on the DiffExp using the algorithms described in \ref{sec:acSourceDetection}. Convolution with a detection kernel will depend on whether the CalExp was preconvolved in item 4. 
+\item Measurements of the \DIASources on the DiffExp will include dipole models and trailed PSF models (see  \ref{sec:acDipoleModels} and \ref{sec:acTrailedPointSourceModels} and parameters described in Table~2 of the \DPDD . The specific algorithms used for measurement of \DIASources will depend on whether the CalExp image was preconvolved.  
+\item Measurement of the PSF flux on snap difference images for all \DIASources.
+\item The application of spuriousness algorithms, also known as ``real-bogus'', may be applied at this time dependent on whether the number of false positives is less than 50\% of the detected sources (see \ref{sec:acSpuriousnessAlgorithms}). \DIASources classified as spurious at this stage may not be persisted (dependent on the density of the false positives). The default technique will be based on a trained random forest classifier. It is likely that the training of this classifier will need to be conditioned on the image quality and airmass of the observations.
 \end{itemize}
 
 \subsubsection{Source Association}~
@@ -263,8 +260,8 @@ In Source Association \DIASources detected within a given CCD will be cross-matc
 
 \begin{itemize}
 \item Generate the positions of SSObjects that overlap a DiffExp given its observation time by propagating the SSObject orbit (see \ref{sec:acEphemerisCalculation}) 
-\item As described in \ref{sec:acDIAObjectGeneration} source association will be undertaken for all \DIASources. Matching will be to \DIAObjects, and the ephemerides of \SSObjects. Positions for DIAObjects will be based on a a time windowed (default 30 day) average of the \DIASources that make up the \DIAObject. When available (i.e.\ the generation of proper motion and parallax is undertaken in the DRP) a linear motion model will be applied to propagate the \DIAObject to the time of the observation. For the second visit in a night to a new \DIAObject the positional information will be from a single \DIASource. A probabilistic association may need to account for one-to-many and many-to-one associations. In dense regions it may be necessary to generate joint associations across all DIAObjects (and associated DIASources) in the local  vicinity of a DIASource to correct for mis-assignment from previous observations. This could include the pruning and reassignment of \DIASources between \DIAObjects. A baseline approach for nightly processing will be to select a maximum a posteriori estimate for the association.
-\item \DIASources will be associated with the \Object table from DRP to identify the nearest, currently three, \Objects to a \DIASource. In its simplest case this will be a nearest neighbor search that will define a set of nearest neighbors (the default radius for association is not defined) that will be persisted with \DIAObjects as a measure of local environment. More sophisticated association may be undertaken to match the DIASources to Objects in order to enable access to the DRP properties of a source (e.g.\ proper motion and parallax - see below).
+\item As described in \ref{sec:acDIAObjectGeneration} source association will be undertaken for all \DIASources. Matching will be to \DIAObjects, and the ephemerides of \SSObjects. Positions for \DIAObjects will be based on a a time windowed (default 30 day) average of the \DIASources that make up the \DIAObject. A linear motion model for parallax and proper motion will be applied to propagate the \DIAObject to the time of the observation. A probabilistic association may need to account for one-to-many and many-to-one associations.  In dense regions it may be necessary to generate joint associations across all DIAObjects (and associated DIASources) in the local  vicinity of a DIASource to correct for mis-assignment from previous observations. This could include the pruning and reassignment of \DIASources between \DIAObjects. A baseline approach for nightly processing will be to select based on a maximum a posteriori estimate for the association.
+\item \DIASources will be positionally matched to the nearest 3 stars and 3 galaxies in the DRP \Object database. In its simplest case the search algorithm will be a tree-based nearest neighbor search (the default radius for association is not defined) . The matched \Objects will be persisted as a measure of local environment. 
 \item \DIASources unassociated with a \DIAObject will instantiate a new DIAObject.
 \item The aggregate positions for the DIAObjects will be updated based on a rolling time window (default 30 days). 
 \item Proper motion and parallax of the \DIAObject will be updated using a linear model as described in \ref{sec:acStellarMotionFitting}. 
