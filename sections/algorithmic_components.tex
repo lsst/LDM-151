@@ -126,6 +126,9 @@ parameters are: $f_s$ the subsampling rate, $\sigma_{lim}$ the SNR of the CRs in
 $f_{lim}$ the minimum contrast relative to the ``fine-structure'' image. Assuming reasonable values for optical
 images, we will define a set of default values.
 
+For the case of Alert Production cosmic ray detection can be applied to the difference of the individual snaps which should improve the performance of the algorithm within the cores of sources.
+
+
 \begin{note}[Add to SFM section]
 We can use something like L.A.COSMIC (or CRBLASTER) but if it is too slow, we can fall back to the SDSS algorithm which does a similar thing, but does no convolutions.
 We should also consider why we do not use a Canny algorithm instead.
@@ -1212,7 +1215,7 @@ When tracklets are collapsed, we gain more information about the collasped track
 
 \subsection{Attribution and Precovery}
 \label{sec:acAttributionAndPrecovery}
-Precovery is the process of adding 'orphan' DIASources, those that do not belong to a SSObject or DIAObject, to a SSObject.  Any time an SSObjects orbital parameters change significanly, it's possible that DIASources not associated previously could now match.  The process is to calculate ephemerides backward in time from the earliest observation as far as is possible given the uncertainty in the orbit.  These ephemerides are compared to the orphan DIASources.  If a match is found, a new orbit is fit and if the new orbit is a better fit than the old one, the SSObject is updated with the new fit.
+Precovery is the process of adding 'orphan' DIASources, those that do not belong to a SSObject or DIAObject, to a SSObject.  Any time an SSObjects orbital parameters change significantly, it's possible that DIASources not associated previously could now match.  The process is to calculate ephemerides backward in time from the earliest observation as far as is possible given the uncertainty in the orbit.  These ephemerides are compared to the orphan DIASources.  If a match is found, a new orbit is fit and if the new orbit is a better fit than the old one, the SSObject is updated with the new fit.
 
 Attribution is the process of adding tracklets to known SSObjects.  For a given time window, topocentric ephemerides are calculated for all SSobjects that could potentially intersect any of the images in that window at the observation times of each of the images.  These ephimerides are then compared to the tracklets in the time window.  If any of them match in locatio and velocity, a new orbit is calculated.  If the new orbit is better than the old on, the tracklet is tagged as being part of that SSObject and the SSOBject is updated with the new orbital parameters.
 
