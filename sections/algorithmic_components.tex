@@ -361,14 +361,13 @@ To enable downstream code to correct shapes for the PSF, the shape algorithm mus
 \paragraph{Aperture Photometry}
 \label{sec:acAperturePhotometry}
 
-\begin{itemize}
-\item Aperture fluxes are computed by summing the total flux within an elliptical region defined on the image.
-\item Aperture fluxes are computed at a series of logarithmically spaced aperture sizes. Per the \DPDD{}, the total number of apertures will vary depending on the size of the source.
-\item When computing fluxes for small apertures---for configurable values of ``small''--we use $\mathrm{sinc}$ interpolation \cite{Bickerton13}. For large apertures, we use a naive summation of pixel values.
-\item Needs to be more clever about measuring bright, saturated stars - maybe measure each annulus in sectors, as in SDSS.  Can then use differences between sectors to measure uncertainties, but care is required when aperture ellipticitiy doens't match source ellipticity.
-\item May need to change ellipticity as a function of aperture radius (tricky to determine any kind of ellipticity robustly).
-\item If run before PSF estimation, will need a variant that does not rely on the PSF model to choose aperture size/ellipticity.
-\end{itemize}
+Aperture photometry here refers to fluxes measured within a sequence of fixed-size (i.e. same for all objects) circular or elliptical annuli.  The radii of the annuli will be logarithmically spaced radii, though fluxes at the largest largest radii will not be measured for objects significantly smaller than those radii.  Together these aperture fluxes will provide a measurement of the radial profile of the object.
+
+The baseline plan for LSST is to use circular apertures, but we also plan to investigate using ellipses, which would provide more meaningful and higher SNR measurements if problems in robustly defining per-object (and perhaps per-radius) ellipses for faint objects can be solved.
+
+While aperture fluxes with radii much larger than the pixel size can be measured naively by simply summing pixel values, smaller apertures will be measured using the $\mathrm{sinc}$ interpolation algorithm of \cite{Bickerton13}, which integrates exactly over sub-pixel regions.  To avoid contamination from bleed trails when measuring heavily saturated objects, we plan to measure fluxes within azimuthal segments of annuli instead of circular regions; any the flux within any contaminated segments can be replaced by the mean of the remaining segments (thus assuming approximate circular symmetry).
+
+For aperture fluxes with radii close to the PSF size to be scientifically useful, they must be performed on PSF-matched images.  We thus expect to plan run aperture photometry only on PSF-matched coadds and visit-level images, with the latter accompanied by a caution that smaller apertures may not be meaningful without user-level correction for the PSF.
 
 \paragraph{Static Point Source Photometry}
 \label{sec:acStaticPointSourceModels}
