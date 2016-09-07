@@ -371,25 +371,38 @@ For aperture fluxes with radii close to the PSF size to be scientifically useful
 
 \paragraph{Static Point Source Photometry}
 \label{sec:acStaticPointSourceModels}
-\begin{itemize}
-\item Fit PSF model for flux only (hold center fixed at centroid or reference value)
-\item Doesn't use per-pixel variances for flux measurement, but might also provide measurement with per-pixel variances (for diagnostics?)
-\end{itemize}
+
+In single-visit, difference image, and forced measurement, PSF fluxes will be measured with position held fixed at the valued determined by the \hyperref[ac:CentroidAlgorithms]{Centroid algorithm}, with only the amplitude allowed to vary.  We will not use per-pixel weights (as these can lead to bias as a function of magnitude when the PSF model is slightly incorrect) to fit for the amplitude, but we will use per-pixel variances to compute the uncertainty on the flux.  PSF fluxes will be aperture corrected (see Section~\ref{sec:acApCorr}).
+
+In multi-coadd measurement we may use either static point source models or moving point source models to estimate PSF fluxes; this depends on the number and depth of short-period coadds, and hence it is likely we will use static point source models for early data releases and moving point source models near the end of the survey.  In either case we expect these measurements to be entirely superceded for science purposes by multi-epoch fitting results using a moving point-source model; these measurements on coadds are largely for QA and to warm-start multi-epoch fitting.
 
 \paragraph{Kron Photometry}
 \label{sec:acKronPhotometry}
-\begin{itemize}
-\item Compute Kron radius (hard to make this robust)
-\item Compute flux in elliptical aperture at Kron radius.
-\end{itemize}
+
+Kron fluxes are aperture fluxes measured with an aperture radius set to some multiple (usually $2$ or $2.5$) of the Kron radius, which is defined as:
+
+$$
+R_{\mathrm{kron}} = \frac{\sum r \, I(r)}{\sum I(r)}
+$$
+
+In our implementation, we use an elliptical aperture (and compute the above radius using elliptical moments), using the \hyperref[sec:acShapeAlgorithms]{Second-Moment Shape} to set the ellipticity.
+
+Measuring the Kron radius itself is difficult in the presence of noise; as with any moment measurement, pixels far from the center with low SNR are given higher weight than central pixels with high SNR.  In practice, the sums over pixels in the Kron radius definition must be truncated at some point, and the resulting Kron radius can be sensitive to this choice.  Our current approach uses a fixed multiple of the \hyperref[sec:acShapeAlgorithms]{Second-Moment Shape} ellipse.  This may be less robust than an adaptive approach, but it more closely matches the procedure used by SExtractor's \texttt{MAG\_AUTO}, which is by far the most popular implementation of Kron photometry in astronomy.
+
 
 \paragraph{Petrosian Photometry}
 \label{sec:acPetrosianPhotometry}
+
+\begin{note}
+Need to get RHL to write this section.
+\end{note}
+
 \begin{itemize}
 \item Compute Petrosian radius.
 \item Requires taut splines and more robust measurement of standard elliptical aperture suite.
 \item Compute flux in elliptical aperture at multiple Petrosian radius.
 \end{itemize}
+
 
 \paragraph{Galaxy Models}
 \label{sec:acGalaxyModels}
@@ -403,6 +416,7 @@ For aperture fluxes with radii close to the PSF size to be scientifically useful
 
 \paragraph{Moving Point Source Models}
 \label{sec:acMovingPointSourceModels}
+
 \begin{itemize}
 \item Fit point source with flux, centroid, parallax, and proper motion parameters.
 \item May need to support simultaneous fitting.
@@ -412,6 +426,11 @@ For aperture fluxes with radii close to the PSF size to be scientifically useful
 
 \paragraph{Trailed Point Source Models}
 \label{sec:acTrailedPointSourceModels}
+
+\begin{note}
+Need to find someone (probably on AP team) to write this section.
+\end{note}
+
 \begin{itemize}
 \item Fit PSF convolved with line segment to individual images
 \end{itemize}
@@ -435,6 +454,11 @@ Note that deblending dipole sources is a complicated process and we do not inten
 
 \paragraph{Spuriousness}
 \label{sec:acSpuriousnessAlgorithms}
+
+\begin{note}
+Need to find someone (probably on AP team) to write this section.
+\end{note}
+
 \begin{itemize}
 \item Some per-source measure of likelhood the detection is junk (in a difference image).
 \item May use machine learning on other measurements or pixels.
