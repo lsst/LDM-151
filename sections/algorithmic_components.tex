@@ -196,7 +196,7 @@ Snap differences will provide significant leverage for masking linear features. 
 \subsubsection{Warped Image Comparison}
 \label{sec:acWarpedImageArtifactDetection}
 
-Additional artifacts will be detected in DRP by comparing multiple viists that have already been resampled to the same coordinate system.  This is similar conceptually to \hyperref[sec:acSnapSubtraction]{Span Subtraction}, but will operate quite differently in practice, in that we do not expect to combine this stage with the morphological detection stages; instead we assume that everything we can detect morphologically will have already been detected.
+Additional artifacts will be detected in DRP by comparing multiple vists that have already been resampled to the same coordinate system.  This is similar conceptually to \hyperref[sec:acSnapSubtraction]{Span Subtraction}, but will operate quite differently in practice, in that we do not expect to combine this stage with the morphological detection stages; instead we assume that everything we can detect morphologically will have already been detected.
 
 Instead, this stage will examine the full 3-d data cube (two spatial dimensions as well as the epoch dimension) for outliers in the epoch dimension that are contiguous in the spatial dimensions.  This is an extension of traditional coadd outlier-rejection, which can cause spurious rejections of single pixels (or small groups of pixels) due to noise and differing PSFs.  This can obviously detect astrophysical transients as well as image artifacts, and this is usually desirable; this stage is responsible for determing which pixels should contribute to our definition of the static sky, and we want to reject astrophysical transients from that as well.
 
