@@ -481,20 +481,93 @@ Need to find someone (probably on AP team) to write this section.
 
 \subsubsection{Blended Measurement}
 \label{sec:acBlendedMeasurement}
+
+Most LSST objects will overlap one or more of its neighbors enough to affect naive measurements of their properties.  One of the major challenges in the deep processing pipelines will be measuring these objects in a way that corrects for and/or characterizes the effect of these blends.
+
+The measurement algorithms of Section~\ref{sec:acMeasurementAlgorithms} can be split up broadly into two categories:
 \begin{itemize}
-\item Integrate text from blended-measurement doc here.
+    \item weighted moments (includes \hyperref[sec:acShapeAlgorithms]{Second-Moment Shapes}, \hyperref[sec:acAperturePhotometry]{Aperture Photometry}, \hyperref[sec:acKronPhotometry]{Kron Photometry}, and \hyperref[sec:acPetrosianPhotometry]{PetrosianPhotometry};
+    \item forward modeling (includes \hyperref[sec:acGalaxyModels]{Galaxy Models}, \hyperref[sec:acMovingPointSourceModels]{Moving Point Source Models}, and \hyperref[sec:acTrailedPointSourceModels]{Trailed Point Source Models}).
 \end{itemize}
+
+Most measurements that involve the PSF or a PSF-convolved function as a weight function can be interpreted in either way (this includes most \hyperref[sec:acCentroidAlgorithms]{Centroid} algorithms and all PSF flux algorithms), though only the weighted-moment interpretation provides a motivation for ignoring per-pixel variances, as is necessary to ensure unbiased fluxes in the presence of incorrect models.
+
+The statistical framework in which weighted moments make sense assumes that each object is isolated from its neighbors.  As a result, our only option for these measurements is removing neighbors from the pixel values prior to measurement, which we will discuss further in \ref{sec:acReplaceNeighborsWithNoise}.
+
+In forward modeling, we convolve a model for the object with our model for the PSF, compare this model to the data, and either optimize to find best-fit parameters or explore the full likelihood surface in another way (e.g. Monte Carlo sampling).  We can use the removing-neighbors approach for forward fitting, simply by fittting each object separately to the deblended pixels.  However, we can also use simultaneous fitting (Section~\ref{sec:acSimultaneousFitting}), in which we optimize or sample the models for multiple objects jointly.
+
+Both neighbor-replacement and simultaneous fitting have some advantages and disadvantages:
+\begin{itemize}
+\item Neighbor-replacement provides no direct way to characterize the uncertainties in an object's measurements due to neighbors, while these are naturally captured in the full likelihood distribution of a simultaneous fit.  This likelihood distribution may be very high-dimensional in a fit that involves many objects, however, and may be difficult to characterize or store.
+\item Neighbor-replacement generally allows for more flexible morphologies than the analytic models typically used in forward fitting, which is particularly important for nearby galaxies and objects blended with them; simultaneous fitting is only statistically well-motivated to the extent the models used can reproduce the data.
+\item Once neighbor-free pixels are available, fitting objects simultaneously will almost always be more computationally expensive than fitting them separately to the deblended pixels.  At best, simultaneous fitting will have similar performance but still require more complex code.  And because we will need to deblend pixels to support some measurement algorithms, we'll always have to deblend whether we want to subsequently do simultaneous fitting or not.
+\end{itemize}
+
+\paragraph{Neighbor Noise Replacement}
+\label{sec:acReplaceNeighborsWithNoise}
+
+We do not perform measurements directly on the deblended-pixel \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} output by the \hyperref[sec:acDeblending]{Deblender} for two reasons:
+\begin{itemize}
+\item The deblended pixels typically have many zero entries, especially for large blend families (i.e. many pixels for which a particular object has no contribution).  These zero pixels make the noise properties of a deblended object qualitatively different from those of an isolated object, which may be problematic for some measurement algorithms.
+\item Many measurements utilize pixels beyond the blend family's \hyperref[sec:spFootprintsHeavy]{Footprint}, and in fact may extend to pixels that are in another family.
+\end{itemize}
+To address these issues, we measure deblended objects using the following
+procedure:
+\begin{enumerate}
+\item Replace every above threshold pixel in the image (all \hyperref[sec:spFootprints]{Footprints}) with randomly generated noise that matches the background noise in the image.
+\item For each blend family:
+    \begin{enumerate}
+    \item For each child object in the current blend family:
+        \begin{enumerate}
+        \item Insert the child's \hyperref[sec:spFootprintsHeavy]{HeavyFootprint} into the image, replacing (not adding to) any pixels it covers.
+        \item Run all measurement algorithms to produce \emph{child} measurements.
+        \item Replace the pixels in the child's \hyperref[sec:spFootprints]{Footprint} region with (the same) random noise again.
+        \end{enumerate}
+    \item Revert the pixels in the parent \hyperref[sec:spFootprints]{Footprint} to their original values.
+    \item Run all measurement algorithms to produce \emph{parent} measurements.
+    \item Replace the parent \hyperref[sec:spFootprints]{Footprint} pixels with (the same) random noise again.
+    \end{enumerate}
+\end{enumerate}
+This procedure double-counts flux that is not part of a \hyperref[sec:spFootprints]{Footprint}, but this is considered better than ignoring this flux, because most measurement algorithms utilize some other procedure for downweighting the contribution of more distant pixels.
 
 \paragraph{Deblend Template Projection}
 \label{sec:acDeblendTemplateProjection}
-\paragraph{Neighbor Noise Replacement}
-\label{sec:acReplaceNeighborsWithNoise}
+
+When \hyperref[sec:acDeblending]{deblending} is performed on one image and measurement occurs in another, the deblender outputs must be ``projected'' to the measurement image.  In general, this requires accounting for three potential categories of differences between the images:
+\begin{itemize}
+\item differing coordinate systems
+\item differing PSFs
+\item different epoch.
+\end{itemize}
+We do not currently have a use case for projecting deblender results between images with different filters; we expect that we will have deblender results from at least each per-band coadd, and projection is required for different per-epoch images in \hyperref[sec:acForcedMeasurement]{Forced Measurement} and \hyperref[sec:acMultiEpochMeasurement]{Multi-Epoch Measurement}.  It may be entirely unnecessary if \hyperref[sec:acSimultaneousFitting]{Simultaneous Fitting} can be used to address all blended measurement issues in these contexts.
+
+When variability can be ignored, deblended pixel values can be \hyperref[sec:spWarp]{resampled} using the same algorithms that operate on images, and \hyperref[sec:acPsfMatching]{PSF Matching} kernels can be used to account for PSF differences (though some regularization will be required if this involves a deconvolution).  When variability cannot be ignored, these operations should instead be applied to the deblend templates, which can then be re-fit to produce new per-epoch deblend results.
+
+These operations are significantly easier if the deblend templates themselves are defined via analytic models that must be convolved with the PSF to generate the template; the models can simply be transformed, convolved with the per-epoch PSF and re-fit.
+
 \paragraph{Simultaneous Fitting}
 \label{sec:acSimultaneousFitting}
+
+For measurement algorithms that can be fully expressed as a likelihood-based fit using a model that closely approximates the data, an alternative to \hyperref[sec:acReplaceNeighborsWithNoise]{Neighbor Noise Replacement} is to fit all objects in a blend simultaneously (either with a greedy optimizer or with Monte Carlo sampling).  This is statistically straightforward: the parameter vectors for individual per-object models can simply be concatenated, and the pixels to fit to are the union of all of the pixels that would be used in fitting individual objects.
+
+Simultaneously fitting a group of objects is almost certainly slower than fitting those objects individually, in essentially every case, but the decrease in performance may be mild.  The per-iteration calculations in optimizer-based methods have a worst-case complexity that is $O(N^2)$ in the number of parameters, but the $O(N)$ evaluation (and convolution) of models typically completely dominates the $O(N^2)$ linear algebra, and this should hold for all but the very largest blend families.  The more important scaling factor is the number of iterations required to converge to the solution; as this is expected to scale roughly with the volume of the space that much be searched, it could scale as poorly as $O(k^N)$.  This can be ameliorated by starting the optimizer close to the correct solution; fitting objects independently to deblended pixel values before simultaneous fitting should provide a reasonably good guess.  Simultaneous fitting in \hyperref[sec:acMultiEpochMeasurement]{Multi-Epoch Measurement} can also be initialized from the results of \hyperref[sec:acMultiCoaddMeasurement]{Multi-Coadd Measurement}, where model evaluations are significantly faster.
+
+With Monte Carlo methods, a high-dimensional parameter space is less of a problem; Monte Carlo methods are valued precisely because they scale (on average) better with dimensionality.  We still expect to require warm-start methods for simultaneous Monte Carlo sampling of multiple objects, such as using importance sampling in \hyperref[sec:acMultiEpochMeasurement]{Multi-Epoch Measurement} to re-weight samples drawn during independent per-object sampling or \hyperref[sec:acMultiCoaddMeasurement]{Multi-Coadd Measurement}.
+
+For both optimizer-based fitting and Monte Carlo sampling, it should be possible to explore the parameter space in a way that does not require evaluating the model for every object at every iteration or draw; because objects on opposite sides of a blend should affect each other only weakly, optimizer steps and samples that explicitly ignore these weak correlations in choosing the next parameter point to evaluate may be more efficient.  In Monte Carlo sampling, this would probably utilize techniques from Gibbs Sampling; with optimizers, one can probably ignore the step for any objects whose optimal step size falls below some threshold (with some extra logic to guarantee these objects are are still sometimes updated).  These improvements would likely reuqire significant development effort, and they would almost certainly make using off-the-sheld optimizers and samplers impossible.
+
+The fact that simultaneous fitting itself may be used to produce templates for deblending -- and that simultaneous fitting may require non-simultaneous fitting, using deblended results, for a warm start -- suggests that the boundary between the \hyperref[sec:acDeblending]{Deblending} and measurement algorithmic components may be somewhat vague.  This could be represented in software as an iteration between these algorithmic components, or perhaps a hierarchy of components in which the same low-level fitting code is used (and extended) by both algorithmic components, which can then be run straightforwardly in sequence.
+
 \paragraph{Hybrid Models}
 \label{sec:acHybridModels}
 
-\label{Spatial Models}
+In simultaneous fitting, the model used to fit one object can affect the quality of the fit to its neighbor, making it important the the best model be used for each object.  We explicitly fit both \hyperref[sec:acMovingPointSourceModels]{Moving Point Source Models} and \hyperref[sec:acGalaxyModels]{Galaxy Models} to every object, however, precisely because we do not expect to always be able to securely classify objects well enough to know which model is better (and we certainly do not expect to be able to classify them before fitting these models).  In simultaneous fitting, trying all possibilies leads to a combinatorial explosion of model-fitting jobs (fitting each of two models to $N$ objects leads to $2^N$ fits).
+
+Given that both of these models have a static point source as a limit, and classification is hardest at this limit, making the right classification for neighbors may not be critical; misclassified objects would still end up being fit with a model that is broadly appropriate for them.  Even in this case, we would still have $2N$ fitting objects when fitting an $N$-object blend with two models: every object would be fit twice as the ``primary'' object (with both models), and then twice for each of its neighbors.  Given that each of these fitting jobs still involves fitting $N$ objects, this still results in a scaling of approximately $2N^2$ (clever optimizers and samplers could probably reduce this, with a cost in code complexity and development time).
+
+Another option would be to fit both models simultaneously, by introducing a higher-level boolean parameter that sets the type.  Sampling from this hierarchical model is not significantly difficult than sampling from either of the original models if naive samplers are used, but optimizers and samplers that rely on derivative information will likely have trouble dealing with the discrete type parameter.  It may be possible to define a smooth transition between the two models through the static point source limit they share, though this would likely require customization of the optimizer and sampler as well.  Sampling with this sort of hybrid model would naturally produce samples from both models in the proportion weighted by the marginal probability of those models, which is essentially ideal (assuming sampling is considered useful for \hyperref[sec:acMovingPointSourceModels]{Moving Point Source Models}).  Using an optimizer with hybrid models would result in a result for just the best-fit model, which is somewhat less desirable.
+
+\subsection{Spatial Models}
 \label{sec:acSpatialModels}
 In many areas we will need to represent spatial models.  This will include models fit to sparse and non-uniformly sampled data.  We will support fitting Chebyshev polynomials and splines.  We will also support regression techniques like Gaussian Processes.
 
