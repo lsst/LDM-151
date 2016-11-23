@@ -60,7 +60,7 @@ regions where the linearity is considered unreliable as \texttt{SUSPECT}.
 
 \item Interpolation over defects and saturation: interpolate over defects previously identified using the PSF, and set the \texttt{INTERP} bit in the mask plane.
 
-\item Cosmic rays: identification of cosmic rays (see \secsymbol\ref{sec:acMorphologicalArtifactDetection}), interpolation over cosmic rays using PSF, and setting of \texttt{CR/INTERP} bit(s) in the mask plane.
+\item Cosmic rays: identification of cosmic rays (see \secsymbol\ref{sec:acCosmicRayDetection}), interpolation over cosmic rays using PSF, and setting of \texttt{CR/INTERP} bit(s) in the mask plane.
 
 \item Generate snap difference: simple pixel-wise differencing of snaps to identify cosmic rays and fast moving transients for removal is baselined, though a more complex process could be involved (see \secsymbol\xxx\footnote{Zeljko, on your full read-through could you find where this is and insert the link please?} for discussion).
 
@@ -165,7 +165,7 @@ Satellite trails, out of focus airplanes, and meteors all cause long linear feat
 This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.  
 
 An algorithm that takes care of both of these issues is presented in \cite{borncamp_lim16}.  We will use this
-as our baseline.  First the image is rescaled to maximize the contrast of faint linear features.  Next an edge detection algorithm is run on the image.  The reference implementation uses a Canny algorithm \citep{canny86}.  This algorithm produces a set of edges that can then be mined for linear features.  They use a probababalistic Hough Transforms \citep{galambos99} to cut down on computational costs.  The probabalistic version limits the number of pixels that vote.  This results in a list of line segments.  The segments are binned in angle and any sement that is outside some tolorance of the mode is culled.  This cleaned set of segments is fed to the masking algorithm.
+as our baseline.  First the image is rescaled to maximize the contrast of faint linear features.  Next an edge detection algorithm is run on the image.  The reference implementation uses a Canny algorithm \citep{canny86}.  This algorithm produces a set of edges that can then be mined for linear features.  They use a probababalistic Hough Transforms \citep{galamhos99} to cut down on computational costs.  The probabalistic version limits the number of pixels that vote.  This results in a list of line segments.  The segments are binned in angle and any sement that is outside some tolorance of the mode is culled.  This cleaned set of segments is fed to the masking algorithm.
 
 The masking algorithm traverses each line segment found in the previous step by selecting a subregion around the segment and flattening the subregion.  A weighted mean of the subregion is computed and any pixels above some threshold are considered part of the trail and masked.  The subregion is moved along the segment until the end is reached.  This is repeated for every segment.
 
@@ -1243,7 +1243,7 @@ matched, than for a model $K$, where the sources do not match.
 \begin{equation}
 B(H,K|D) = \frac{p(D|H)}{p(D|K)}
 \end{equation}
-see Budavari and Szalay \cite{budavariSzalay2009}.
+see Budavari and Szalay \cite{budavariSzalay2008}.
 
 Assuming a normal distribution for positional uncertainties the Bayes
 Factor is given by, 
