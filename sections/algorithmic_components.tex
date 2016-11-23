@@ -602,7 +602,8 @@ A variant of \hyperref[sec:acSingleVisitBackgroundEstimation]{Single-Visit Backg
 
 \subsection{Build Background Reference}
 \label{sec:acBuildBackgroundReference}
-AUTHOR: Simon
+% AUTHOR: Simon
+
 \subsubsection{Patch Level}
 Background-matching each \texttt{CoaddTempExp} to a reference exposure performs comparably to fitting
 the offsets to the N(N-1)/2 difference images, however the co-add quality will depend on the quality of the
@@ -666,7 +667,7 @@ We can get arbitrarily complex, but I don't thinkn we need a more complex system
 
 \subsubsection{Wavefront Sensor PSF Estimation}
 \label{sec:acWavefrontSensorPSF}
-AUTHOR: Jim
+%AUTHOR: Jim
 \begin{itemize}
 \item Build an approximate PSF model using only the very brightest stars in the wavefront sensors.  Because WF sensors are out-of-focus, these stars may be saturated on science CCDs.
 \item Model can have very few degrees of freedom (very simple optical model + elliptical Moffat/Double-Gaussian?)
@@ -677,7 +678,7 @@ AUTHOR: Jim
 
 \subsubsection{Full Visit PSF Estimation}
 \label{sec:acFullVisitPSF}
-AUTHOR: Jim
+%AUTHOR: Jim
 \begin{itemize}
 \item Decompose PSF into optical + atmosphere (and maybe sensor).
 \item Constrain model with stars, telemetry, and wavefront data.
@@ -688,7 +689,7 @@ AUTHOR: Jim
 
 \subsection{Aperture Correction}
 \label{sec:acApCorr}
-AUTHOR: Jim
+%AUTHOR: Jim
 \begin{itemize}
 \item Measure curves of growth from bright stars (visit-level, at least in DRP)
 \item Correct various flux measurements to infinite (CCD-level).  Stellar measurements are easy, galaxies are hard (impossible to do formally correctly?).
@@ -832,7 +833,7 @@ In PSF-matched coaddition, input images are convolved by a kernel that matches t
 
 \subsection{Image Coaddition}
 \label{sec:acCoaddition}
-AUTHOR: Jim
+%AUTHOR: Jim
 \begin{itemize}
 \item Must be able to do generalized outlier rejection, using histograms of detection masks produced on difference images.
 \item Needs to propagate full uncertainty somehow.
@@ -959,7 +960,8 @@ image.  The convolution can be written as a transfer matrix, $T$,
 where the elements of the matrix correspond to the fraction of pixel $x'$ that maps to pixel $x$ in the observed image. Under this mapping, we can write the linear equations as $TI=O$ and by inverting the matrix solve for $I$. 
 
 While,  $T$, is clearly sparse the number of terms that must be solved for given the number of wavelengths $\lambda$ that $I$ is decomposed into, means that we require a heavily regularized regression. The initial implementation for the DCR corrected template will invert the linear equations assuming smoothness between adjacent pixels and as a function of wavelength, by adopting first and second
-order finite difference matrices (ref nate).  A prototype implementation has been demonstrated for the 1D case.  
+order finite difference matrices. % (ref nate).  
+A prototype implementation has been demonstrated for the 1D case.  
 
 A second approach will be to forward model the problem by iteratively updating
 $I$ based on a set of observations $O$.
@@ -993,7 +995,7 @@ Issues arising from complications often seen in real-world data such as spatiall
 
 \subsubsection{Coadd Decorrelation}
 \label{sec:acCoaddDecorrelation}
-AUTHOR: Jim
+%AUTHOR: Jim
 \begin{itemize}
 \item Fourier-space/iterative deconvolution of likelihood coadds, as in DMTN-15.
 \item Need to test with small-scale research before committing to this approach.
@@ -1001,7 +1003,7 @@ AUTHOR: Jim
 
 \subsection{Star/Galaxy Classification}
 \label{sec:acClassification}
-AUTHOR: Jim
+%AUTHOR: Jim
 \subsubsection{Single Frame S/G}
 \label{sec:acSingleFrameClassification}
 \begin{itemize}
@@ -1108,7 +1110,7 @@ Percentiles. Taking, for example, $F_{5,95}$ to be the difference between the $9
 \item{All of $F_{40,60} / F_{5,95}$, $F_{32.5,67.5} / F_{5,95}$, $F_{25,75} / F_{5,95}$, $F_{17.5,82.5} / F_{5,95}$, $F_{10,90} / F_{5,95}$}
 \item{The largest absolute departure from the median flux, divided by the
 median.}
-\item{The radio of $F_{5,95}$ to the median.}
+\item{The ratio of $F_{5,95}$ to the median.}
 \end{itemize}
 
 QSO similarity metrics, as defined by Butler \& Bloom \cite{Butler11}:
@@ -1120,7 +1122,7 @@ QSO similarity metrics, as defined by Butler \& Bloom \cite{Butler11}:
 
 \subsection{Proper Motion and Parallax from DIASources}
 \label{sec:acStellarMotionFitting}
-Every time we observe another apparition of a DIAObject, we have an opportunity to update/improve the proper motion and pararllax models.  The DIASources are associated with the current best model from the DIAObject.  The proper motion and parallax are then refit using the new observation.
+Every time we observe another apparition of a DIAObject, we have an opportunity to update/improve the proper motion and parallax models.  The DIASources are associated with the current best model from the DIAObject.  The proper motion and parallax are then refit using the new observation.
 
 \begin{note}[Do we actually want to do this]
 I had a conversation about this with Colin.  In reqlity we can't do as good a job with proper motion and parallax in nightly processing as we can in DRP.  It's true that we would have no estimate of the proper motion or parallax until the first release if we do not calculate it in nightly, but I'd argue that before the first release we don't have the baseline to calculate an accurate anyway.  Further, the measurement in DRP can be much better since we can do it as part of joint astrometric fitting.  If we don't measure pm and parallax in nightly, we could still use the DRP measurement in the associated DRP object for association.
@@ -1167,36 +1169,36 @@ Cross-matching is undertaken using the Optimistic Pattern Matching (B) algorithm
 \item An optical distortion model is subtracted from the positions of
   the detected sources on the sensor to define a gnomonic plane projection.
 \item Detected sources are ordered in descending brightness and the
-  brightest $n$ stars (default = 50) are selected, $I$
+  brightest $n$ stars (default = 50) are selected, $I$.
 \item Given the extent of the sensor (defined from the initial WCS)
-  the brightest $n$ sources are extracted from the reference catalog, $R$
+  the brightest $n$ sources are extracted from the reference catalog, $R$.
 \item The pairwise distances and position angles between the reference
-  catalog sources, $R$, are measured (generating $n(n-1)/2$ pairs)
+  catalog sources, $R$, are measured (generating $n(n-1)/2$ pairs).
 \item For the $m$ brightest sources in $I$ the length of the edges and
   the position angles of the edges of the graph are calculated (with
   the brightest source the center of the graph). Angles are relative
   to the sensor orientation and distances are in angular coordinates.
 \item A binary search identifies all pairs in $R$ with a length
   matching the length of the edge containing the brightest two sources
-  (within a tolerance that has a default pf 3 arcsec).  The difference
+  (within a tolerance that has a default of 3 arcsec).  The difference
   in position angle between the reference and source edges is assumed
   to be due to the rotation of the sensor relative to the reference
   catalog and this position angle difference is accounted for in all
-  remaining matches
+  remaining matches.
 \item The remaining $m-2$ edges are compared to the pairs in $R$ and a
   match is assumed if the edge length and postion angles are within
-  the tolerances (defaults 3 arcsec and 1 degree respectively)
+  the tolerances (defaults 3 arcsec and 1 degree respectively).
 \item If $m-1$ matches are not found the search repeats; initially for
   the remaining matches to the length of the edge corresponding to the
   brightest two sources and then for a new graph that excludes the
-  brightest object from$I$ and finds the next brightest $m$ sources
+  brightest object from $I$ and finds the next brightest $m$ sources.
 \end{itemize} 
 
-Once $m-1$ edges match an initial verification step is performed where a gnomonic projection of the reference catalog is fit to the matched stars. Given a consistent fit to the gnomonic projection all sources and reference objects are matched in sensor coordinates (sorted by brightness) with the brightest source in $I$ selected when two sources are within the match tolerance (default 3 arcsec)
+Once $m-1$ edges match, an initial verification step is performed where a gnomonic projection of the reference catalog is fit to the matched stars. Given a consistent fit to the gnomonic projection all sources and reference objects are matched in sensor coordinates (sorted by brightness) with the brightest source in $I$ selected when two sources are within the match tolerance (default 3 arcsec). 
 
 For the case of no WCS for the sensor or a significant error in the
-WCS ($> 3$ arcsec) a blind matching will be undertaken using the
-algorithms in astrometry.net (ref)
+WCS ($> 3$ arcsec), a blind matching will be undertaken using the
+algorithms in astrometry.net. 
 
 \subsubsection{Single Visit to Reference Catalog, Semi-Blind}
 \label{sec:acSingleVisitReferenceMatching}
@@ -1248,7 +1250,7 @@ see Budavari and Szalay \cite{budavariSzalay2008}.
 Assuming a normal distribution for positional uncertainties the Bayes
 Factor is given by, 
 \begin{equation} 
-B(H,K|D) = \frac{sinh w}{w} \prod_{i=1}^n \frac{w_i}{sinh w_i}
+B(H,K|D) = \frac{sinh (w)}{w} \prod_{i=1}^n \frac{w_i}{sinh (w_i)}
 \end{equation} 
 with 
 \begin{equation}
@@ -1263,23 +1265,24 @@ w = \sqrt(w_1^2 + w_2^2 +2 w_1 w_2 \cos(\phi)
 \end{equation}
 and
 \begin{equation}
-B=\frac{2}{\sigma_1^2 + \sigma_2^2} exp(-\frac{\phi^2}{2(\sigma_1^2 + \sigma_2^2)})
+B=\frac{2}{\sigma_1^2 + \sigma_2^2} \, {\rm exp}(-\frac{\phi^2}{2(\sigma_1^2 + \sigma_2^2)})
 \end{equation}
 with $\phi$ the angle between the positions.
 
 For all pairs of sources within a given tolerance the Bayes Factor
 will be calculated and the source with the largest Bayes Factor
 assigned to the DIAObject. For sources above the Bayes Factor
-threshold that were not assigned the Bayes Factor and DIAObject ID
+threshold that were not assigned, the Bayes Factor and DIAObject ID
 will be persisted in the DIASource. Thresholds for the Bayes Factor
 will be derived from simulations.
 
 An extension to Bayes Factor association that accounts for unknown
 proper motions is also possible \citep{???}
 
+
 \subsubsection{Object Generation}
 \label{sec:acObjectGeneration}
-AUTHOR: Jim
+%AUTHOR: Jim
 \begin{itemize}
 \item Match coadd detections from different bands/SEDs/epoch-ranges, merging Footprints and associating peaks.
 \item Also merge in DIASources or (if already self-associated) DIAObjects.
@@ -1287,7 +1290,7 @@ AUTHOR: Jim
 
 \subsubsection{Blended Overlap Resolution}
 \label{sec:acBlendedOverlapResolution}
-AUTHOR: Jim
+%AUTHOR: Jim
 \begin{itemize}
 \item Given two or more overlapping blend families (with associated measurements), merge them by selecting the ``best'' measurement for each child object.
 \end{itemize}
@@ -1295,7 +1298,7 @@ AUTHOR: Jim
 \subsection{Raw Measurement Calibration}
 \label{sec:acRawMeasurementCalibration}
 
-AUTHOR: Jim
+%AUTHOR: Jim
 \begin{itemize}
 \item Apply astrometric and photometric calibrations to measurements in raw units, transforming them to calibrated quantities.
 \item May be applied within the database after ingest in some contexts, but needs to be available outside the database as well.
@@ -1312,31 +1315,32 @@ There are tools that allow for orbit prediction.  As a baseline, we suggest usin
 \item {\tt Prediction}: Produce a set of topocentric positions for a given set of objects at a particular time
 \end{itemize}
 
-In order to make spatial lookup of the orbits of interest fast, we will checkpoint the location of every solar system object at the beginning, middle and end of each upcoming night.  The checkpointing will involve saving topocentric positions for all solar system objects and saving the propogated orbital parameters at the end of the night.  We cannot precompute this for the duration of the survey because we will find new objects and we will update orbits of known objects.  This computation will be done daily as part of the prep-work for nightly observing.  This is not a large computational challenge and is pleasingly parallel.
+In order to make spatial lookup of the orbits of interest fast, we will checkpoint the location of every Solar System object at the beginning, middle and end of each upcoming night.  The checkpointing will involve saving topocentric positions for all Solar System objects and saving the propagated orbital parameters at the end of the night.  We cannot precompute this for the duration of the survey because we will find new objects and we will update orbits of known objects.  This computation will be done daily as part of the preparatory work for nightly observing.  This is not a large computational challenge and is pleasingly parallel.
 
-During nightly processing ephemeris prediction will be carried out on the objects that may intersect the visit in question.  For spatial filtering, all objects will be assumed to move linearly over half the night.  The on-sky visit aperture with an appropriate buffer to account for the maximum acceleration of a solar system object over \~4 hours will determine which objects potentially fall in the exposure.  For those few thousand objects, precise ephimerides will be calculated for the purpose of association.
+During nightly processing, ephemeris prediction will be carried out on the objects that may intersect the visit in question.  For spatial filtering, all objects will be assumed to move linearly over half the night.  The on-sky visit aperture with an appropriate buffer to account for the maximum acceleration of a Solar System object over about 4 hours will determine which objects potentially fall in the exposure.  For those few thousand objects, precise ephemerides will be calculated for the purpose of association.
 
 \subsection{Make Tracklets}
 \label{sec:acMakeTracklets}
 Tracklets are the building blocks of orbits.  The process of linking observations is to pair up all observations that are within some distance of each other given a maximum on sky velocity.  For any source, tracklets can be found by looking in circular apertures in subsequent visits with the radius of the circular aperture growing with time by $v_{max}dt$ for $v_{max}$ in appropriate units.  In practice we will follow \cite{kubica05} and build KD-trees on detections from each visit.  KD-trees allow fast range searches.  Linking up tracklets simply involves a series of range searches on available visits.
 
-The number of tracklets goes up as $O(n^2)$ where $n$ is the number of images covering a region in a given time span.  However, many of the tracklets are degenerate (i.e.\ for an object moving slowly across the sky, it's possible that the beginning, ending and every other image inbetween could be within the velocity cut). These degenerate tracks are ``collapsed'' by computing a velocity vector for each tracklet.  The tracklets are then binned in speed, perpendicular distance from a reference location, and direction.  Similar to a Hough transform, degenerate tracklets will tend to accupy similar bins.  Bins with multiple tracklets will be used to reduce the tracklets to the longest linear tracklet consistent with the tracklets.
+The number of tracklets goes up as $O(n^2)$ where $n$ is the number of images covering a region in a given time span.  However, many of the tracklets are degenerate (i.e.\ for an object moving slowly across the sky, it is possible that the beginning, ending and every other image in between could be within the velocity cut). These degenerate tracks are ``collapsed'' by computing a velocity vector for each tracklet.  The tracklets are then binned in speed, perpendicular distance from a reference location, and direction.  Similar to a Hough transform, degenerate tracklets will tend to accupy similar bins.  Bins with multiple tracklets will be used to reduce the tracklets to the longest linear tracklet consistent with the tracklets.
 
-When tracklets are collapsed, we gain more information about the collasped tracklet since we have multiple observations of it.  This allows some tracklets to be dismissed ds spurious linkages.  Any observation that deviates from the linear fit to the collapsed tracklet by a threshold amount will be discarded as spurious.
+When tracklets are collapsed, we gain more information about the collapsed tracklet since we have multiple observations of it.  This allows some tracklets to be dismissed as spurious linkages.  Any observation that deviates from the linear fit to the collapsed tracklet by a threshold amount will be discarded as spurious.
 
 \subsection{Attribution and Precovery}
 \label{sec:acAttributionAndPrecovery}
-Precovery is the process of adding 'orphan' DIASources, those that do not belong to a SSObject or DIAObject, to a SSObject.  Any time an SSObjects orbital parameters change significantly, it's possible that DIASources not associated previously could now match.  The process is to calculate ephemerides backward in time from the earliest observation as far as is possible given the uncertainty in the orbit.  These ephemerides are compared to the orphan DIASources.  If a match is found, a new orbit is fit and if the new orbit is a better fit than the old one, the SSObject is updated with the new fit.
+Precovery is the process of adding 'orphan' DIASources, those that do not belong to a SSObject or DIAObject, to a SSObject.  Any time an SSObject's orbital parameters change significantly, it's possible that DIASources not associated previously could now match.  The process is to calculate ephemerides backward in time from the earliest observation as far as is possible given the uncertainty in the orbit.  These ephemerides are compared to the orphan DIASources.  If a match is found, a new orbit is fit and if the new orbit is a better fit than the old one, the SSObject is updated with the new fit.
 
-Attribution is the process of adding tracklets to known SSObjects.  For a given time window, topocentric ephemerides are calculated for all SSobjects that could potentially intersect any of the images in that window at the observation times of each of the images.  These ephimerides are then compared to the tracklets in the time window.  If any of them match in locatio and velocity, a new orbit is calculated.  If the new orbit is better than the old on, the tracklet is tagged as being part of that SSObject and the SSOBject is updated with the new orbital parameters.
+Attribution is the process of adding tracklets to known SSObjects.  For a given time window, topocentric ephemerides are calculated for all SSobjects that could potentially intersect any of the images in that window at the observation times of each of the images.  These ephemerides are then compared to the tracklets in the time window.  If any of them match in location and velocity, a new orbit is calculated.  If the new orbit is better than the old one, the tracklet is tagged as being part of that SSObject and the SSOBject is updated with the new orbital parameters.
 
 Since both attribution and precovery involve updating the SSObject, this process is recursive.  The cadence of the recursion will be daily.  Since we run attribution and precovery at least once during every run of the moving object pipeline, there is little need to recurse on shorter timescales.
+
 
 \subsection{Orbit Fitting}
 \label{sec:acOrbitFitting}
 Given a database of tracklets not associated with any SSobject, we will look for tracks that match physical orbits.
 
-Finding tracks is a tricky problem.  We will follow the approach presented in \cite{kubica05}.  Where all except the most quickly moving bodies will have linear motion over a night, this is not true over the LSST discovery window of 30 days.  In order to have high quality candidate tracks, we require three tracklets per track.  Scince there are limits to how fast solar system objects can move and also how fast the can accellerate, we can build a KD-tree on the tracklest in a given observationin velocity and position.  Given a node, this implies an acceleration for nodes in other trees.  Since we require at least one support tracklet between any two endpoint tracklets, we can discard any nodes that do not have at least on matching node between them.  With this in mind, we search for pairs of tracklets that match the velocity and acceleration cuts and are on different nights.  If there is also at least one node between them in time (and on a different night than either of the endpoints) that also pass the velocity and acceleration criteria, all nodes are searched for tracks.
+Finding tracks is a tricky problem.  We will follow the approach presented in \cite{kubica05}.  All except the fastest moving bodies will have linear motion over a night; however, this is not true over the LSST discovery window of 30 days.  In order to have high quality candidate tracks, we require three tracklets per track.  Since there are limits to how fast Solar System objects can move and also how fast the can accelerate, we can build a KD-tree on the tracklets in a given observation in velocity and position.  Given a node, this implies an acceleration for nodes in other trees.  Since we require at least one support tracklet between any two endpoint tracklets, we can discard any nodes that do not have at least on matching node between them.  With this in mind, we search for pairs of tracklets that match the velocity and acceleration cuts and are on different nights.  If there is also at least one node between them in time (and on a different night than either of the endpoints) that also pass the velocity and acceleration criteria, all nodes are searched for tracks.
 
 In order to validate candidate tracks, a quadratic fit to the orbit is attempted with higher order topocentric effects due to reflex motion of the Earth included.  These effects depend on the distance of the object from the Earth, so the range is fit for as part of the fitting process.  For tracks with sufficiently good $\chi^2$, the tracks are passed on to an orbit fitter.  As above, there are tools to fit for orbital parameters given a set of observations.  We will use these as our final orbit determination.
 
