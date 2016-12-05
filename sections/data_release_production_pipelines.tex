@@ -558,7 +558,7 @@ These coadds must propagate uncertainty, PSF models (including aperture correcti
 \subsection{Coadd Processing}
 \label{sec:drp_coadd_processing}
 
-In comparison to the previous two pipeline groups, coadd processing is relatively simple.  All pipelines operate on individual patches, and there is no large-scale iteration between pipelines.  These pipelines may individually require complex parallelization at a lower level, as they will frequently have memory usage above what can be expected to fit on a single core.
+In comparison to the previous two pipeline groups, the large-scale processing flow in coadd processing is relatively simple.  All pipelines operate on individual patches, and there is no large-scale iteration between pipelines.  These pipelines may individually require complex parallelization at a lower level, as they will frequently have memory usage above what can be expected to fit on a single core.
 
 Coadd processing begins with the \hyperref[sec:drpDeepDetect]{DeepDetect} pipeline, which simply finds above-threshold regions and peaks in multiple detection coadds.  These are merged in catalog-space in \hyperref[sec:drpDeepAssociate]{DeepAssociate}, then deblended at the pixel level in \hyperref[sec:drpDeepDeblend]{DeepDeblend}.  The deblended pixels are measured in \hyperref[sec:drpMeasureCoadds]{MeasureCoadds}, which may also fit multiple objects simultaneously using the original undeblended pixels.
 
