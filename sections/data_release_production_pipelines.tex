@@ -784,11 +784,7 @@ Variability summary statistics are delegated to the \hyperref[sec:acVariabilityC
 
 Type classification is delegated to the \hyperref[sec:acObjectClassification]{Object Classification} algorithmic component.  This may utilize any combination of morphological, color, and variability/motion information, and may use spatial information such as galactic latitude as a Bayesian prior.  Classifications based on only morphology will also be available.
 
-Both variability and type classification may require ``training'' on the full Object and ForcedSource tables and/or similar tables derived from special program data.  This represents a potential full-survey sequence point for the production.
-
-The possible need for full-dataset processing suggests that it may be more efficient to perform classification in the final public database, in order to utilize it for large-scale aggregation calculations.  This may not be feasible if final public database tables are write-once, as classification may require both read and write operations on Object.  Putting the classification sequence point before ingest would then require keeping the Object data products for all tracts on disk before ingesting any of them.
-
-Further specification of special programs (and DM plans for processing them) and algorithmic research are needed to determine whether classification actually will require a full-survey sequence point in the production.
+Both variability and type classification may require ``training'' a representative subset of the Object and ForcedSource tables and/or similar tables derived from special program data.  Rather than imposing a full-survey sequence point here, we'll probably use previous data releases or results from a small-area validation release.
 
 \subsubsection{GatherContributed}
 \label{sec:drpGatherContributed}
