@@ -418,7 +418,10 @@ The baseline ordering of these steps is thus \{1,2,3,4,5\}, but \{1,2,4,3,4,5\} 
 This pipeline group is responsible for producing the following final data products:
 \begin{description}
 \item[CalExp]  See above.
-\item[DIAExp] A CCD-level \hyperref[sec:spImagesExposure]{Exposure} that is the difference between the CalExp and a template coadd, in the coordinate system of the CalExp.  It may have the same PSF as the CalExp (if traditional PSF matching is used) or its own PSF model (if the difference image is decorrelated after matching).
+\item[DIAExp] A CCD-level \hyperref[sec:spImagesExposure]{Exposure} that is the difference between the CalExp and a template coadd, in the coordinate system of the CalExp.  It may have the same PSF as the CalExp (if traditional PSF matching is used) or its own PSF model (if the difference image is decorrelated\footnote{\textit{Decorrelated images} refer here to a technique for convolving images by the transpose of the PSF, summing or differencing them, and then deconvolving the transpose of the effective PSF of the resulting image.  See DMTN-015 for more information.
+\begin{note}
+Add link to technote.
+\end{note}} after matching).
 \item[DIASource] A \hyperref[sec:spTablesSource]{SourceCatalog} containing sources detected and measured on the DIAExp images.
 \item[ConstantPSFCoadd] A coadd data product (\hyperref[sec:spImagesExposure]{Exposure} or subclass thereof) with a constant, predefined PSF.
 \item[DeepCoadd] A coadd data product built to emphasize depth at the possible expense of seeing.
