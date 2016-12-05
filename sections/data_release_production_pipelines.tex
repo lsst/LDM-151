@@ -666,18 +666,21 @@ Patch overlap resolution can be run independently on every distinct overlap regi
 
 Tract overlap resolution operates under the same principles as patch overlap resolution, but the fact that different tracts have different coordinate systems and subtly different pixel values makes the problem significantly more complex.
 
-While we do not attempt to define inner and outer regions for tracts, we can still define discrete overlap regions in which the set of contributing tracts is constant (though these regions must now be defined using spherical geometry).  Because tracts may differ on the extent and membership of blend families, it will be useful here to define the concept of a ``blend chain'': within an overlap region a family's blend chain is the recursive union of all families it overlaps with in any tract that contributes to that overlap region see Figure~TODO.  A blend chain is thus the maximal cross-tract definition of the extent of a blend family, and hence we can use it to categorize blends in tract overlaps:
-\begin{itemize}
-\item If a blend chain is strictly contained by only one tract, all families within that chain are assigned to that tract.
-\item If a blend chain is strictly contained by more than one tract, all families within that chain are assigned to the tract whose center is closest to the centroid of the blend chain.
+While we do not attempt to define inner and outer regions for tracts, we can still define discrete overlap regions in which the set of contributing tracts is constant (though these regions must now be defined using spherical geometry).  Because tracts may differ on the extent and membership of blend families, it will be useful here to define the concept of a ``blend chain'': within an overlap region a family's blend chain is the recursive union of all families it overlaps with in any tract that contributes to that overlap region see Figure~\ref{fig:blend_chains}.  A blend chain is thus the maximal cross-tract definition of the extent of a blend family, and hence we can use it to categorize blends in tract overlaps:
+\begin{enumerate}
+\item If a blend chain is strictly contained by only one tract, all families within that chain are assigned to that tract.  Note that this can occur even if the blend chain overlaps multiple tracts, as in Figure~\ref{fig:blend_chains}; region 1 there is wholly contained only by the blue tract even though it overlaps the green tract.
+\item If a blend chain is strictly contained by more than one tract, all families within that chain are assigned to the tract whose center is closest to the centroid of the blend chain.  This is illustrated by region 2 in Figure~\ref{fig:blend_chains}, which would be assigned to the red tract.
 \item If a blend chain is not strictly contained by any tract, all families in the chain must be merged at an Object-by-Object level.  This is done by the \hyperref[sec:acBlendedOverlapResolution]{Blended Overlap Resolution} algorithmic component, after first transforming all measurements to a new coordinate system defined to minimize distortion due to projection (such as a tangent projection at the blend chain's centroid).
-\end{itemize}
+\end{enumerate}
 
 ResolveTractOverlaps is the first pipeline in Data Release Production to require access to processed results from more than one tract.
 
-\begin{note}[TODO]
-  Add figure explaining blend chains.
-\end{note}
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth]{figures/blend_chains.pdf}
+\caption{Tract overlap scenarios, corresponding to the enumerated list in the text.  Each region outlined in black is a blend chain; transparent filled regions within these indicate the contributes from individual tracts.  The region labeled "0" is strictly contained by the green tract and does not touch any others, so it does not participate in tract overlap resolution at all.
+\label{fig:blend_chains}}
+\end{figure}
 
 \subsection{Multi-Epoch Object Characterization}
 \label{sec:drp_multi_epoch_object_characterization}
