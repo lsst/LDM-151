@@ -636,7 +636,7 @@ We currently assume that overlap resolution actually drops Object rows when it m
 \subsubsection{ResolvePatchOverlaps}
 \label{sec:drpResolvePatchOverlaps}
 
-In patch overlap resolution, all contributing patches to an area (there can be between one and four) share the same pixel grid, and we furthermore expect that they will have the same coadd pixel values.  This should ensure that any above-threshold pixel in one patch is also above threshold in all others, which in turn should guarantee that patches agree on the extent of each blend family (as defined by the parent \hyperref[sec:spFootprints]{Footprint}).
+In patch overlap resolution, all contributing patches to an area (there can be between one and four; see Figure~\ref{fig:patch_overlaps}) share the same pixel grid, and we furthermore expect that they will have the same coadd pixel values.  This should ensure that any above-threshold pixel in one patch is also above threshold in all others, which in turn should guarantee that patches agree on the extent of each blend family (as defined by the parent \hyperref[sec:spFootprints]{Footprint}).
 
 A common pixel grid also allows us to define the overlap areas as exact rectangular regions; we consider each patch to have an inner region (which directly abuts the inner regions of neighboring patches) and an outer region (which extends into the inner regions of neighboring patches).  If we consider the case of two overlapping patches, blend families in those patches can fall into five different categories:
 \begin{itemize}
@@ -650,9 +650,12 @@ A common pixel grid also allows us to define the overlap areas as exact rectangu
 \end{itemize}
 Overlap regions with more than two patches contributing have more possibilities, but are qualitatively no different.
 
-\begin{note}[TODO]
-  Add figure explaining inner and outer patch regions.
-\end{note}
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth]{figures/patch_overlaps.pdf}
+\caption{Patch boundaries and overlaps regions for a single tract with 3$\times$3 patches.  Different colors represent different patches; dashed lines show outer patch regions and dotted lines show inner patch regions.  Light gray regions are processed as part of only one patch, medium regions as part of two, and dark regions as part of four.
+\label{fig:patch_overlaps}}
+\end{figure}
 
 If pixel values in patch overlap regions cannot be guaranteed to be identical, patch overlap resolution becomes significantly harder (but no harder than tract overlap resolution), because adjacent patches may disagree on the above categories to which a family belongs.
 
