@@ -116,7 +116,7 @@ A plausible (but by no means certain) high-level algorithm for this pipeline is 
 \newcommand{\hr}[1]{\hyperref[sec:drpBootstrapImChar_#1]{#1}}
 
 \begin{lstlisting}
-def BootstrapImChar(%\hr{raw}%, %\hr{reference}%):
+def BootstrapImChar(%\hr{raw}%, %\hr{reference}%, %\hr{calibrations}%):
     # Some data products components are visit-wide and some are per-CCD;
     # these imaginary data types lets us deal with both.
     # VisitExposure also has components; most are self-explanatory, and
@@ -172,6 +172,11 @@ Raw amplifier images from science and wavefront CCDs, spread across one or more 
 A full-sky catalog of reference stars derived from both external (e.g. Gaia) and LSST data.
 
 The \hyperref[sec:drpStandardJointCal]{StandardJointCal} pipeline will later define a deeper reference catalog derived from this one and the new data being processed, but the origin and depth of the initial reference catalog is largely TBD.  It will almost certainly include Gaia stars, but it may also include data from other telescopes, LSST special programs, LSST commissioning observations, and/or the last LSST data release.  Decisions will require some combination of negotation with the LSST commissioning team, specification of the special programs, experiments on our ability to accurately type faint stars using the Gaia catalog, and policy decisions from DM leadership on the degree to which data releases are required to be independent.  Depending on the choices selected, it could also require a major separate processing effort using modified versions of the data release production pipelines.
+
+\paragraph{Input Data Product: Calibrations}
+\label{sec:drpBootstrapImChar_calibrations}
+
+Calibration frames and metadata from the \hyperref[sec:cpp]{Calibration Products Pipeline}.  This may include any of the data products listed in Section~\ref{sec:CPP:output}, though some will probably not be used until later stages of the production.
 
 \paragraph{Output Data Product: Source}
 \label{sec:drpBootstrapImChar_sources}
