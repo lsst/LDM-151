@@ -481,7 +481,7 @@ The steps involved in background matching are described below.  All of these ope
 
 We are assuming in the baseline plan that we can use a matched-to PSF in \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} large enough to match all visit images to it without deconvolution.  If a large matched-to PSF adversely affects subsequent processing in \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, we may need to develop an iterative approach in which we apply \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} only to better-seeing visits first, using a smaller target PSF, run \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject} on these, and then re-match everything to a larger target PSF and repeat with a larger set of input visits.  However, this problem would suggest that the \hyperref[sec:drpDiffIm]{DiffIm} and \hyperref[sec:drpUpdateMasks]{UpdateMasks} pipelines would be even better at finding artifacts, so a more likely mitigation strategy would be to simply defer final Mask generation to after at least one iteration of those pipelines, as described in the discussion of Figure~\ref{fig:drp_coaddition_and_diffim} at the beginning of Section~\ref{sec:drp_coaddition_and_diffim}.
 
-The outputs of BackgroundMarchAndReject are updated Background and Mask components for the CalExp product.  Because it is not built with the final photometric and astrometric calibration, the PSF-matched coadd built here is discarded.
+The outputs of BackgroundMatchAndReject are updated Background and Mask components for the CalExp product.  Because it is not built with the final photometric and astrometric calibration, the PSF-matched coadd built here is discarded.
 
 \subsubsection{WarpTemplates}
 \label{sec:drpWarpTemplates}
