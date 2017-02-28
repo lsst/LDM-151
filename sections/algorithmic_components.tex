@@ -653,21 +653,17 @@ visits together using all overlaps while background matching.
 \subsubsection{Single CCD PSF Estimation}
 \label{sec:acSingleCCDPSF}
 
-Single CCD PSF estimation needs to be run in both Alert Production and in in Data Release Processing.  In Alert Production it will be the final PSF model for both direct and difference image measurement.  In Data Release Processing, it will be used as an initial bootstrapping step to start off image characterization.  We do not intend to include chromatic effects in the PSF at the single CCD estimation phase.
+Single CCD PSF estimation needs to be run in both Alert Production and in Data Release Processing.  In Alert Production it will be the final PSF model for both direct and difference image measurement.  In Data Release Processing, it will be used as an initial bootstrapping step to start off image characterization.  We do not expect to require inclusion of chromatic effects in the PSF at the single CCD estimation phase.
 
-The first step is to select a set of suitable stars to use as PSF exemplars.  This can be done by finding clusters in second moment space.  In production, we expect that an external catalog with PSF candidates that have been show to be non-varying and isolated will produce better results.
+The first step is to select a set of suitable stars to use as PSF exemplars.  In production, we expect that an external catalog with PSF candidates that have been shown to be non-varying and isolated will produce the most repeatable results.
 
-Once a set of candidate stars is selected each star is fit by a set of appropriate basis functions: e.g. shapelets.  The PSF is approximated by
+Once a set of candidate stars is selected each star is fit by a set of
+appropriate basis functions (e.g., PCA or pixel bases).  The PSF is approximated by
 \[
 P = \Sigma_n c_n\Psi_n
 \]
-where $\Psi_n$ is the $n^{th}$ basis function, and $c_n$ is the coefficient for that basis function.  We can solve for the coefficients in the least squares sense using a QR decomposition or similar technique.  We then have an estimate of the PSF at several locations on the chip.  For each of the coefficients we can fit 2D Chebyshev polynomials to each coefficient to model the spatial variation in each component (see \ref{sec:acSpatialModels}).  By interpolating the fit coefficients, we can derive an estimate of the PSF at any point in the chip.
-
-The order of the spatial model cannot excede number of PSF exemplars in the frame.  If there is only a single PSF candidate star, we will assume the PSF is constant across the CCD.  In the case of no PSF candidate stars, we will assume a double Gaussian PSF with width set by observation metadata: e.g. FWHM from the guiding system.
-
-\begin{note}[Do we need something more complex?]
-We can get arbitrarily complex, but I don't thinkn we need a more complex system in the baseline until we show this won't work.  Some have considered using Gaussian process regression for this, but I don't know that anyone has formalized that.
-\end{note}
+where $\Psi_n$ is the $n^{th}$ basis function, and $c_n$ is the coefficient for that basis function.  We can solve for the coefficients for each PSF candidate in a least squares sense along with a model for the spatial variation of the PSF
+across the CCD.
 
 \subsubsection{Wavefront Sensor PSF Estimation}
 \label{sec:acWavefrontSensorPSF}
@@ -705,11 +701,12 @@ We can get arbitrarily complex, but I don't thinkn we need a more complex system
 \label{sec:acAstrometricFitting}
 \subsubsection{Single CCD}
 \label{sec:acSingleCCDAstrometricFit}
-Used by AP, probably (RHL worries we might need full-visit)
 
-AP will need to do reasonably good astrometeric calibration on single frames in order to do the relative warping between the template and science images.  We have seen that the kernel matching algorithm can take out bulk astrometric errors up to a significan fraction of a pixel.  However, we would like to avoid making the kernel matching deal with astrometric errors.  Astrometric errors between the science and template coordinate systems should be less than 15mas.  We will use the internal reference catalog used in DRP as the reference catalog.  This will be based on astrometry from an external source and will be extended using high quality measurements on coadds from DRP.
+AP will need good astrometeric calibration on single frames in order to do the relative warping between the template and science images.  We have seen that the kernel matching algorithm can take out bulk astrometric errors up to a significant fraction of a pixel.  However, we expect subtraction performance to improve if astrometric errors are minimized.  Astrometric errors between the science and template coordinate systems should therefore be less than 15\,mas.  We expect to use the internal reference catalog used in DRP as the reference catalog.  This will be based on astrometry from an external source and will be extended using high quality measurements on coadds from DRP.
 
-We can project the per-chip coordinates into a flat (Gnomonic) projection in the focalplane.  This will take out the bulk of the optical distortion.  Next, we will use a matching algorithm like that outlined in \citep{2007PASA...24..189T}.  Once we match, a 2D polynomial solution will be fit to minimize the residual.
+We can project the per-chip coordinates into a flat projection in the focalplane.
+This will take out the bulk of the optical distortion.
+We will then match the science and template sources and fit a distortion model to minimize the residual positional offsets.
 
 \begin{note}[Dependency]
 This introduces a dependency on DRP's internal reference catalog not capture elsewhere.
@@ -719,7 +716,7 @@ This introduces a dependency on DRP's internal reference catalog not capture els
 \label{sec:acSingleVisitAstrometricFit}
 Full visit astrometric fitting will be done as a bootstrapping step toward higher quality calibration in DRP.  All measurements in the visit will be projected to a tangent plane, taking into account all knowledge of the sensor arrangement and optics.  The reference catalog (likely the DRP reference catalog) will be projected to the same tangent plane.
 
-Sources will be matched, again using a \cite{2007PASA...24..189T} like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for the Von Karman turbulence.
+Sources will be matched, again using a \cite{2007PASA...24..189T}-like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for the Von Karman turbulence.
 
 \subsubsection{Joint Multi-Visit}
 \label{sec:acJointAstrometricFit}
@@ -799,33 +796,50 @@ Ideally, the retrieval will be to select the correct bounding box from the corre
 \subsection{PSF Matching}
 \label{sec:acPSFMatching}
 
-The essence of image subtraction is to astrometrically register the science image $S(x,y)$ and template image $T(x,y)$, and then match their point spread functions (PSFs) of so that they may be subtracted pixel by pixel. The PSFs are the time--averaged transfer functions of a point source through the Earth's atmosphere, telescope optics, and into the silicon of the detector before being read out. We assume that the science image can be modeled as a convolution of the template image by a PSF--matching kernel $\kappa(u,v;x,y)$, i.e., $S = \kappa \otimes T$. (Indices $u,v$ indicate that the kernel itself is a 2--dimensional function, which varies as a function of position $x,y$ in the image; during convolution and correlation there is an implicit summation over $u,v$.) Then the difference image, upon which new or variable sources are detected, is given by $D = S - (\kappa \otimes T)$.
+The essence of image subtraction is to astrometrically register the science image $S(x,y)$ and template image $T(x,y)$, and then match their point spread functions (PSFs) of so that they may be subtracted pixel by pixel. The PSFs are the time--averaged transfer functions of a point source through the Earth's atmosphere, telescope optics, and into the silicon of the detector before being read out.
 
 \subsubsection{Image Subtraction}
 \label{sec:acImageSubtraction}
-\begin{itemize}
-\item Match template image to science image, as in Alert Production and DRP Difference Image processing.
-\item Includes identifying sources to use to determine matching kernel, fitting the kernel, and convolving by it.
-\end{itemize}
 
-The current implementation of the PSF matching algorithm is summarized in detail by Becker, et al. (2013) (\url{http://ls.st/x9f}).  We model the PSF--matching kernel by decomposing it into a set of basis functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$ \citep{1998ApJ...503..325A}, where the coefficients are determined via ordinary least-squares estimation:
-%
-\begin{eqnarray}
-C_i & \equiv & (\kappa_i \otimes T); \\ \nonumber
-b_{i}  & = & \sum_{x,y} {{C_i(x,y) S(x,y)}\over{\sigma^2(x,y)}};   \nonumber \\
-M_{ij} & = & \sum_{x,y} {{C_i(x,y) C_j(x,y)}\over{\sigma^2(x,y)}};  \nonumber \\
-a_{i}  & = & M^{-1}_{ij} b_{j}. \nonumber
-\label{eq-soln}
-\end{eqnarray}
-%
-\noindent
-$\sigma^2(x,y)$ is the per--pixel variance stored in the {\tt   variance} plane of each LSST {\tt exposure}. To generate a spatially varying model for the kernel, we further decompose the relative weights of the basis coefficients $a_i$ into spatially-varying low-order polynomials, i.e. $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$. We also allow for a spatially-varying differential background between the two images $b(x,y)$ that may be fit for using a low--order polynomial \citep{1998ApJ...503..325A,2000A&AS..144..363A}. The image difference is then $D(x,y) = S(x,y) - T(x,y) \otimes \kappa(u,v;x,y) - b(x,y)$.  There are many choices of baisis functions, e.g. regularized delta functions.  However, the basic algoirthm remains unchanged.
+The mechanics of image subtraction will depend on the choice of algorithm.  The performance of several variations are being considered \citep{DMTN-021}.  The algorithms differ primarily in their treatment of correlated noise and whether PSFs are measured directly or a matching kernel is used.
 
-The basis functions $\kappa_i(u,v)$ are a degree of freedom in this problem. Following \citep{1998ApJ...503..325A}, we use a set of $\rm nGauss = 3$ Gaussians, each with a different width $\sigma_i$, and each modified by a Laguerre polynomial to a given order (see below). Following more recent studies studies \citep[e.g.][]{2007AN....328...16I}, we parameterize these different Gaussian widths via a single ratio $\beta$, such that $\sigma_{i+1} = \beta \times \sigma_{i}$ with $\beta = 2.0$. (We note that all constants are defined by {\tt Config} variables and may be adjusted on a per-use basis). We set the overall scale for the $\sigma$ by noting that, under the assumption that the PSFs of the images are Gaussian ($\sigma_S$ for the science image and $\sigma_T$ for the template image), the $\sigma_{\kappa}$ of the matching kernel should be simply $\sigma_{\kappa}^2 = \sigma_S^2 - \sigma_T^2$. We use this canonical width for the central Gaussian in the basis sequences (i.e., $\sigma_{i=2} \equiv \sigma_{\kappa}$ when using three Gaussians bases). Each of the three default kernel basis functions are modified by Laguerre polynomials up to order $\rm degGauss = [4, 2,   2]$, respectively. This results in a total number of (non-spatially varying) bases of $\sum_i^{\rm nGauss} ({\rm degGauss}_i+1)\times({\rm   degGauss}_i+2)/2$, or 27 given the aforementioned defaults.
+In the classic method of Alard \& Lupton (A\&L) \citep{1998ApJ...503..325A}, the
+science image is modeled as a convolution of the template image by a
+PSF--matching kernel $\kappa(u,v;x,y)$, i.e., $S = \kappa \otimes
+T$.\footnote{Indices $u,v$ indicate that the kernel itself is a
+2--dimensional function, which varies as a function of position $x,y$ in
+the image; during convolution and correlation there is an implicit
+summation over $u,v$.} Then the difference image, upon which new or
+variable sources are detected, is given by $D = S - (\kappa \otimes T)$.
+We model the PSF--matching kernel by decomposing it into a set of basis
+functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$, where the coefficients
+are determined via ordinary least-squares estimation.  The basis functions
+$\kappa_i(u,v)$ are a degree of freedom in this problem.
+\footnote{The current implementation of the A\&L matching algorithm is
+summarized in detail by Becker et al. (2013) (\url{http://ls.st/x9f}).}
 
-A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image. The kernel candidates are selected using the {\tt   DiaCatalogSourceSelector} to query the appropriate reference catalog for appropriate sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures. The resulting ensemble of filtered kernel models is used to constrain the spatially-varying kernel model $\kappa(u,v;x,y)$ by fitting the spatially-varying basis kernel coefficients $a_i(x,y)$ with a $N^{th}$-order 2-dimensional Chebyshev polynomial. This results in the final full spatial solution $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$, which may be evaluated at each location $(x,y)$ in the image for convolution.
+A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image after brighter-fatter corrections have been applied.  The kernel candidates are selected using the {\tt DiaCatalogSourceSelector} to query the appropriate reference catalog for sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures.
 
-Detection on the difference image occurs through correlation of $D(x,y)$ with the science image's PSF, yielding optimally filtered detection image $D'(x,y) = D(x,y) \circ PSF_S(u,v;x,y)$ where $\circ$ denotes correlation (currently the DM stack uses convolution instead of correlation). The values of the pixels in $D'(x,y)$ provide a maximum likelihood estimate of there being a point source at that position. Detection occurs by simply finding pixels that are more than $N \times \sigma$ above the square root of the per--pixel variance. Alternatively, the science image may be {\em pre-convolved} with a kernel similar to its PSF, in which case the resulting difference image $D(x,y)$ is already filtered for detection. This latter option has the additional advantage that it help us avoid requiring {em deconvolution} of the template image, in cases when the template has a wider PSF than the science image.
+Detection on the difference image occurs through correlation of $D(x,y)$ with the science image's PSF, yielding a detection image $D'(x,y) = D(x,y) \otimes PSF(u,v;x,y)$. The values of the pixels in $D'(x,y)$ provide a maximum likelihood estimate of there being a point source at that position.  Detection occurs by simply finding pixels that are more than $N \times \sigma$ above the square root of the per--pixel variance, allowing for covariances.
+
+Since noise in the template image creates
+covariance among neighboring pixels in the subtraction image and hence
+false detections,
+an alternative approach is to
+identify transients on a
+``score image'' derived from a Fourier Transform of the new and template
+images and their measured PSFs \citep{2016ApJ...830...27Z}.
+(This procedure is equivalent to
+subtracting the new and template images, each convolved with a scaled
+kernel derived from the other's PSF.)
+Identification of PSF stars would
+proceed as described for selecting kernel-matching stars above.  This
+procedure avoids deconvolution artifacts, but requires measurement of the
+PSFs and does not account for variations of the PSF across the image.
+
+In the limit of a noiseless reference image, whitening of the correlated
+noise can be accomplished simply by
+an ``afterburner'' rescaling of the A\&L difference image \citep{DMTN-021}.
 
 \subsubsection{PSF Homogenization for Coaddition}
 \label{sec:acPSFHomogenization}
@@ -887,13 +901,13 @@ with $z_0$ the zenith distance.
 
 
 % \begin{align}
-% 	n_0(\lambda) =&1 + \left(\left[2371.34 +\frac{683939.7}{130 - \sigma(\lambda)} +\frac{4547.3}{38.9 - \sigma(\lambda)^2}\right] D_s
-% 		+ \left(6487.31 + 58.058 \sigma(\lambda)^2 - 0.71150 \sigma(\lambda)^4 +0.08851 \sigma(\lambda)^6\right) D_w \right)\times 10^{-8} \label{eqn:index_refraction}\\*
-% 	& where \nonumber\\*
-% 	\sigma(\lambda) &= 10^4 /\lambda \;\;\;\;\left(\mu m^{-1}\right)\nonumber \\*
-% 	D_s =& \left[1 + (P_s-P_w) \left(57.90\times10^{-8} - \frac{9.3250\times10^{-4}}{T}+\frac{0.25844}{T^2}\right)\right] \frac{(P_s-P_w)}{T} \nonumber \\*
-% 	D_w =& \left[1 + P_w \left(1 + 3.7\times10^{-4} P_w\right)\left(-2.37321\times10^{-3} + \frac{2.23366}{T} - \frac{710.792}{T^2} + \frac{7.75141\times10^4}{T^3}\right)\right] \frac{P_w}{T} \nonumber \\
-% 	P_w =& RH\times 10^{-4} \times e^{(77.3450 + 0.0057 T - 7235.0/T)}/T^{8.2} \nonumber
+%	n_0(\lambda) =&1 + \left(\left[2371.34 +\frac{683939.7}{130 - \sigma(\lambda)} +\frac{4547.3}{38.9 - \sigma(\lambda)^2}\right] D_s
+%		+ \left(6487.31 + 58.058 \sigma(\lambda)^2 - 0.71150 \sigma(\lambda)^4 +0.08851 \sigma(\lambda)^6\right) D_w \right)\times 10^{-8} \label{eqn:index_refraction}\\*
+%	& where \nonumber\\*
+%	\sigma(\lambda) &= 10^4 /\lambda \;\;\;\;\left(\mu m^{-1}\right)\nonumber \\*
+%	D_s =& \left[1 + (P_s-P_w) \left(57.90\times10^{-8} - \frac{9.3250\times10^{-4}}{T}+\frac{0.25844}{T^2}\right)\right] \frac{(P_s-P_w)}{T} \nonumber \\*
+%	D_w =& \left[1 + P_w \left(1 + 3.7\times10^{-4} P_w\right)\left(-2.37321\times10^{-3} + \frac{2.23366}{T} - \frac{710.792}{T^2} + \frac{7.75141\times10^4}{T^3}\right)\right] \frac{P_w}{T} \nonumber \\
+%	P_w =& RH\times 10^{-4} \times e^{(77.3450 + 0.0057 T - 7235.0/T)}/T^{8.2} \nonumber
 % \end{align}
 % where the parameters $D_s$ and $D_w$ are the density factors for dry air and water vapor, respectively, taken from \cite{Owens:67}.
 
@@ -907,29 +921,29 @@ with $z_0$ the zenith distance.
 % the ratio $\beta$ of the scale height of the atmosphere to radius of
 % the observing site from the Earth's core can be approximated by
 % \begin{equation}
-% 	\beta =  4.5908\times 10^{-6} T \label{eqn:beta}
+%	\beta =  4.5908\times 10^{-6} T \label{eqn:beta}
 % \end{equation}
 % where $m$ is the average mass of molecules in the atmosphere, $R_\oplus$ is the radius of the Earth, $k_B$ is the Boltzmann constant, and $g_0$ is the acceleration due to gravity at the Earth's surface.
 
 
 
 % \begin{table}[h!]
-% 	\begin{center}
-% 	\begin{tabular}{c | c | c | c}
-% 		Parameter & valid range & description & units \\
-% 		\hline
-% 		$P_s$& $0$ mbar$ < P_s < 4000$ mbar & Atmospheric pressure & millibar  \\
-% 		$RH$ & $0\% < RH < 100\%$ & Relative humidity & Percent \\
-% 		$\lambda$& $2302$\AA{}$ < \lambda < 20,586 $\AA{} & Wavelength  & Angstroms \\
-% 		$T$& $250K < T < 320K$ & Temperature & Kelvin \\
-% 		$\phi$ & $0^\circ \leq \phi < 360^\circ$ & Latitude of the observing site & Degrees \\
-% 		$h$ & $0\,m\leq h$ & Elevation of the observing site & meters \\
-% 		$z_0$ & $0^\circ\leq z_0 < 75^\circ$ & Zenith angle & Degrees
+%	\begin{center}
+%	\begin{tabular}{c | c | c | c}
+%		Parameter & valid range & description & units \\
+%		\hline
+%		$P_s$& $0$ mbar$ < P_s < 4000$ mbar & Atmospheric pressure & millibar  \\
+%		$RH$ & $0\% < RH < 100\%$ & Relative humidity & Percent \\
+%		$\lambda$& $2302$\AA{}$ < \lambda < 20,586 $\AA{} & Wavelength  & Angstroms \\
+%		$T$& $250K < T < 320K$ & Temperature & Kelvin \\
+%		$\phi$ & $0^\circ \leq \phi < 360^\circ$ & Latitude of the observing site & Degrees \\
+%		$h$ & $0\,m\leq h$ & Elevation of the observing site & meters \\
+%		$z_0$ & $0^\circ\leq z_0 < 75^\circ$ & Zenith angle & Degrees
 
-% 	\end{tabular}
-% 	\end{center}
-% 	\caption{Definition of parameters and their units}
-% 	\label{table:parameters}
+%	\end{tabular}
+%	\end{center}
+%	\caption{Definition of parameters and their units}
+%	\label{table:parameters}
 % \end{table}
 % %\vspace{-0.7cm}
 
@@ -1159,58 +1173,24 @@ Algorithmic components in this section will typically (but perhaps not always) d
 \subsubsection{Single CCD to Reference Catalog, Semi-Blind}
 \label{sec:acSingleCCDReferenceMatching}
 
-Given a set of sources detected on a single sensor, and a
-corresponding reference catalog we adopt a simple pattern matching
-algorithm to cross-match between the catalogs.  We assume that the
-sources detected on the sensor have approximate positions given by the
-telescope's initial estimate of a WCS, that we know the plate scale of
-the system, and that positional errors are available for both the
-sensor and reference catalog.
+Given a set of sources detected on a single sensor, and a corresponding reference catalog, we adopt a simple pattern matching algorithm to cross-match between the catalogs.
+We assume that the sources detected on the sensor have approximate positions given by the telescope's initial estimate of a WCS, that we know the plate scale of the system, and that positional errors are available for both the sensor and reference catalog.
 
-Cross-matching is undertaken using the Optimistic Pattern Matching (B) algorithm of Tabur \cite{2007PASA...24..189T}. The algorithm defines an order $m$ (default 6) size $m-1$ acyclic connected tree as the pattern to match between catalogs. The details of the LSST implementation of the Optimistic Pattern Matching (B) algorithm are as follows:
+Cross-matching may be undertaken using the Optimistic Pattern Matching (B) algorithm of Tabur \cite{2007PASA...24..189T}.
+The algorithm defines an order $m$ (default 6) size $m-1$ acyclic connected tree as the pattern to match between catalogs.
+Trees are constructed and matched for the brightest $n$ stars (default = 50) in descending order until a match is found.
 
-\begin{itemize}
-\item An optical distortion model is subtracted from the positions of
-  the detected sources on the sensor to define a gnomonic plane projection.
-\item Detected sources are ordered in descending brightness and the
-  brightest $n$ stars (default = 50) are selected, $I$.
-\item Given the extent of the sensor (defined from the initial WCS)
-  the brightest $n$ sources are extracted from the reference catalog, $R$.
-\item The pairwise distances and position angles between the reference
-  catalog sources, $R$, are measured (generating $n(n-1)/2$ pairs).
-\item For the $m$ brightest sources in $I$ the length of the edges and
-  the position angles of the edges of the graph are calculated (with
-  the brightest source the center of the graph). Angles are relative
-  to the sensor orientation and distances are in angular coordinates.
-\item A binary search identifies all pairs in $R$ with a length
-  matching the length of the edge containing the brightest two sources
-  (within a tolerance that has a default of 3 arcsec).  The difference
-  in position angle between the reference and source edges is assumed
-  to be due to the rotation of the sensor relative to the reference
-  catalog and this position angle difference is accounted for in all
-  remaining matches.
-\item The remaining $m-2$ edges are compared to the pairs in $R$ and a
-  match is assumed if the edge length and postion angles are within
-  the tolerances (defaults 3 arcsec and 1 degree respectively).
-\item If $m-1$ matches are not found the search repeats; initially for
-  the remaining matches to the length of the edge corresponding to the
-  brightest two sources and then for a new graph that excludes the
-  brightest object from $I$ and finds the next brightest $m$ sources.
-\end{itemize}
-
-Once $m-1$ edges match, an initial verification step is performed where a gnomonic projection of the reference catalog is fit to the matched stars. Given a consistent fit to the gnomonic projection all sources and reference objects are matched in sensor coordinates (sorted by brightness) with the brightest source in $I$ selected when two sources are within the match tolerance (default 3 arcsec).
+After a matched solution is found, we will verify the quality of the match by comparing the positions of the science and reference objects.
 
 For the case of no WCS for the sensor or a significant error in the
-WCS ($> 3$ arcsec), a blind matching will be undertaken using the
-algorithms in astrometry.net.
+WCS ($> 3$ arcsec), blind matching will be undertaken (e.g., by using the
+algorithms in astrometry.net).
 
 \subsubsection{Single Visit to Reference Catalog, Semi-Blind}
 \label{sec:acSingleVisitReferenceMatching}
 
 For single visit cross-matching matches all sources within a focal
-plane will be matched to the reference catalog, $R$. This case is a
-modification of the original Tabur algorithm. It must account for
-significant distortions across the focal plane, and for deviations from a Euclidean space when due to the gnomonic projection.
+plane will be matched to the reference catalog, $R$.
 
 Modifications from the single sensor cross matching are:
 \begin{itemize}
