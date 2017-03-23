@@ -166,10 +166,10 @@ The CR rejection algorithm does not depend on the PSF of the image.  The single 
 
 Satellite trails, out of focus airplanes, and meteors all cause long linear features in astronomical images.  The Hough Transform \citep{citation_needed} is a common tool used in computer vison applications to detect linear features.  Linear features are parameterized by $r$, the perpendicular distance to the line from the origin and $\theta$, the the angle of $r$ with the x-axis.  The $(r, \theta)$ space is binned and each pixel in the image adds its flux to all the bins consistent with that pixel location.  For bright linear features, the bin at the true location of the feature will fill up because more than one bright pixel is contributing to that location in parameter space.  After all pixels have been polled, the highest bins correspond to the linear features in the image.
 
-This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.  
+This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.
 
-An algorithm that takes care of both of these issues is presented in \cite{borncamp_lim16}.  We will use this
-as our baseline.  First the image is rescaled to maximize the contrast of faint linear features.  Next an edge detection algorithm is run on the image.  The reference implementation uses a Canny algorithm \citep{canny86}.  This algorithm produces a set of edges that can then be mined for linear features.  They use a probababalistic Hough Transforms \citep{galamhos99} to cut down on computational costs.  The probabalistic version limits the number of pixels that vote.  This results in a list of line segments.  The segments are binned in angle and any sement that is outside some tolorance of the mode is culled.  This cleaned set of segments is fed to the masking algorithm.
+An algorithm that takes care of both of these issues is presented in \cite{2016acs..rept....1B}.  We will use this
+as our baseline.  First the image is rescaled to maximize the contrast of faint linear features.  Next an edge detection algorithm is run on the image.  The reference implementation uses a Canny algorithm \citep{Canny:1986:CAE:11274.11275}.  This algorithm produces a set of edges that can then be mined for linear features.  They use a probababalistic Hough Transforms \citep{galamhos99} to cut down on computational costs.  The probabalistic version limits the number of pixels that vote.  This results in a list of line segments.  The segments are binned in angle and any sement that is outside some tolorance of the mode is culled.  This cleaned set of segments is fed to the masking algorithm.
 
 The masking algorithm traverses each line segment found in the previous step by selecting a subregion around the segment and flattening the subregion.  A weighted mean of the subregion is computed and any pixels above some threshold are considered part of the trail and masked.  The subregion is moved along the segment until the end is reached.  This is repeated for every segment.
 
@@ -369,7 +369,7 @@ Aperture photometry here refers to fluxes measured within a sequence of fixed-si
 
 The baseline plan for LSST is to use circular apertures, but we also plan to investigate using ellipses, which would provide more meaningful and higher SNR measurements if problems in robustly defining per-object (and perhaps per-radius) ellipses for faint objects can be solved.
 
-While aperture fluxes with radii much larger than the pixel size can be measured naively by simply summing pixel values, smaller apertures will be measured using the $\mathrm{sinc}$ interpolation algorithm of \cite{Bickerton13}, which integrates exactly over sub-pixel regions.  To avoid contamination from bleed trails when measuring heavily saturated objects, we plan to measure fluxes within azimuthal segments of annuli instead of circular regions; any the flux within any contaminated segments can be replaced by the mean of the remaining segments (thus assuming approximate circular symmetry).
+While aperture fluxes with radii much larger than the pixel size can be measured naively by simply summing pixel values, smaller apertures will be measured using the $\mathrm{sinc}$ interpolation algorithm of \cite{2013MNRAS.431.1275B}, which integrates exactly over sub-pixel regions.  To avoid contamination from bleed trails when measuring heavily saturated objects, we plan to measure fluxes within azimuthal segments of annuli instead of circular regions; any the flux within any contaminated segments can be replaced by the mean of the remaining segments (thus assuming approximate circular symmetry).
 
 For aperture fluxes with radii close to the PSF size to be scientifically useful, they must be performed on PSF-matched images.  We thus expect to plan run aperture photometry only on PSF-matched coadds and visit-level images, with the latter accompanied by a caution that smaller apertures may not be meaningful without user-level correction for the PSF.
 
@@ -633,7 +633,7 @@ coverage and sky-background, and can select a visit that minimizes that quantity
 \subsubsection{Tract Level}
 Constructing reference images for tract-sized co-adds follows the same principle, but requires maximizing the
 SNR/coverage of a large mosaic constructed from multiple visits.  Algorithms for mosaicking partially
-overlapping images have been well established \citep[e.g.][]{Sick2013, Berriman2008}. By mosaicking visits,
+overlapping images have been well established \citep[e.g.][]{Sick2013, 2008ASPC..394...83B}. By mosaicking visits,
 applying additive scalar or sloping offsets to calexps, we can generate a tract-sized reference image.
 Algorithms for selecting visits to construct these fall on a spectrum of computational expense. On the less
 expensive side is a greedy algorithm which starts with a ``best'' (as defined above) visit chosen at the
@@ -709,7 +709,7 @@ Used by AP, probably (RHL worries we might need full-visit)
 
 AP will need to do reasonably good astrometeric calibration on single frames in order to do the relative warping between the template and science images.  We have seen that the kernel matching algorithm can take out bulk astrometric errors up to a significan fraction of a pixel.  However, we would like to avoid making the kernel matching deal with astrometric errors.  Astrometric errors between the science and template coordinate systems should be less than 15mas.  We will use the internal reference catalog used in DRP as the reference catalog.  This will be based on astrometry from an external source and will be extended using high quality measurements on coadds from DRP.
 
-We can project the per-chip coordinates into a flat (Gnomonic) projection in the focalplane.  This will take out the bulk of the optical distortion.  Next, we will use a matching algorithm like that outlined in \cite{tabur04}.  Once we match, a 2D polynomial solution will be fit to minimize the residual.
+We can project the per-chip coordinates into a flat (Gnomonic) projection in the focalplane.  This will take out the bulk of the optical distortion.  Next, we will use a matching algorithm like that outlined in \citep{2007PASA...24..189T}.  Once we match, a 2D polynomial solution will be fit to minimize the residual.
 
 \begin{note}[Dependency]
 This introduces a dependency on DRP's internal reference catalog not capture elsewhere.
@@ -808,24 +808,24 @@ The essence of image subtraction is to astrometrically register the science imag
 \item Includes identifying sources to use to determine matching kernel, fitting the kernel, and convolving by it.
 \end{itemize}
 
-The current implementation of the PSF matching algorithm is summarized in detail by Becker, et al. (2013) (\url{http://ls.st/x9f}).  We model the PSF--matching kernel by decomposing it into a set of basis functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$ \citep{Alard98}, where the coefficients are determined via ordinary least-squares estimation:
+The current implementation of the PSF matching algorithm is summarized in detail by Becker, et al. (2013) (\url{http://ls.st/x9f}).  We model the PSF--matching kernel by decomposing it into a set of basis functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$ \citep{1998ApJ...503..325A}, where the coefficients are determined via ordinary least-squares estimation:
 %
 \begin{eqnarray}
 C_i & \equiv & (\kappa_i \otimes T); \\ \nonumber
-b_{i}  & = & \sum_{x,y} {{C_i(x,y) S(x,y)}\over{\sigma^2(x,y)}};   \nonumber \\ 
-M_{ij} & = & \sum_{x,y} {{C_i(x,y) C_j(x,y)}\over{\sigma^2(x,y)}};  \nonumber \\ 
-a_{i}  & = & M^{-1}_{ij} b_{j}. \nonumber 
+b_{i}  & = & \sum_{x,y} {{C_i(x,y) S(x,y)}\over{\sigma^2(x,y)}};   \nonumber \\
+M_{ij} & = & \sum_{x,y} {{C_i(x,y) C_j(x,y)}\over{\sigma^2(x,y)}};  \nonumber \\
+a_{i}  & = & M^{-1}_{ij} b_{j}. \nonumber
 \label{eq-soln}
 \end{eqnarray}
 %
 \noindent
-$\sigma^2(x,y)$ is the per--pixel variance stored in the {\tt   variance} plane of each LSST {\tt exposure}. To generate a spatially varying model for the kernel, we further decompose the relative weights of the basis coefficients $a_i$ into spatially-varying low-order polynomials, i.e. $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$. We also allow for a spatially-varying differential background between the two images $b(x,y)$ that may be fit for using a low--order polynomial \citep{Alard98,Alard00}. The image difference is then $D(x,y) = S(x,y) - T(x,y) \otimes \kappa(u,v;x,y) - b(x,y)$.  There are many choices of baisis functions, e.g. regularized delta functions.  However, the basic algoirthm remains unchanged. 
+$\sigma^2(x,y)$ is the per--pixel variance stored in the {\tt   variance} plane of each LSST {\tt exposure}. To generate a spatially varying model for the kernel, we further decompose the relative weights of the basis coefficients $a_i$ into spatially-varying low-order polynomials, i.e. $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$. We also allow for a spatially-varying differential background between the two images $b(x,y)$ that may be fit for using a low--order polynomial \citep{1998ApJ...503..325A,2000A&AS..144..363A}. The image difference is then $D(x,y) = S(x,y) - T(x,y) \otimes \kappa(u,v;x,y) - b(x,y)$.  There are many choices of baisis functions, e.g. regularized delta functions.  However, the basic algoirthm remains unchanged.
 
-The basis functions $\kappa_i(u,v)$ are a degree of freedom in this problem. Following \citep{Alard98}, we use a set of $\rm nGauss = 3$ Gaussians, each with a different width $\sigma_i$, and each modified by a Laguerre polynomial to a given order (see below). Following more recent studies studies \citep[e.g.][]{Israel07}, we parameterize these different Gaussian widths via a single ratio $\beta$, such that $\sigma_{i+1} = \beta \times \sigma_{i}$ with $\beta = 2.0$. (We note that all constants are defined by {\tt Config} variables and may be adjusted on a per-use basis). We set the overall scale for the $\sigma$ by noting that, under the assumption that the PSFs of the images are Gaussian ($\sigma_S$ for the science image and $\sigma_T$ for the template image), the $\sigma_{\kappa}$ of the matching kernel should be simply $\sigma_{\kappa}^2 = \sigma_S^2 - \sigma_T^2$. We use this canonical width for the central Gaussian in the basis sequences (i.e., $\sigma_{i=2} \equiv \sigma_{\kappa}$ when using three Gaussians bases). Each of the three default kernel basis functions are modified by Laguerre polynomials up to order $\rm degGauss = [4, 2,   2]$, respectively. This results in a total number of (non-spatially varying) bases of $\sum_i^{\rm nGauss} ({\rm degGauss}_i+1)\times({\rm   degGauss}_i+2)/2$, or 27 given the aforementioned defaults. 
+The basis functions $\kappa_i(u,v)$ are a degree of freedom in this problem. Following \citep{1998ApJ...503..325A}, we use a set of $\rm nGauss = 3$ Gaussians, each with a different width $\sigma_i$, and each modified by a Laguerre polynomial to a given order (see below). Following more recent studies studies \citep[e.g.][]{2007AN....328...16I}, we parameterize these different Gaussian widths via a single ratio $\beta$, such that $\sigma_{i+1} = \beta \times \sigma_{i}$ with $\beta = 2.0$. (We note that all constants are defined by {\tt Config} variables and may be adjusted on a per-use basis). We set the overall scale for the $\sigma$ by noting that, under the assumption that the PSFs of the images are Gaussian ($\sigma_S$ for the science image and $\sigma_T$ for the template image), the $\sigma_{\kappa}$ of the matching kernel should be simply $\sigma_{\kappa}^2 = \sigma_S^2 - \sigma_T^2$. We use this canonical width for the central Gaussian in the basis sequences (i.e., $\sigma_{i=2} \equiv \sigma_{\kappa}$ when using three Gaussians bases). Each of the three default kernel basis functions are modified by Laguerre polynomials up to order $\rm degGauss = [4, 2,   2]$, respectively. This results in a total number of (non-spatially varying) bases of $\sum_i^{\rm nGauss} ({\rm degGauss}_i+1)\times({\rm   degGauss}_i+2)/2$, or 27 given the aforementioned defaults.
 
-A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image. The kernel candidates are selected using the {\tt   DiaCatalogSourceSelector} to query the appropriate reference catalog for appropriate sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures. The resulting ensemble of filtered kernel models is used to constrain the spatially-varying kernel model $\kappa(u,v;x,y)$ by fitting the spatially-varying basis kernel coefficients $a_i(x,y)$ with a $N^{th}$-order 2-dimensional Chebyshev polynomial. This results in the final full spatial solution $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$, which may be evaluated at each location $(x,y)$ in the image for convolution. 
+A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image. The kernel candidates are selected using the {\tt   DiaCatalogSourceSelector} to query the appropriate reference catalog for appropriate sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures. The resulting ensemble of filtered kernel models is used to constrain the spatially-varying kernel model $\kappa(u,v;x,y)$ by fitting the spatially-varying basis kernel coefficients $a_i(x,y)$ with a $N^{th}$-order 2-dimensional Chebyshev polynomial. This results in the final full spatial solution $\kappa(u,v;x,y) = \sum_i a_i(x,y) \kappa_i(u,v)$, which may be evaluated at each location $(x,y)$ in the image for convolution.
 
-Detection on the difference image occurs through correlation of $D(x,y)$ with the science image's PSF, yielding optimally filtered detection image $D'(x,y) = D(x,y) \circ PSF_S(u,v;x,y)$ where $\circ$ denotes correlation (currently the DM stack uses convolution instead of correlation). The values of the pixels in $D'(x,y)$ provide a maximum likelihood estimate of there being a point source at that position. Detection occurs by simply finding pixels that are more than $N \times \sigma$ above the square root of the per--pixel variance. Alternatively, the science image may be {\em pre-convolved} with a kernel similar to its PSF, in which case the resulting difference image $D(x,y)$ is already filtered for detection. This latter option has the additional advantage that it help us avoid requiring {em deconvolution} of the template image, in cases when the template has a wider PSF than the science image. 
+Detection on the difference image occurs through correlation of $D(x,y)$ with the science image's PSF, yielding optimally filtered detection image $D'(x,y) = D(x,y) \circ PSF_S(u,v;x,y)$ where $\circ$ denotes correlation (currently the DM stack uses convolution instead of correlation). The values of the pixels in $D'(x,y)$ provide a maximum likelihood estimate of there being a point source at that position. Detection occurs by simply finding pixels that are more than $N \times \sigma$ above the square root of the per--pixel variance. Alternatively, the science image may be {\em pre-convolved} with a kernel similar to its PSF, in which case the resulting difference image $D(x,y)$ is already filtered for detection. This latter option has the additional advantage that it help us avoid requiring {em deconvolution} of the template image, in cases when the template has a wider PSF than the science image.
 
 \subsubsection{PSF Homogenization for Coaddition}
 \label{sec:acPSFHomogenization}
@@ -979,7 +979,7 @@ For each approach the number of wavelength bins that $I(x)$ can be decomposed in
 
 In situations where the signal-to-noise in the template image is not insignificant (e.g., when the template is constructed by co-addition of a small number of exposures), the resulting image difference will contain autocorrelated noise arising from the convolution of the template with the PSF matching kernel prior to subtraction. This will result in inaccurate estimates of thresholds for {\tt diaSource} detection if the (potentially spatially-varying) covariances in the image difference are not properly accounted for.
 
-A viable alternative in the case of noisy template images is to construct a difference image with a flat noise spectrum, like the original input images \citep{Kaiser04, Zackay16}. This simply involves multiplying the image difference by a term which removes its frequency dependence,
+A viable alternative in the case of noisy template images is to construct a difference image with a flat noise spectrum, like the original input images \citep{Kaiser04, 2016ApJ...830...27Z}. This simply involves multiplying the image difference by a term which removes its frequency dependence,
 
 \begin{equation}
   D(k) = \left[S(k) - \kappa(k) T(k)\right]\sqrt{\frac{\sigma_S^2+\sigma_T^2}{\sigma_S^2 + \kappa^2(k)\sigma_T^2}},
@@ -993,9 +993,9 @@ where $S$ is the science image, $T$ is the template, $\sigma_S^2$ and $\sigma_T^
   \phi_D(k) = \phi_S(k) \sqrt{\frac{\sigma_S^2+\sigma_T^2}{\sigma_S^2 + \kappa^2(k)\sigma_T^2}}.
 \end{equation}
 
-We are investigating this approach and have shown that, for idealized situations, the resulting image differences are statistically indistinguishable from those generated using the ``Proper image subtraction'' technique proposed by \cite{Zackay16}.
+We are investigating this approach and have shown that, for idealized situations, the resulting image differences are statistically indistinguishable from those generated using the ``Proper image subtraction'' technique proposed by \cite{2016ApJ...830...27Z}.
 
-Issues arising from complications often seen in real-world data such as spatially-varying PSFs and/or poorly-evaluated matching kernels, spatially variable backgrounds and/or noise, and possibly non-Gaussian or heteroschedastic noise need to be further evaluated. Such tests are currently underway on simulated and real data. These tests could highlight the advantages of the method proposed here over the proposal of \cite{Zackay16}, including: no requirement for accurate measurement of the PSFs of the science or template images, and thus the ability to to account for errors in astrometric alignment and to directly model spatially varying differential PSFs.
+Issues arising from complications often seen in real-world data such as spatially-varying PSFs and/or poorly-evaluated matching kernels, spatially variable backgrounds and/or noise, and possibly non-Gaussian or heteroschedastic noise need to be further evaluated. Such tests are currently underway on simulated and real data. These tests could highlight the advantages of the method proposed here over the proposal of \cite{2016ApJ...830...27Z}, including: no requirement for accurate measurement of the PSFs of the science or template images, and thus the ability to to account for errors in astrometric alignment and to directly model spatially varying differential PSFs.
 
 \subsubsection{Coadd Decorrelation}
 \label{sec:acCoaddDecorrelation}
@@ -1027,7 +1027,7 @@ Issues arising from complications often seen in real-world data such as spatiall
 \subsection{Variability Characterization}
 \label{sec:acVariabilityCharacterization}
 
-Following the \DPDD{}, lightcurve variability is characterized by providing a series of numeric summary `features' derived from the lightcurve. The DPDD baselines an approach based on Richards et al. \cite{Richards11}, with the caveat that ongoing work in time domain astronomy may change the definition, but not the number or type, of features being provided.
+Following the \DPDD{}, lightcurve variability is characterized by providing a series of numeric summary `features' derived from the lightcurve. The DPDD baselines an approach based on Richards et al. \cite{2011ApJ...733...10R}, with the caveat that ongoing work in time domain astronomy may change the definition, but not the number or type, of features being provided.
 
 Richards et al. define two classes of features: those designed to characterize variability which is periodic, and those for which the period, if any, is not important. We address both below.
 
@@ -1044,7 +1044,7 @@ y_i(t|j f_i) &= a_{i,j} \sin(2 \pi j f_i t) + b_{i, j} \cos(2 \pi j f_i t) + b_{
 \end{align}
 where $i$ sums over fundamentals and $j$ over harmonics.
 }
-\item{Use iterative application of the generalized Lomb-Scargle periodogram, as described in \cite{Richards11}, to establish the fundamental frequencies, $f_1$, $f_2$, $f_3$:
+\item{Use iterative application of the generalized Lomb-Scargle periodogram, as described in \cite{2011ApJ...733...10R}, to establish the fundamental frequencies, $f_1$, $f_2$, $f_3$:
 \begin{itemize}
   \item{Search a configurable (minimum, maximum, step) linear frequency grid with the periodogram, applying a $\log f/f_N$ penalty for frequencies above $f_N = 0.5 \langle 1 / \Delta T \rangle$, identifying the frequency $f_1$ with highest power;}
   \item{Fit and subtract that frequency and its harmonics from the lightcurve;}
@@ -1067,7 +1067,7 @@ NB the \DPDD{} baselines providing 32 floats, but, since $\mathrm{PH}_{1,1}$ is 
 
 \subsubsection{Characterization of Aperiodic Variability}
 
-In addition to the periodic variability described above, we follow \cite{Richards11} in providing a series of statistics computed from the lightcurve which do not assume peridoicity. They define 20 floating point quantities in four groups which we describe here, again with the caveat that future revisions to the \DPDD{} may require changes to this list.
+In addition to the periodic variability described above, we follow \cite{2011ApJ...733...10R} in providing a series of statistics computed from the lightcurve which do not assume peridoicity. They define 20 floating point quantities in four groups which we describe here, again with the caveat that future revisions to the \DPDD{} may require changes to this list.
 
 Basic quantities:
 
@@ -1091,7 +1091,7 @@ s &= \sqrt{\frac{1}{n-1} \sum_{i=1}^{n}(x_i - \overline{x})^2}
 }
 \item{Standard deviation.}
 \item{The fraction of magnitudes which lie more than one standard deviation from the weighted mean.}
-\item{Welch-Stetson variability index $J$ \cite{Stetson96}, defined as
+\item{Welch-Stetson variability index $J$ \cite{1996PASP..108..851S}, defined as
 \[
 J = \frac{\sum_{k} \mathrm{sgn}(P_k) \sqrt{|P_k|}}{K},
 \]
@@ -1100,8 +1100,8 @@ where the sum runs over all $K$ pairs of observations of the object, where $\mat
 P_k &= \delta_i \delta_j \\
 \delta_i &= \sqrt{\frac{n}{n-1}}\frac{\nu_i - \overline{\nu}}{\sigma_{\nu}},
 \end{align}
-where $n$ is the number of observations of the object, and $\nu_i$ its flux in observation $i$. Following the procedure described in Stetson \cite{Stetson96}, the mean is not the simple weighted algebraic mean, but is rather reweighted to account for outliers.}
-\item{Welch-Stetson variability index $K$ \cite{Stetson96}, defined as
+where $n$ is the number of observations of the object, and $\nu_i$ its flux in observation $i$. Following the procedure described in Stetson \cite{1996PASP..108..851S}, the mean is not the simple weighted algebraic mean, but is rather reweighted to account for outliers.}
+\item{Welch-Stetson variability index $K$ \cite{1996PASP..108..851S}, defined as
 \[
 K = \frac{1/n \sum_{i=1}{N}|\delta_i|}{\sqrt{1/n \sum_{i=1}{N}|\delta_i^2|}},
 \]
@@ -1117,7 +1117,7 @@ median.}
 \item{The ratio of $F_{5,95}$ to the median.}
 \end{itemize}
 
-QSO similarity metrics, as defined by Butler \& Bloom \cite{Butler11}:
+QSO similarity metrics, as defined by Butler \& Bloom \cite{2011AJ....141...93B}:
 
 \begin{itemize}
 \item{$\chi_{\mathrm{QSO}}^2 / \nu$.}
@@ -1141,7 +1141,7 @@ and data release processing. External catalogs may come from
 photometric or astrometric standards (e.g.\ catalogs from GAIA), from
 previous LSST observations (e.g. Objects), or from catalogs derived
 from previous observations (e.g.\ the ephemerides of moving
-sources). 
+sources).
 
 For cross-matching to reference catalogs the algorithm must be able to
 account for variation in scale and rotation of the field, and for
@@ -1165,9 +1165,9 @@ algorithm to cross-match between the catalogs.  We assume that the
 sources detected on the sensor have approximate positions given by the
 telescope's initial estimate of a WCS, that we know the plate scale of
 the system, and that positional errors are available for both the
-sensor and reference catalog.  
+sensor and reference catalog.
 
-Cross-matching is undertaken using the Optimistic Pattern Matching (B) algorithm of Tabur \cite{tabur2007}. The algorithm defines an order $m$ (default 6) size $m-1$ acyclic connected tree as the pattern to match between catalogs. The details of the LSST implementation of the Optimistic Pattern Matching (B) algorithm are as follows:
+Cross-matching is undertaken using the Optimistic Pattern Matching (B) algorithm of Tabur \cite{2007PASA...24..189T}. The algorithm defines an order $m$ (default 6) size $m-1$ acyclic connected tree as the pattern to match between catalogs. The details of the LSST implementation of the Optimistic Pattern Matching (B) algorithm are as follows:
 
 \begin{itemize}
 \item An optical distortion model is subtracted from the positions of
@@ -1249,7 +1249,7 @@ matched, than for a model $K$, where the sources do not match.
 \begin{equation}
 B(H,K|D) = \frac{p(D|H)}{p(D|K)}
 \end{equation}
-see Budavari and Szalay \cite{budavariSzalay2008}.
+see Budavari and Szalay \cite{2008ApJ...679..301B}.
 
 Assuming a normal distribution for positional uncertainties the Bayes
 Factor is given by, 
@@ -1325,7 +1325,7 @@ During nightly processing, ephemeris prediction will be carried out on the objec
 
 \subsection{Make Tracklets}
 \label{sec:acMakeTracklets}
-Tracklets are the building blocks of orbits.  The process of linking observations is to pair up all observations that are within some distance of each other given a maximum on sky velocity.  For any source, tracklets can be found by looking in circular apertures in subsequent visits with the radius of the circular aperture growing with time by $v_{max}dt$ for $v_{max}$ in appropriate units.  In practice we will follow \cite{kubica05} and build KD-trees on detections from each visit.  KD-trees allow fast range searches.  Linking up tracklets simply involves a series of range searches on available visits.
+Tracklets are the building blocks of orbits.  The process of linking observations is to pair up all observations that are within some distance of each other given a maximum on sky velocity.  For any source, tracklets can be found by looking in circular apertures in subsequent visits with the radius of the circular aperture growing with time by $v_{max}dt$ for $v_{max}$ in appropriate units.  In practice we will follow \cite{NIPS2005_2915} and build KD-trees on detections from each visit.  KD-trees allow fast range searches.  Linking up tracklets simply involves a series of range searches on available visits.
 
 The number of tracklets goes up as $O(n^2)$ where $n$ is the number of images covering a region in a given time span.  However, many of the tracklets are degenerate (i.e.\ for an object moving slowly across the sky, it is possible that the beginning, ending and every other image in between could be within the velocity cut). These degenerate tracks are ``collapsed'' by computing a velocity vector for each tracklet.  The tracklets are then binned in speed, perpendicular distance from a reference location, and direction.  Similar to a Hough transform, degenerate tracklets will tend to accupy similar bins.  Bins with multiple tracklets will be used to reduce the tracklets to the longest linear tracklet consistent with the tracklets.
 
@@ -1344,7 +1344,7 @@ Since both attribution and precovery involve updating the SSObject, this process
 \label{sec:acOrbitFitting}
 Given a database of tracklets not associated with any SSobject, we will look for tracks that match physical orbits.
 
-Finding tracks is a tricky problem.  We will follow the approach presented in \cite{kubica05}.  All except the fastest moving bodies will have linear motion over a night; however, this is not true over the LSST discovery window of 30 days.  In order to have high quality candidate tracks, we require three tracklets per track.  Since there are limits to how fast Solar System objects can move and also how fast the can accelerate, we can build a KD-tree on the tracklets in a given observation in velocity and position.  Given a node, this implies an acceleration for nodes in other trees.  Since we require at least one support tracklet between any two endpoint tracklets, we can discard any nodes that do not have at least on matching node between them.  With this in mind, we search for pairs of tracklets that match the velocity and acceleration cuts and are on different nights.  If there is also at least one node between them in time (and on a different night than either of the endpoints) that also pass the velocity and acceleration criteria, all nodes are searched for tracks.
+Finding tracks is a tricky problem.  We will follow the approach presented in \cite{NIPS2005_2915}.  All except the fastest moving bodies will have linear motion over a night; however, this is not true over the LSST discovery window of 30 days.  In order to have high quality candidate tracks, we require three tracklets per track.  Since there are limits to how fast Solar System objects can move and also how fast the can accelerate, we can build a KD-tree on the tracklets in a given observation in velocity and position.  Given a node, this implies an acceleration for nodes in other trees.  Since we require at least one support tracklet between any two endpoint tracklets, we can discard any nodes that do not have at least on matching node between them.  With this in mind, we search for pairs of tracklets that match the velocity and acceleration cuts and are on different nights.  If there is also at least one node between them in time (and on a different night than either of the endpoints) that also pass the velocity and acceleration criteria, all nodes are searched for tracks.
 
 In order to validate candidate tracks, a quadratic fit to the orbit is attempted with higher order topocentric effects due to reflex motion of the Earth included.  These effects depend on the distance of the object from the Earth, so the range is fit for as part of the fitting process.  For tracks with sufficiently good $\chi^2$, the tracks are passed on to an orbit fitter.  As above, there are tools to fit for orbital parameters given a set of observations.  We will use these as our final orbit determination.
 
