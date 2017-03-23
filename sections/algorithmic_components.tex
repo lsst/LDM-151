@@ -47,7 +47,7 @@ regions where the linearity is considered unreliable as \texttt{SUSPECT}.
 \item Full frame corrections:	
 	\mysubitem Bias: Subtract the \hyperref[sec:CPP:output:bias]{master bias frame}.
 	\mysubitem Dark: Subtract an exposure length multiple of the \hyperref[sec:CPP:output:dark]{master dark frame}, perhaps including the slew time, depending on when the array is cleared.
-	\mysubitem Flats: Divide by the appropriate linear combination of  \hyperref[sec:CPP:output:monoPhotoFlat]{master flats}.
+	\mysubitem Flats: Divide by the appropriate linear combination of  \hyperref[sec:CPP:output:monoPhotoFlat]{monochromatic master flats}.
 	\mysubitem Fringe frames: this will involve the subtraction of a fringe frame composed of some combination of \hyperref[sec:CPP:output:monoFlat]{monochromatic flats} to match the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} and the filter in use at the time of observation, though the plan for how this combination will be derived remains to be determined.
 
 
@@ -74,7 +74,11 @@ The ISR for the AP pipeline differs slightly to the one used in DRP due to the r
 
 Crosstalk correction will be performed inside the DAQ, where the most recent crosstalk matrix will have been loaded. However, whilst there is therefore no default action for AP, in the event of network outages where the local data buffer overflows and the crosstalk-corrected data is lost, crosstalk correction would need to be applied.\footnote{ This assumes that alerts are still being generated in this eventuality.}
 
-Flat fielding will be performed as for DRP, but because the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} will not be available to AP, the fringe frame subtracted will likely be constructed based on a look-up table which crudely describes the expected night sky spectrum based on the position and phase of the moon at the time of observation.
+Flat fielding will be performed as for DRP, but because the \hyperref[sec:CPP:aux:nightSkySpectrum]{night sky's spectrum} will not be available to AP, the fringe frame subtracted will either be some nominal fringe frame, or one taken from an array of pre-computed composite fringe frames with the sky-matching performed using PCA on-the-fly.
+
+%However, should that prove to be too slow, an approach in which the nominal sky spectrum's evolution over the course of the night is used to improve the quality of the fringe frame used could be used.
+
+%based on a look-up table which crudely describes the expected night sky spectrum based on the position and phase of the moon at the time of observation.
 
 
 
