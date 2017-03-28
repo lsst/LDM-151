@@ -18,6 +18,16 @@
 \usepackage{listings}
 \usepackage{nameref}
 
+\bibliographystyle{aasjournal}
+\newcommand{\aaps}{A\&AS}           % Astronomy and Astrophysics Suplement
+\newcommand{\aap}{A\&A}           % Astronomy and Astrophysics
+\newcommand{\apj}{ApJ}              % Astrophysical Journal
+\newcommand{\apjs}{ApJS}              % Astrophysical Journal Supplement
+\newcommand{\mnras}{MNRAS}          % Monthly Notices of the RAS
+\newcommand{\aj}{AJ}                % Astronomical Journal
+\newcommand{\pasp}{PASP}            % Publications of the ASP
+\newcommand{\pasa}{PASA}            % Publications of the Astronomical Society of Australia
+
 % For referencing {description} environment labels,
 % as used in DRP pipeline section.  Taken from
 % http://tex.stackexchange.com/questions/1230/reference-name-of-description-list-item-in-latex
@@ -284,186 +294,6 @@ second readout time, and a second 15 second exposure.
 
 \clearpage
 
-\begin{thebibliography}{10}
-
-\bibitem{Ankerst99} M.~Ankerst, M.~M.~Breunig, H.-P.~Kriegel and J.~Sander,
-  \textbf{OPTICS: Ordering Points To Identify the Clustering Structure},
-  Proc ACM SIGMOD (1999).
-
-\bibitem{Antilogus14} P.~Antilogus, P.~Astier, P~.Doherty, A.~Guyonnet and N.~Regnault
-  \textbf{The brighter-fatter effect and pixel correlations in CCD sensors}
-  Journal of Instrumentation, Volume 9, Issue 3, article id. C03048 (2014).
-
-\bibitem{BailerJones10} C. A. L.~Bailer-Jones,
-	\textbf{The ILIUM forward modelling algorithm for multivariate parameter estimation and its application to derive stellar parameters from Gaia spectrophotometry}
-	Monthly Notices of the Royal Astronomical Society 403.1, 96-116 (2010).
-
-\bibitem{Becker13} A.~Becker et al,
-  \textbf{Report on Late Winter 2013 Production: Image Differencing}
-  \url{http://ls.st/x9f}.
-
-\bibitem{Becker14} A.~Becker,
-  \textbf{Report on Summer 2014 Production: Analysis of DCR},
-  \url{https://github.com/lsst-dm/S14DCR/blob/master/report/S14report_V0-00.pdf}.
-
-\bibitem{Bickerton13}
-  \textbf{An algorithm for precise aperture photometry of critically sampled images},
-  MNRAS 431, 1275--1285, 2013
-
-\bibitem{Bloom12} J.~S.~Bloom et al,
-  \textbf{Automating discovery and classification of transients and variable stars in the synoptic survey era},
-  PASP 124, 1175--1196 (2012).
-
-\bibitem{Bosch10} J.~F.~Bosch,
-  \textbf{Modeling Techniques for Measuring Galaxy Properties in Multi-Epoch Surveys},
-  PhD Thesis, University of California, Davis (2011). \url{http://adsabs.harvard.edu/abs/2011PhDT.......226B}
-
-\bibitem{Bosch13} J.~Bosch, P.~Gee, R.~Owen, M.~Juric and the LSST DM team,
-  \textbf{LSST DM S13 Report: Shape measurement plans and prototypes},
-  \url{https://docushare.lsstcorp.org/docushare/dsweb/ImageStoreViewer/Document-15298}
-
-\bibitem{Bosch15} J.~Bosch,
-  \textbf{Measurement of Blended Objects in LSST}.
-  LSST Data Management Technical Note, DMTN-038, 2015.
-  \url{https://dmtn-038.lsst.io}
-
-\bibitem{Butler11}
-  \textbf{Optimal Time-Series Selection of Quasars},
-  ApJ 141, 93 (2011).
-
-\bibitem{Debosscher07}
-  \textbf{Automated Supervised Classification of Variable Stars I. Methodology},
-  A\&A 475, 1159–1183 (2007).
-
-\bibitem{Huff11} E.~M.~Huff et al,
-  \textbf{Seeing in the dark -- I. Multi-epoch alchemy},
-  \url{http://arxiv.org/abs/1111.6958}.
-
-\bibitem{Furusawa14} H.~Furusawa et al,
-  \textbf{Hyper Suprime-Cam Survey Pipeline Description},
-  \url{http://hsca.ipmu.jp/pipeline_outputs.pdf}.
-
-\bibitem{GaiaSpecs} The Gaia Team,
-\textbf{Science Performance of the Gaia Mission}
- \url{https://www.cosmos.esa.int/web/gaia/science-performance}
-
-\bibitem{Holberg16} G.~Narayan, et al,
-\textbf{Toward a Network of Faint {DA} White Dwarfs as High-precision Spectrophotometric Standards},
- The Astrophysical Journal 822.2: 67 (2016).
-
-\bibitem{JeeTyson11} M.~J.~Jee and J.~A.~Tyson,  \textbf{Toward
-  Precision LSST Weak-Lensing Measurement. I. Impacts of Atmospheric
-  Turbulence and Optical Aberration}, PASP 123, 596(2011).
-
-\bibitem{Jee13} M.~J.~Jee, J.~A.~Tyson, M.~D.~Schneider, D.~Wittman, S.~Schmidt and S.~Hilbert,
-  \textbf{Cosmic shear results from the Deep Lens Survey. I. Joint constraints on $\Omega_M$ and $\sigma_8$ with a two-dimensional analysis},
-  ApJ 765 74 (2013).
-
-\bibitem{Kubica05} J.~Kubica et al,
-  \textbf{Efficiently Tracking Moving Sources in the LSST},
-  Bulletin of the American Astronomical Society, 37, 1207 (2005).
-
-\bibitem{Lang09} D.~Lang, D.~Hogg, S.~Jester and H.-W.~Rix,
-  \textbf{Measuring the undetectable: Proper motions and parallaxes of very faint sources},
-  AJ 137 4400--4111 (2009).
-
-\bibitem{LuptonPhoto} R.~H.~Lupton et al,
-  \textbf{SDSS Image Processing II: The \textit{Photo} Pipelines}.
-  \url{http://www.astro.princeton.edu/~rhl/photo-lite.pdf}
-
-\bibitem{Lupton05} R.~Lupton and \v{Z}.~Ivezi\'c, \textbf{Experience with SDSS: the Promise and Perils of Large Surveys},
-  Astrometry in the Age of the Next Generation of Large Telescopes, ASP
-  Conferences Series, Vol 338 (2005). \url{http://adsabs.harvard.edu/abs/2005ASPC..338..151L}
-
-\bibitem{Lupton15} R.~Lupton, M.~Juri\'c and C.~Stubbs,
-  \textbf{LSST's Plans for Calibration Photometry},
-  July 2015.
-
-\bibitem{MOPS} L.~Denneau, J.~Kubica and R.~Jedicke,
-   \textbf{The Pan-STARRS Moving Object Pipeline}, Astronomical Data
-  Analysis Software and Systems XVI ASP Conference Series, Vol. 376,
-  proceedings of the conference held 15-18 October 2006 in Tucson,
-  Arizona, USA\@. Edited by Richard A. Shaw, Frank Hill and David
-  J. Bell., p.257.
-
-\bibitem{OConnor15} P.~O'Connor,
-\textbf{Crosstalk in multi-output {CCDs} for {LSST}},
-JInst 10 05 C05010 (2015).
-
-\bibitem{Padmanabhan08} N.~Padmanabhan et al,
-  \textbf{An Improved Photometric Calibration of the Sloan Digital Sky Survey Imaging Data},
-  ApJ 674 1217--1233 (2008).
-
-\bibitem{Rasmussen15} A.~Rasmussen,
-  \textbf{Sensor Modeling for the LSST Camera Focal Plane: Current Status of SLAC Originated Code}
-  July 2015. \url{https://docushare.lsstcorp.org/docushare/dsweb/Get/Document-8590}.
-
-\bibitem{Richards11} J.~Richards et al,
-  \textbf{On Machine-learned Classification of Variable Stars with Sparse and Noisy Time-series Data},
-  ApJ 733 10 (2011).
-
-\bibitem{Schlafly12} E.~F.~Schlafly et al,
-  \textbf{Photometric Calibration of the First 1.5 Years of the Pan-STARRS1 Survey},
-  ApJ 756 158 (2012).
-
-\bibitem{Stetson96} Stetson, P.B.,
-  \textbf{On the Automatic Determination of Light-Curve Parameters for Cepheid Variables},
-  PASP 108 851--876 (1996).
-
-\bibitem{Stubbs14} C.~W.~Stubbs,
-  \textbf{Precision Astronomy with Imperfect Fully Depleted CCDs -- An Introduction and a Suggested Lexicon},
-  Journal of Instrumentation, Volume 9, Issue 3, article id. C03032 (2014).
-
-\bibitem{Szalay99} A.~S.~Szalay, A.~J.~Connolly and G.~P.~Szokoly,
-  \textbf{Simultaneous Multicolor Detection of Faint Galaxies in the Hubble Deep Field},
-  AJ 117 68--74 (1999).
-
-\bibitem{Alard98} C.~Alard and R.~H.~Lupton,
-  \textbf{A Method for Optimal Image Subtraction},
-  ApJ 503, 1996 325--331 (1998).
-
-\bibitem{Alard00} C.~Alard,
-  \textbf{Image subtraction using a space-varying kernel},
-  A\&A 144, 2 363–370 (2000).
-
-\bibitem{Israel07}, H.~Israel, H., F.~V.~Hessman, and S.~Schuh,
-  \textbf{Optimising optimal image subtraction},
-  Astronomische Nachrichten 328, 16--24.
-
-\bibitem{Kaiser04} N.~Kaiser,
-  \textbf{Addition of Images with Varying Seeing},
-  Pan-STARRS Document Control, PSDC-002-011-xx (2004).
-
-\bibitem{Yagi12} M.~ Yagi,
-\textbf{Crosstalk Analysis of Suprime-Cam {FDCCDs} Using Cosmic Rays in Dark Frames}, Publications of the Astronomical Society of the Pacific 124.922, 1347 (2012).
-
-\bibitem{Zackay16} B.~Zackay, E.~O.~Ofek, and A.~Gal-Yam,
-  \textbf{Proper image subtraction -- optimal transient detection, photometry and hypothesis testing},
-  ApJ, {\em Submitted} (2016).
-
-\bibitem{budavariSzalay2008} Budav{\'a}ri, T. and Szalay, A.~S.,
-    \textbf{Probabilistic Cross-Identification of Astronomical
-      Sources}, ApJ, 679, 301-309 (2008)
-
-\bibitem{canny86} Canny, J., \textbf{A Computational Approach to Edge
-    Detection}, IEEE Trans. Pattern Anal. Mach. Intell., 8, 6,
-  679--698 (1986)
-
-\bibitem{borncamp_lim16} Borncamp, David \& Lim, P., L., 
-\textbf{Satellite Detection in Advanced Camera for Surveys/Wide Field Channel
-Images}, STSCI Instrument Science Report, ISR 16-01, (2016) 
-
-\bibitem{galamhos99} Galamhos, C., Matas, J., \& Kittler, J.,
-  \textbf{Progressive probabilistic Hough transform for line
-    detection}, IEEE Computer Society Conference on Computer Vision
-  and Pattern Recognition (1999)
-
-\bibitem{kubica05} Kubica, Jeremy, Masiero, Joseph, Moore, Andrew,
-    Jedicke, Robert, \& Connolly, Andrew, \textbf{Variable KD-tree
-      Algorithms for Spatial Pattern Search and Discovery},
-    Proceedings of the 18th International Conference on Neural
-    Information Processing Systems, NIPS'05, 691--698 (2005)
-
-\end{thebibliography}
+\bibliography{ldm-151}
 
 \end{document}

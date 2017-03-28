@@ -447,7 +447,7 @@ From multiple visits within a night, link unassociated \DIASources to form tuple
 
 \begin{itemize}
 \item Extract unassociated \DIASources from the Level 1 database
-\item Link \DIASources into tracklets assuming a maximum velocity for the moving sources. The maximum velocity will be based on a prior as described in  \cite{kubica05}. For each tracklet a velocity vector will be calculated to enable pruning or merging of degenerate tracklets within a data set. 
+\item Link \DIASources into tracklets assuming a maximum velocity for the moving sources. The maximum velocity will be based on a prior as described in  \cite{NIPS2005_2915}. For each tracklet a velocity vector will be calculated to enable pruning or merging of degenerate tracklets within a data set.
 \item Merge tracklets by clustering in velocity and position (propagated to a common visit time). Tracklets can contain multiple points and all permutations of the asteroid tuples will be stored. In the process of merging tracklets \DIASources that are not a good fit for the merged tracklet will be remove and their associated tracklets returned to the tracklet database.  Moving or trailed sources will incorporate the position angle of the source when linking. Details of the implementation of the \DIASource linkage is described in \ref{sec:acMakeTracklets}
 \item Temporarily persist a database of tracklets. This database will be required for at least 30 days of data but, depending on resources available, may persist for longer.
 \end{itemize}

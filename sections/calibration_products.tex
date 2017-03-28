@@ -185,9 +185,9 @@ The crosstalk matrix element for every pair of amplifiers in the camera; identic
 %\XXX{Remove this commentary in final version:} Whilst this is not ``hard'' in the intellectual sense, it is a fiddly thing and easy to get wrong, both in the measurement and potentially the correction; the LSST focal plane is likely to be heterogeneous, and the readout direction between the amplifiers differ between the chip flavors, meaning that crosstalk ghosts may appear mirrored in one or more axes. Furthermore, whilst unlikely to exist (nay certain, we are assured), \emph{should} a timing offset exist between REBs or CCDs, the crosstalk ghost positions would change, and a single matrix would be insufficient to describe the correction.
 \alg In the un-multiplexed limit, this involves dithering a single CBP spot around the focal plane and measuring the positive and negative crosstalk ghosts, whilst disambiguating these from optical ghosts using the fact that electronic ghosts have fixed focal-plane coordinate offsets whereas optical ghosts will move as a function of the CBP pointing. Some multiplexing will be possible using a multi-pinhole CBP mask, though the level of this remains to be determined, and depends on the final properties of the camera and the optical system. We baseline for a single spot mask, a one-spot-per-CCD mask, a one-spot-per-raft-mask, and ideally a one-spot-per-amplifier mask.
 
-CBP dithering scripts will be written which will involve mask-specific raster scanning routines, followed by either performing a camera rotation or by re-raster scanning at a different M1 position for the previous focal plane positions to differentiate between the crosstalk and optical ghosts. Code to perform this differentiation will be written, which will then measure the coupling coefficients. Further reading on crosstalk in LSST CCDs can be found in \cite{OConnor15}.
+CBP dithering scripts will be written which will involve mask-specific raster scanning routines, followed by either performing a camera rotation or by re-raster scanning at a different M1 position for the previous focal plane positions to differentiate between the crosstalk and optical ghosts. Code to perform this differentiation will be written, which will then measure the coupling coefficients. Further reading on crosstalk in LSST CCDs can be found in \cite{2015JInst..10C5010O}.
 
-Confirmation of the measured crosstalk matrix will be performed using either CBP data, saturated stars' bleed trails, or cosmic rays in dark frames\cite{Yagi12}.
+Confirmation of the measured crosstalk matrix will be performed using either CBP data, saturated stars' bleed trails, or cosmic rays in dark frames\citep{2012PASP..124.1347Y}.
 
 
 \subsubsection{Master Impure Broadband Flats}\label{sec:CPP:output:BroadbandImpureFlat}
@@ -284,8 +284,8 @@ A set of standard stars, spectrally characterized above the atmosphere, covering
 \alg Color transformations need to be constructed from the Gaia measurements, based on assumptions about the objects' intrinsic SEDs, \ie not using only color terms. In the case that Gaia does not provide the catalog, a process similar to the Forward Global Calibration Model (FGCM) implemented by Eli Rykoff and David Burke for DES would be used. The latter process would likely be able to share atmospheric modelling code with the reductions performed for the \auxtelescope.
 
 
-\subsubsection{Spectrophotometric Standards}\label{sec:CPP:output:spectrophotometricStandards} 
-A set of photometrically characterized stars with well known spectra, distributed across the sky. This will likely be comprised of DA white-dwarves, CALSPEC standards, or a larger (\ie fainter) set of stars which will be bootstrapped from the faint extension to the CALSPEC standards\cite{Holberg16}.
+\subsubsection{Spectrophotometric Standards}\label{sec:CPP:output:spectrophotometricStandards}
+A set of photometrically characterized stars with well known spectra, distributed across the sky. This will likely be comprised of DA white-dwarves, CALSPEC standards, or a larger (\ie fainter) set of stars which will be bootstrapped from the faint extension to the CALSPEC standards\cite{2016ApJ...822...67N}.
 \alg Exactly how these stars will be chosen and cataloged remains TBD.
 
 
@@ -423,7 +423,7 @@ The effective end-to-end instrumental throughput, as a function of wavelength, f
 The atmospheric transmission as a function of wavelength, at the time each observation is made, is known at some position in the field-of-view by taking the ratio of \hyperref[sec:CPP:output:spectrophotometricStandards]{spectrophotometricly calibrated stellar spectrum} of a bright ($8^{\text{th}}-10^{\text{th}}$ magnitude) star, as measured by the \auxtelescope, to the BP/RP spectrum as measured above the atmosphere by Gaia. 
 
 
-It should be noted that the effective delivered spectral resolution of both the \hyperref[sec:CPP:output:spectrophotometricStandards]{Gaia spectrophotometry} and the \hyperref[sec:CPP:aux:atmosphericAbsorption]{atmospheric absorption} can be improved using model fits. The stellar spectra from Gaia, with ($R \sim 40-70$) for the BP and RP spectra respectively\cite{GaiaSpecs}, can be fitted to standard stellar spectral types, as will be done internally by Gaia for their data releases\cite{BailerJones10}. For the atmospheric absorption profile, as described in \secsymbol\ref{sec:CPP:aux:atmosphericAbsorption}, the absorption features from the atmosphere will be fitted to an atmospheric transmission model (\eg MODTRAN \etc), allowing us to improve the delivered measurement of the spectral absorption features present at the time of observation. 
+It should be noted that the effective delivered spectral resolution of both the \hyperref[sec:CPP:output:spectrophotometricStandards]{Gaia spectrophotometry} and the \hyperref[sec:CPP:aux:atmosphericAbsorption]{atmospheric absorption} can be improved using model fits. The stellar spectra from Gaia, with ($R \sim 40-70$) for the BP and RP spectra respectively\cite{GaiaSpecs}, can be fitted to standard stellar spectral types, as will be done internally by Gaia for their data releases\citep{2010MNRAS.403...96B}. For the atmospheric absorption profile, as described in \secsymbol\ref{sec:CPP:aux:atmosphericAbsorption}, the absorption features from the atmosphere will be fitted to an atmospheric transmission model (\eg MODTRAN \etc), allowing us to improve the delivered measurement of the spectral absorption features present at the time of observation.
 %How necessary it will be to enhance the stellar spectra provided by Gaia depends both on Gaia's delivered performance at GRDR3, and on the delivered performance of the \auxtelescope, as we need to match its performance at a minimum.
 %% Above line is commented out, as I think we plan to use the stellar model fitting from Gaia whatever happens.
 
@@ -516,8 +516,8 @@ While parts of the Calibration Products Pipeline have been prototyped by the LSS
 %
 %\begin{itemize}
 % \item{QE variation between pixels;}
-% \item{Static non-uniform pixel sizes (e.g.\ ``tree rings'' \cite{Stubbs14});}
-% \item{Dynamic electric fields (e.g.\ ``brighter-fatter'' \cite{Antilogus14});}
+% \item{Static non-uniform pixel sizes (e.g.\ ``tree rings'' \cite{2014JInst...9C3032S});}
+% \item{Dynamic electric fields (e.g.\ ``brighter-fatter'' \cite{1748-0221-9-03-C03048});}
 % \item{Time dependent effects in the camera (e.g.\ hot pixels, changing cross-talk coefficients);}
 % \item{Charge transfer (in)efficiency (CTE).}
 %\end{itemize}
@@ -621,7 +621,7 @@ While parts of the Calibration Products Pipeline have been prototyped by the LSS
 %
 %\subsection{Baseline Design}
 %
-%The adopted baseline algorithm is a variant of ``ubercal'' \cite{Padmanabhan08, Schlafly12}. This baseline is described in detail in the Photometric Self Calibration Design and Prototype Document (\UCAL).
+%The adopted baseline algorithm is a variant of ``ubercal'' \cite{2008ApJ...674.1217P, 2012ApJ...756..158S}. This baseline is described in detail in the Photometric Self Calibration Design and Prototype Document (\UCAL).
 %
 %\subsection{Constituent Use Cases and Diagrams}
 %
