@@ -1,60 +1,60 @@
 \section{Data Access, the Science User Interface and Tools}
 \label{sec:suit}
 
-An integral part of the LSST Data Management (DM) system is the provision of user access to the 
-LSST data products. Users will be able to access and interact with the data products hosted at 
-Data Access Centers (DACs) through a layered set of graphical and programmatic interfaces that 
+An integral part of the LSST Data Management (DM) system is the provision of user access to the
+LSST data products. Users will be able to access and interact with the data products hosted at
+Data Access Centers (DACs) through a layered set of graphical and programmatic interfaces that
 may be invoked both on the DAC systems and on remote computers.
 
-The present document focuses on the scientific pipelines and algorithms necessary to produce 
-the data described in the Data Products Definition Document. Details of the requirements, design, 
-and implementation plan for the data access interfaces and the DACs themselves thus are set forth 
-elsewhere. Nevertheless, we provide a short description of the expected user interfaces here in order 
+The present document focuses on the scientific pipelines and algorithms necessary to produce
+the data described in the Data Products Definition Document. Details of the requirements, design,
+and implementation plan for the data access interfaces and the DACs themselves thus are set forth
+elsewhere. Nevertheless, we provide a short description of the expected user interfaces here in order
 to place their design in context with the rest of DM.
 
-Access to the LSST data products, including the raw image data, the Level 1, Level 2, and Calibration 
-catalog and image data products, the Engineering and Facilities Database, and Level 3 data products 
-contributed by users, is enabled by two major software components: the Data Access layer (DAX) and 
-the Science User Interface and Tools (SUIT). This software will run on a combination of the 
-project-provided Data Access Centers' hardware and on users' remote devices, and will be supported 
-at the DACs by a number of IT-infrastructure services such as authentication and authorization, 
+Access to the LSST data products, including the raw image data, the Level 1, Level 2, and Calibration
+catalog and image data products, the Engineering and Facilities Database, and Level 3 data products
+contributed by users, is enabled by two major software components: the Data Access layer (DAX) and
+the Science User Interface and Tools (SUIT). This software will run on a combination of the
+project-provided Data Access Centers' hardware and on users' remote devices, and will be supported
+at the DACs by a number of IT-infrastructure services such as authentication and authorization,
 resource provisioning, and the like.
 
-\subsection{Data Access Layer} 
+\subsection{Data Access Layer}
 
-The Data Access Layer (DAX) will consist of both network APIs and Python APIs providing access to 
-the above data products. They will also enable the storage and retrieval of Level 3 data products created 
-by the community, depending on the availability of the resources needed for a product or set of products, 
-supporting the sharing of such data products between individuals, within collaborations, or with the 
-LSST community as a whole. DAX APIs will be provided both for image and tabular (e.g., catalog) data. 
-The DAX layer will include support for a variety of widely-used VO services and protocols, as well as 
-LSST-specific interfaces where appropriate. The Python APIs will enable access to LSST data products 
-at the Data Access Centers from remote systems as well as to user processes running at the DACs. 
-The DAX interfaces will provide access to a capability to run additional user-specific computations next 
+The Data Access Layer (DAX) will consist of both network APIs and Python APIs providing access to
+the above data products. They will also enable the storage and retrieval of Level 3 data products created
+by the community, depending on the availability of the resources needed for a product or set of products,
+supporting the sharing of such data products between individuals, within collaborations, or with the
+LSST community as a whole. DAX APIs will be provided both for image and tabular (e.g., catalog) data.
+The DAX layer will include support for a variety of widely-used VO services and protocols, as well as
+LSST-specific interfaces where appropriate. The Python APIs will enable access to LSST data products
+at the Data Access Centers from remote systems as well as to user processes running at the DACs.
+The DAX interfaces will provide access to a capability to run additional user-specific computations next
 to the data, operating on the results of large-scale database queries.
 
-\subsection{Science User Interface and Tools} 
+\subsection{Science User Interface and Tools}
 
-The Science User Interface and Tools (SUIT) will provide an interactive, exploratory analysis and visualization 
-environment for the users of LSST data. It is designed to enable creativity and flexible use by the astronomical 
-community, and will be highly configurable and customizable by individuals and collaborations. The SUIT will 
-provide a web-based entry portal suitable for the discovery, searching, and exploration of the LSST data products 
-and the interactive visualization of images, tabular data, and plots, while also providing a workspace environment 
-accessible through the portal or programmatically for additional data manipulation, analysis, and the storage and 
-retrieval of results. The workspace environment will enable users to utilize the resources made available in the 
-DAC for additional processing and storage of data and results. The workspace environment will feature a strong 
-integration of the SUIT's UI components for data searching and visualization with a Python Jupyter notebook 
-environment, in which users will be able to take advantage of the full power of the LSST software stack as well as 
-common community scientific and astronomical Python libraries and tools. The SUIT's components will be available 
-through both JavaScript and Python APIs to facilitate the development of 
+The Science User Interface and Tools (SUIT) will provide an interactive, exploratory analysis and visualization
+environment for the users of LSST data. It is designed to enable creativity and flexible use by the astronomical
+community, and will be highly configurable and customizable by individuals and collaborations. The SUIT will
+provide a web-based entry portal suitable for the discovery, searching, and exploration of the LSST data products
+and the interactive visualization of images, tabular data, and plots, while also providing a workspace environment
+accessible through the portal or programmatically for additional data manipulation, analysis, and the storage and
+retrieval of results. The workspace environment will enable users to utilize the resources made available in the
+DAC for additional processing and storage of data and results. The workspace environment will feature a strong
+integration of the SUIT's UI components for data searching and visualization with a Python Jupyter notebook
+environment, in which users will be able to take advantage of the full power of the LSST software stack as well as
+common community scientific and astronomical Python libraries and tools. The SUIT's components will be available
+through both JavaScript and Python APIs to facilitate the development of
 custom portals and the integration of these components into individuals' scientific workflows.
 
-The DAX and SUIT interfaces and frameworks are being designed so that they are suitable for use in the quality 
-assessment of the results from the DM algorithmic pipelines, as well as for operational data quality assessment 
-during observing. This will take full advantage of their configurability, and the resulting system will provide 
-pre-defined views of standard metrics and informative displays as well as an interactive exploration and 
+The DAX and SUIT interfaces and frameworks are being designed so that they are suitable for use in the quality
+assessment of the results from the DM algorithmic pipelines, as well as for operational data quality assessment
+during observing. This will take full advantage of their configurability, and the resulting system will provide
+pre-defined views of standard metrics and informative displays as well as an interactive exploration and
 visualization (``drill down'') capability.
 
-All of the DAX and SUIT software will be part of the open-source code base of the LSST project, and much of this 
+All of the DAX and SUIT software will be part of the open-source code base of the LSST project, and much of this
 software will be developed to be widely useful beyond the project-provided DAC environment.
 
