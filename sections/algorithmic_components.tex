@@ -44,7 +44,7 @@ regions where the linearity is considered unreliable as \texttt{SUSPECT}.
 
 \item Mask defects and saturation: application of \hyperref[sec:CPP:output:defectList]{master defect list} and \hyperref[sec:CPP:output:saturationLevel]{master saturation levels} to set the \texttt{BAD/SAT} bit(s) in the maskplane.
 
-\item Full frame corrections:	
+\item Full frame corrections:
 	\mysubitem Bias: Subtract the \hyperref[sec:CPP:output:bias]{master bias frame}.
 	\mysubitem Dark: Subtract an exposure length multiple of the \hyperref[sec:CPP:output:dark]{master dark frame}, perhaps including the slew time, depending on when the array is cleared.
 	\mysubitem Flats: Divide by the appropriate linear combination of  \hyperref[sec:CPP:output:monoPhotoFlat]{monochromatic master flats}.
@@ -53,7 +53,7 @@ regions where the linearity is considered unreliable as \texttt{SUSPECT}.
 
 \item Pixel level corrections:
 	\mysubitem The \bfeffect: Apply brighter fatter correction using the coefficients from \secsymbol\ref{sec:CPP:output:brighterFatterCoeffs}. \XXX{Need to add proper section about this and reference it as this is a non-trivial ISR algorithm. Just not sure where to put it.}
-	
+
 	\mysubitem Static pixel size effects: Correction of static effects such as tree rings, spider legs \etc using data from \secsymbol\ref{sec:CPP:output:pixelSizeMap}. \XXX{As above - needs details and referencing.}
 
 \item CTE correction: The method used to correct for CTE will depend on what was needed to fully characterize the charge transfer (see \secsymbol\ref{sec:CPP:output:CTE}).
@@ -95,11 +95,11 @@ Flat fielding will be performed as for DRP, but because the \hyperref[sec:CPP:au
 
 \subsubsection{Cosmic Ray Identification}
 \label{sec:acCosmicRayDetection}
-Cosmic rays will be identified using a Laplacian edge detection algorithm \citep{dokkum01}.  Laplacian edge detection involves convolving the image (I) with a smoothing function (f) tuned to the size of the expected edge width.
+Cosmic rays will be identified using a Laplacian edge detection algorithm \citep{2001PASP..113.1420V}.  Laplacian edge detection involves convolving the image (I) with a smoothing function (f) tuned to the size of the expected edge width.
 \[
 L = \bigtriangledown^2f\ast I
 \]
-In the case of cosmic rays, this implies a very sharp edge.  A natural choice is a Gaussian with small $\sigma$.  The discrete kernel chosen in \citep{dokkum01} is
+In the case of cosmic rays, this implies a very sharp edge.  A natural choice is a Gaussian with small $\sigma$.  The discrete kernel chosen in \citep{2001PASP..113.1420V} is
 \begin{align}
 \bigtriangledown^2 = \frac{1}{4}\left( \begin{array}{ccc}
 0 & -1 & 0 \\
@@ -164,7 +164,7 @@ The CR rejection algorithm does not depend on the PSF of the image.  The single 
 
 \subsubsection{Linear feature detection and removal}
 
-Satellite trails, out of focus airplanes, and meteors all cause long linear features in astronomical images.  The Hough Transform \citep{citation_needed} is a common tool used in computer vison applications to detect linear features.  Linear features are parameterized by $r$, the perpendicular distance to the line from the origin and $\theta$, the the angle of $r$ with the x-axis.  The $(r, \theta)$ space is binned and each pixel in the image adds its flux to all the bins consistent with that pixel location.  For bright linear features, the bin at the true location of the feature will fill up because more than one bright pixel is contributing to that location in parameter space.  After all pixels have been polled, the highest bins correspond to the linear features in the image.
+Satellite trails, out of focus airplanes, and meteors all cause long linear features in astronomical images.  The Hough Transform \citep{c1962method} is a common tool used in computer vison applications to detect linear features.  Linear features are parameterized by $r$, the perpendicular distance to the line from the origin and $\theta$, the the angle of $r$ with the x-axis.  The $(r, \theta)$ space is binned and each pixel in the image adds its flux to all the bins consistent with that pixel location.  For bright linear features, the bin at the true location of the feature will fill up because more than one bright pixel is contributing to that location in parameter space.  After all pixels have been polled, the highest bins correspond to the linear features in the image.
 
 This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.
 
@@ -460,11 +460,11 @@ Need to find someone (probably on AP team) to write this section.
 \item Deblending on direct image very problematic.
 \end{itemize}
 
-Arising primarily due to slight astrometric alignment or PSF matching errors between the two images, or effects such as differential chromatic aberration, flux “dipoles” are a common artifact often observed in image differences. These dipoles will lead to false detections of transients unless correctly identified and eliminated. Importantly, dipoles will also be observed in image differences in which a source has moved less than the width of the PSF. Such objects must be correctly identified and measured as dipoles in order to obtain accurate fluxes and positions of these objects. 
+Arising primarily due to slight astrometric alignment or PSF matching errors between the two images, or effects such as differential chromatic aberration, flux “dipoles” are a common artifact often observed in image differences. These dipoles will lead to false detections of transients unless correctly identified and eliminated. Importantly, dipoles will also be observed in image differences in which a source has moved less than the width of the PSF. Such objects must be correctly identified and measured as dipoles in order to obtain accurate fluxes and positions of these objects.
 
-Putative dipoles in image differences are identified as a positive and negative source whose footprints overlap by at least one pixel. These overlapping footprints are merged, and only the sources containing one and only one positive and negative merged footprint are passed to the dipole modeling task. There is a documented degeneracy (\url{http://dmtn-007.lsst.io}) between dipole separation and flux, such that dipoles with closely-separated lobes of high flux are statistically indistinguishable from ones with low flux and wider separations. We remove this degeneracy by using the {\em pre-subtraction images} (i.e., the warped, PSF-matched template image and the pre-convolved science image) to constrain the lobe positions (specifically, to constrain the centroid of the positive lobe in the science image and of the negative lobe in the template image). This is done by first fitting and subtracting a second-order 2-D polynomial to the background within a subimage surrounding each lobe footprint in the pre-subtraction images to remove any flux from background galaxies (we assume that this gradient, if it exists, is identical in both pre-subtraction images). Then, a dipole model is fit simultaneously to the background-subtracted pre-subtraction images and the image difference. 
+Putative dipoles in image differences are identified as a positive and negative source whose footprints overlap by at least one pixel. These overlapping footprints are merged, and only the sources containing one and only one positive and negative merged footprint are passed to the dipole modeling task. There is a documented degeneracy (\url{http://dmtn-007.lsst.io}) between dipole separation and flux, such that dipoles with closely-separated lobes of high flux are statistically indistinguishable from ones with low flux and wider separations. We remove this degeneracy by using the {\em pre-subtraction images} (i.e., the warped, PSF-matched template image and the pre-convolved science image) to constrain the lobe positions (specifically, to constrain the centroid of the positive lobe in the science image and of the negative lobe in the template image). This is done by first fitting and subtracting a second-order 2-D polynomial to the background within a subimage surrounding each lobe footprint in the pre-subtraction images to remove any flux from background galaxies (we assume that this gradient, if it exists, is identical in both pre-subtraction images). Then, a dipole model is fit simultaneously to the background-subtracted pre-subtraction images and the image difference.
 
-The dipole model consists of positive and negative instances of the PSF in the difference image at the dipole's location. The six dipole model parameters (positive and negative lobe centroids and fluxes) are estimated using non-linear weighted least-squares minimization (we currently use the Levenberg-Marquardt minimization algorithm). The resulting reduced $\chi^2$ and signal-to-noise estimates provide a measure by which the source(s) may be classified as a dipole. 
+The dipole model consists of positive and negative instances of the PSF in the difference image at the dipole's location. The six dipole model parameters (positive and negative lobe centroids and fluxes) are estimated using non-linear weighted least-squares minimization (we currently use the Levenberg-Marquardt minimization algorithm). The resulting reduced $\chi^2$ and signal-to-noise estimates provide a measure by which the source(s) may be classified as a dipole.
 
 We have tested the described dipole measurement algorithm on simulated dipoles with a variety of fluxes, separations, background gradients, and signal-to-noise. Including the pre-subtraction image data clearly improves the accuracy of the measured fluxes and centroids. We have yet to thoroughly assess the dipole measurement algorithm performance on crowded stellar fields. Such crowded fields may confuse the parameter estimates (both centroids and/or fluxes) when using the pre-subtraction images to constrain the fitting procedure, and in such situations, we may have to adjust the prior constraint which they impose.
 
@@ -612,7 +612,7 @@ A variant of \hyperref[sec:acSingleVisitBackgroundEstimation]{Single-Visit Backg
 Background-matching each \texttt{CoaddTempExp} to a reference exposure performs comparably to fitting
 the offsets to the N(N-1)/2 difference images, however the co-add quality will depend on the quality of the
 reference image.  Choosing a reference image on a per-patch basis is as simple as choosing the \texttt{CoaddTempExp} that
-maximizes coverage and is the highest weighted component in the chosen weighting scheme: e.g. minimum variance, optimum point source SNR. 
+maximizes coverage and is the highest weighted component in the chosen weighting scheme: e.g. minimum variance, optimum point source SNR.
 
 Coverage is defined as the fraction of non-NaN
 pixels in the \texttt{CoaddTempExp}. NaN pixels arise in \texttt{CoaddTempExp}s because of gaps between the chips and edges of the visit focal
@@ -633,7 +633,7 @@ coverage and sky-background, and can select a visit that minimizes that quantity
 \subsubsection{Tract Level}
 Constructing reference images for tract-sized co-adds follows the same principle, but requires maximizing the
 SNR/coverage of a large mosaic constructed from multiple visits.  Algorithms for mosaicking partially
-overlapping images have been well established \citep[e.g.][]{Sick2013, 2008ASPC..394...83B}. By mosaicking visits,
+overlapping images have been well established \citep[e.g.][]{2014AJ....147..109S, 2008ASPC..394...83B}. By mosaicking visits,
 applying additive scalar or sloping offsets to calexps, we can generate a tract-sized reference image.
 Algorithms for selecting visits to construct these fall on a spectrum of computational expense. On the less
 expensive side is a greedy algorithm which starts with a ``best'' (as defined above) visit chosen at the
@@ -719,7 +719,7 @@ This introduces a dependency on DRP's internal reference catalog not capture els
 \label{sec:acSingleVisitAstrometricFit}
 Full visit astrometric fitting will be done as a bootstrapping step toward higher quality calibration in DRP.  All measurements in the visit will be projected to a tangent plane, taking into account all knowledge of the sensor arrangement and optics.  The reference catalog (likely the DRP reference catalog) will be projected to the same tangent plane.
 
-Sources will be matched, again using a \cite{tabor04} like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for the Von Karman turbulence.
+Sources will be matched, again using a \cite{2007PASA...24..189T} like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for the Von Karman turbulence.
 
 \subsubsection{Joint Multi-Visit}
 \label{sec:acJointAstrometricFit}
@@ -799,7 +799,7 @@ Ideally, the retrieval will be to select the correct bounding box from the corre
 \subsection{PSF Matching}
 \label{sec:acPSFMatching}
 
-The essence of image subtraction is to astrometrically register the science image $S(x,y)$ and template image $T(x,y)$, and then match their point spread functions (PSFs) of so that they may be subtracted pixel by pixel. The PSFs are the time--averaged transfer functions of a point source through the Earth's atmosphere, telescope optics, and into the silicon of the detector before being read out. We assume that the science image can be modeled as a convolution of the template image by a PSF--matching kernel $\kappa(u,v;x,y)$, i.e., $S = \kappa \otimes T$. (Indices $u,v$ indicate that the kernel itself is a 2--dimensional function, which varies as a function of position $x,y$ in the image; during convolution and correlation there is an implicit summation over $u,v$.) Then the difference image, upon which new or variable sources are detected, is given by $D = S - (\kappa \otimes T)$. 
+The essence of image subtraction is to astrometrically register the science image $S(x,y)$ and template image $T(x,y)$, and then match their point spread functions (PSFs) of so that they may be subtracted pixel by pixel. The PSFs are the time--averaged transfer functions of a point source through the Earth's atmosphere, telescope optics, and into the silicon of the detector before being read out. We assume that the science image can be modeled as a convolution of the template image by a PSF--matching kernel $\kappa(u,v;x,y)$, i.e., $S = \kappa \otimes T$. (Indices $u,v$ indicate that the kernel itself is a 2--dimensional function, which varies as a function of position $x,y$ in the image; during convolution and correlation there is an implicit summation over $u,v$.) Then the difference image, upon which new or variable sources are detected, is given by $D = S - (\kappa \otimes T)$.
 
 \subsubsection{Image Subtraction}
 \label{sec:acImageSubtraction}
@@ -833,7 +833,7 @@ Detection on the difference image occurs through correlation of $D(x,y)$ with th
 \item Match science image to predetermined analytic PSF, as in PSF-matched coaddition.
 \end{itemize}
 
-In PSF-matched coaddition, input images are convolved by a kernel that matches their PSF to a predefined constant PSF before they are combined. This so-called ``model PSF matching'' uses the PSF-matching algorithm described in the previous section to match the PSF {\em   model} from an exposure to a pre-determined template (e.g., a constant-across-the-sky double Gaussian) PSF model. For this task, we realize each PSF model into an exposure-sized grid, and then utilize those as kernel candidates as input for the PSF matching algorithm described above. 
+In PSF-matched coaddition, input images are convolved by a kernel that matches their PSF to a predefined constant PSF before they are combined. This so-called ``model PSF matching'' uses the PSF-matching algorithm described in the previous section to match the PSF {\em   model} from an exposure to a pre-determined template (e.g., a constant-across-the-sky double Gaussian) PSF model. For this task, we realize each PSF model into an exposure-sized grid, and then utilize those as kernel candidates as input for the PSF matching algorithm described above.
 
 \subsection{Image Coaddition}
 \label{sec:acCoaddition}
@@ -876,7 +876,7 @@ scheme for generating DCR corrected templates.
 \subsubsection{Refraction from the Atmosphere}
 %reference stone and community posting on DCR
 
-Refraction is dependent on the local index of refraction of air $n_0(\lambda)$ at the observatory and, as a function of wavelength is given by, 
+Refraction is dependent on the local index of refraction of air $n_0(\lambda)$ at the observatory and, as a function of wavelength is given by,
 
 \begin{align}
 R(\lambda) &= r_0 n_0(\lambda) \sin z_0 \int_1^{n_0(\lambda)} \frac{dn}{n \left(r^2n^2 -r_0^2n_0(\lambda)^2\sin^2z_0\right)^{1/2}} \nonumber\\
@@ -887,7 +887,7 @@ with $z_0$ the zenith distance.
 
 
 % \begin{align}
-% 	n_0(\lambda) =&1 + \left(\left[2371.34 +\frac{683939.7}{130 - \sigma(\lambda)} +\frac{4547.3}{38.9 - \sigma(\lambda)^2}\right] D_s 
+% 	n_0(\lambda) =&1 + \left(\left[2371.34 +\frac{683939.7}{130 - \sigma(\lambda)} +\frac{4547.3}{38.9 - \sigma(\lambda)^2}\right] D_s
 % 		+ \left(6487.31 + 58.058 \sigma(\lambda)^2 - 0.71150 \sigma(\lambda)^4 +0.08851 \sigma(\lambda)^6\right) D_w \right)\times 10^{-8} \label{eqn:index_refraction}\\*
 % 	& where \nonumber\\*
 % 	\sigma(\lambda) &= 10^4 /\lambda \;\;\;\;\left(\mu m^{-1}\right)\nonumber \\*
@@ -925,7 +925,7 @@ with $z_0$ the zenith distance.
 % 		$\phi$ & $0^\circ \leq \phi < 360^\circ$ & Latitude of the observing site & Degrees \\
 % 		$h$ & $0\,m\leq h$ & Elevation of the observing site & meters \\
 % 		$z_0$ & $0^\circ\leq z_0 < 75^\circ$ & Zenith angle & Degrees
-		
+
 % 	\end{tabular}
 % 	\end{center}
 % 	\caption{Definition of parameters and their units}
@@ -941,36 +941,36 @@ can model the corresponding image at the zenith (or any other
 airmass), $I(x, 0)$. For simplicity, we will consider only a single
 row of a sensor as comprising an image, that the direction of the DCR
 is aligned along the row, and that the PSF is constant between
-images. 
+images.
 
 The impact of DCR is to move flux between pixels as a function of airmass and wavelength. Refraction, $R(\lambda, z)$, can be treated as a shift operator or a convolution, $D(\lambda, z)$, and is known given the refractive index of the atmosphere.  If we consider that the zenith image can be decomposed into a linear sum of images as a function of wavelength, i.e.,
 \begin{equation}
-I(x', 0) = \sum_\lambda I(x', 0, \lambda) 
+I(x', 0) = \sum_\lambda I(x', 0, \lambda)
 \end{equation}
 then the observed set of images are given by,
 \begin{equation}
-O(x, z) = \sum_\lambda I(x',\lambda) \otimes D(\lambda, z) 
+O(x, z) = \sum_\lambda I(x',\lambda) \otimes D(\lambda, z)
 \label{eq:convDCR}
 \end{equation}
 
-Solving for $I(x,\lambda)$ becomes a regression problem that can be 
+Solving for $I(x,\lambda)$ becomes a regression problem that can be
 solved for by minimizing
 \begin{equation}
-\chi^2 = \sum_x (O(x) - \sum_\lambda I(x',\lambda) \otimes D(\lambda))^2 
+\chi^2 = \sum_x (O(x) - \sum_\lambda I(x',\lambda) \otimes D(\lambda))^2
 \end{equation}
 
 There are a number of possible approaches for finding the ``zenith''
 image.  The convolution can be written as a transfer matrix, $T$,
-where the elements of the matrix correspond to the fraction of pixel $x'$ that maps to pixel $x$ in the observed image. Under this mapping, we can write the linear equations as $TI=O$ and by inverting the matrix solve for $I$. 
+where the elements of the matrix correspond to the fraction of pixel $x'$ that maps to pixel $x$ in the observed image. Under this mapping, we can write the linear equations as $TI=O$ and by inverting the matrix solve for $I$.
 
 While,  $T$, is clearly sparse the number of terms that must be solved for given the number of wavelengths $\lambda$ that $I$ is decomposed into, means that we require a heavily regularized regression. The initial implementation for the DCR corrected template will invert the linear equations assuming smoothness between adjacent pixels and as a function of wavelength, by adopting first and second
-order finite difference matrices. % (ref nate).  
-A prototype implementation has been demonstrated for the 1D case.  
+order finite difference matrices. % (ref nate).
+A prototype implementation has been demonstrated for the 1D case.
 
 A second approach will be to forward model the problem by iteratively updating
 $I$ based on a set of observations $O$.
 
-For each approach the number of wavelength bins that $I(x)$ can be decomposed into will depend on the number of observations at different airmass. The assumption of a constant PSF will clearly not hold for the LSST observations but can be incorporated within the convolution \autoref{eq:convDCR} or addressed through a separable, wavelength dependent, PSF convolution. The robustness of these techniques will need to be evaluated for low signal-to-noise sources and in the presence of scattered light and artifacts. 
+For each approach the number of wavelength bins that $I(x)$ can be decomposed into will depend on the number of observations at different airmass. The assumption of a constant PSF will clearly not hold for the LSST observations but can be incorporated within the convolution \autoref{eq:convDCR} or addressed through a separable, wavelength dependent, PSF convolution. The robustness of these techniques will need to be evaluated for low signal-to-noise sources and in the presence of scattered light and artifacts.
 
 \subsection{Image Decorrelation}
 \label{sec:acImageDecorrelation}
@@ -1196,27 +1196,27 @@ Cross-matching is undertaken using the Optimistic Pattern Matching (B) algorithm
   the remaining matches to the length of the edge corresponding to the
   brightest two sources and then for a new graph that excludes the
   brightest object from $I$ and finds the next brightest $m$ sources.
-\end{itemize} 
+\end{itemize}
 
-Once $m-1$ edges match, an initial verification step is performed where a gnomonic projection of the reference catalog is fit to the matched stars. Given a consistent fit to the gnomonic projection all sources and reference objects are matched in sensor coordinates (sorted by brightness) with the brightest source in $I$ selected when two sources are within the match tolerance (default 3 arcsec). 
+Once $m-1$ edges match, an initial verification step is performed where a gnomonic projection of the reference catalog is fit to the matched stars. Given a consistent fit to the gnomonic projection all sources and reference objects are matched in sensor coordinates (sorted by brightness) with the brightest source in $I$ selected when two sources are within the match tolerance (default 3 arcsec).
 
 For the case of no WCS for the sensor or a significant error in the
 WCS ($> 3$ arcsec), a blind matching will be undertaken using the
-algorithms in astrometry.net. 
+algorithms in astrometry.net.
 
 \subsubsection{Single Visit to Reference Catalog, Semi-Blind}
 \label{sec:acSingleVisitReferenceMatching}
 
 For single visit cross-matching matches all sources within a focal
 plane will be matched to the reference catalog, $R$. This case is a
-modification of the original Tabur algorithm. It must account for 
+modification of the original Tabur algorithm. It must account for
 significant distortions across the focal plane, and for deviations from a Euclidean space when due to the gnomonic projection.
 
 Modifications from the single sensor cross matching are:
 \begin{itemize}
 \item Given a model for the postions and orientations of the sensors
   on the focal plane, sensor coordinates are transformed to focal plane
-  coordinates 
+  coordinates
 \item The focal plane coordinates are corrected for the optical distortion model to provide a Euclidean space
 \end{itemize}
 
@@ -1245,25 +1245,25 @@ to the probabilistic assignment of a DIASource to a DIAObject.
 We define this assignment in terms of the Bayes Factor, $B$, that defines
 the ratio of the probability that the observed data, $D$, is more
 likely given a model, $H$, that the DIASource and DIAObject are
-matched, than for a model $K$, where the sources do not match. 
+matched, than for a model $K$, where the sources do not match.
 \begin{equation}
 B(H,K|D) = \frac{p(D|H)}{p(D|K)}
 \end{equation}
 see Budavari and Szalay \cite{2008ApJ...679..301B}.
 
 Assuming a normal distribution for positional uncertainties the Bayes
-Factor is given by, 
-\begin{equation} 
+Factor is given by,
+\begin{equation}
 B(H,K|D) = \frac{sinh (w)}{w} \prod_{i=1}^n \frac{w_i}{sinh (w_i)}
-\end{equation} 
-with 
+\end{equation}
+with
 \begin{equation}
 w = |\sum_{i=1}^n w_i \bar{x_i} |
 \end{equation}
 with $x_i$ the 3D unit vector for a position on a sphere, and
 $w=1/\sigma^2$ with $\sigma$ the uncertainty on the position.
 
-For the case of two sources and small uncertainties on the positions this simplifies to 
+For the case of two sources and small uncertainties on the positions this simplifies to
 \begin{equation}
 w = \sqrt(w_1^2 + w_2^2 +2 w_1 w_2 \cos(\phi)
 \end{equation}
@@ -1281,7 +1281,7 @@ will be persisted in the DIASource. Thresholds for the Bayes Factor
 will be derived from simulations.
 
 An extension to Bayes Factor association that accounts for unknown
-proper motions is also possible \citep{???}
+proper motions is also possible \citep{2010ApJ...719...59K}.
 
 
 \subsubsection{Object Generation}
@@ -1311,7 +1311,7 @@ proper motions is also possible \citep{???}
 
 \subsection{Ephemeris Calculation}
 \label{sec:acEphemerisCalculation}
-Ephemeris calculation for the purpose of association in the nightly pipelines and for attribution and precovery in dayMOPS will require an indexing algorithm as well as a numerical integration phase. The JPL Horizons page reports $~700,000$ asteroid orbits.  This is far too many to run forward for every observation we will take.  Thus, we will need to predict which bodies are likely to cross an aperture on the sky.  
+Ephemeris calculation for the purpose of association in the nightly pipelines and for attribution and precovery in dayMOPS will require an indexing algorithm as well as a numerical integration phase. The JPL Horizons page reports $~700,000$ asteroid orbits.  This is far too many to run forward for every observation we will take.  Thus, we will need to predict which bodies are likely to cross an aperture on the sky.
 
 There are tools that allow for orbit prediction.  As a baseline, we suggest using the OOrb (https://github.com/oorb/oorb).  Regardless of the tool we use in production, it will need the following features:
 \begin{itemize}
