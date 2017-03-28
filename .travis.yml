@@ -12,9 +12,9 @@ install:
   - git clone https://github.com/lsst/lsst-texmf.git
 script:
   - export TEXMFLOCAL=lsst-texmf/texmf
-  - latexmk -bibtex -pdf -f DM_Applications_Design.tex
+  - latexmk -bibtex -pdf -f LDM-151.tex
 after_success:
-  - cp DM_Applications_Design.pdf deployment/LDM-151.pdf
+  - cp LDM-151.pdf deployment/LDM-151.pdf
   - ltd-mason-travis --html-dir deployment
 env:
   global:
