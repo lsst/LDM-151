@@ -18,11 +18,11 @@ The work performed in this WBS serves several complementary roles:
 
 \begin{itemize}
  \item It will enable the production of calibration data products as required by the Level 2 Photometric Calibration Plan (\NewPCP{}) and other planning documents \cite{Lupton15}. This includes both characterization of the sensitivity of the LSST system (optics, filters and detector) and the transmissivity of, and emission from, the atmosphere;
- 
+
  \item It will characterize detector anomalies in such a way that they can be corrected either by the instrument signature removal routines in the Single Frame Processing Pipeline (\wbsSFM) or, if appropriate, elsewhere in the system;
- 
+
  \item It will provide updated values of the crosstalk matrix to the camera DAQ (for AP) and DM (for DRP) for correction of the raw data;
- 
+
  \item It will allow for characterization of the optical ghosts and scattered light in the system.
 \end{itemize}
 
@@ -32,22 +32,22 @@ The work performed in this WBS serves several complementary roles:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Inputs}
-\label{sec:CPP:inputs} 
+\label{sec:CPP:inputs}
 The following section details the input datasets which will be available to the Calibration Products Pipeline which will be acquired by the operations team at some frequency TBD. Some of these will be acquired frequently, \eg flats, while some will be acquired much less frequently, \eg the gain and linearity values. It should be noted that these are the raw inputs, and as such, the algorithmic sections for items that are listed as camera team deliverables are shown as ``None'' as these will have been previously developed. However, many of these items are re-listed in the \hyperref[sec:CPP:output]{outputs section}, where the algorithms to recalculate/monitor these on the mountain are defined.
 
 
-\subsubsection{Bias Frames}\label{sec:CPP:inputs:biases} 
+\subsubsection{Bias Frames}\label{sec:CPP:inputs:biases}
 A set of bias frames used for the production of the master bias frame, obtained by acquiring many zero second exposures with the shutter remaining closed, taken at the normal LSST cadence.
 \alg None - these just need to be taken.
 
 
-\subsubsection{Gain Values}\label{sec:CPP:inputs:gain} 
+\subsubsection{Gain Values}\label{sec:CPP:inputs:gain}
 \cameraTeam
 The gain values for all amplifiers in the camera, in \electron/ADU; note that these are required to high accuracy (0.1\%), as they are used in determination of the photometric flats.
 \alg None.
 
 
-\subsubsection{Linearity}\label{sec:CPP:inputs:linearityCurve} 
+\subsubsection{Linearity}\label{sec:CPP:inputs:linearityCurve}
 \cameraTeam
 The linearity curve for each amplifier in the camera, as well as the level above which these non-linearity curves should be considered unreliable.
 \alg None.
@@ -64,7 +64,7 @@ The crosstalk matrix for every pair of amplifiers in the camera. It is worth not
 \alg None.
 
 
-\subsubsection{Defect Map}\label{sec:CPP:inputs:defectList} 
+\subsubsection{Defect Map}\label{sec:CPP:inputs:defectList}
 \cameraTeam
 A list of all bad (unusable) pixels in each CCD, as well as list of possibly suspect pixels, \ie ones which should be flagged as such during processing.
 \alg None.
@@ -95,11 +95,11 @@ Sets of images taken with the Collimated Beam Projector (CBP). The proposed reso
 Sets of CBP images scanned in wavelength at 1nm resolution\footnote{1nm `resolution' here denotes the bandwith of the light source, and can be this width, or any amount lower. It should, however, be noted that the accuracy on the wavelength calibration of the light source needs to be at the 0.1nm level.} every 1nm for a fixed set of spot positions on the camera, and for fixed footprint on M1. No filter should be in the beam.
 %Add a reference to the DESC people showing that this is necessary for SN cosmology in LSST.?
 
-	
+
 \paragraph{CBP dataset 2}\label{sec:CPP:inputs:CBP:spot}
 Sets of CBP images scanned in wavelength at 20nm bandwidth every 100nm, while rotating the CBP about a pupil to move the spot pattern around the camera for a fixed footprint on M1. No filter should be in the beam.
 
-	
+
 \paragraph{CBP dataset 3}\label{sec:CPP:inputs:CBP:M1}
 Sets of CBP images scanned in wavelength at 20nm resolution every 100nm for a fixed set of spot positions on the camera, and for a number of footprints on M1; the minimum number of footprints is \c 6 for a 30cm CBP, but in reality the use of more pointings will be explored to test the assumption of azimuthal symmetry. No filter should be in the beam.
 
@@ -206,15 +206,15 @@ A set of master flats produced by taking the median of a set of `monochromatic' 
 
 \subsubsection{Master PhotoFlats}\label{sec:CPP:output:standardPhotoFlat}
 A set of master flats, each composed of a linear combination of \hyperref[sec:CPP:output:monoPhotoFlat]{pure monochromatic flats}, weighted by a flat-spectrum source (or other predefined standard SED), absorbed by a standard atmosphere, and observed through each filter. Each input flat will be calculated from the median of many exposures. This will only be necessary if per-object corrections are not being applied, though this product will always be used to flat-field the sky, with the appropriate sky-spectrum used for the weighting.
-\alg The combination of \hyperref[sec:CPP:output:monoPhotoFlat]{pure monochromatic flats} is simple, though the ``standard atmosphere'' and ``standard SED'' remain to be defined. 
+\alg The combination of \hyperref[sec:CPP:output:monoPhotoFlat]{pure monochromatic flats} is simple, though the ``standard atmosphere'' and ``standard SED'' remain to be defined.
 
 
 \subsubsection{Master Low-resolution narrow-band flats}\label{sec:CPP:output:monoPhotoFlatLowRes}
 A set of master flats produced by taking the median of a set of a low-resolution (both in space and wavelength) version of \secsymbol\ref{sec:CPP:output:monoPhotoFlat}, used to save memory in the conversion of the photometry from the flattened data using the current sky colour to the proper flatfield for a given SED.
-\alg Scripting to perform the necessary sweeps of the laser light source, and characterization of its output, as the pulse energy will need to be normalized to.	
+\alg Scripting to perform the necessary sweeps of the laser light source, and characterization of its output, as the pulse energy will need to be normalized to.
 
 
-\subsubsection{Pixel Sizes}\label{sec:CPP:output:pixelSizeMap} 
+\subsubsection{Pixel Sizes}\label{sec:CPP:output:pixelSizeMap}
 A map of the (effective) pixel-size distortions. At worst, this will be a {$n_{\mbox{width}}\times n_{\mbox{height}}\times 2$} datacube of floats. Pixel size distortions include small-scale quasi-random size variations, mask-stitching/tiling artifacts, tree-rings, and any other effects not dynamical in nature.
 \alg The algorithm to measure this is currently a (somewhat) unsolved problem. It has been claimed by Aaron Roodman, Michael Baumer and Christopher Davis that these can be measured from flat-fields, but the problem is under-constrained, and thus the stability (nay, validity?) of their measurements is questionable, despite seeming to work. Further thought is required to establish whether their method can be used, and if not, devise another one. It is not obvious how the problem can be made to be well constrained, but work is ongoing in the DESC Sensor Anomalies Working Group (SAWG) to investigate this which might help inform future thinking on the matter.
 \begin{note}
@@ -238,7 +238,7 @@ Measurement of the charge transfer efficiency for each amplifier/column in the c
 
 
 \subsubsection{Filter Transmission}\label{sec:CPP:output:filterTransmission}
-Monitoring of filter transmission \emph{in-situ}. As well as the filter transmission measurement provided by the camera team/vendor in \secsymbol\ref{sec:CPP:inputs:filterTransmission}, we further baseline the development of a procedure for monitoring the filter response at 1\,nm resolution using the approach described in \cite{Lupton15}, \ie by making suitable CBP measurements with and without the filter in the beam, and averaging over the angles. 
+Monitoring of filter transmission \emph{in-situ}. As well as the filter transmission measurement provided by the camera team/vendor in \secsymbol\ref{sec:CPP:inputs:filterTransmission}, we further baseline the development of a procedure for monitoring the filter response at 1\,nm resolution using the approach described in \cite{Lupton15}, \ie by making suitable CBP measurements with and without the filter in the beam, and averaging over the angles.
 
 Whilst the flat-top portion of the filter pass-band will be monitored, given the small expected gradient and minimal ringing, the transmission across the top becomes degenerate with gray extinction or mirror degradation and its monitoring is therefore of less importance than that of the filter edges. The evolution of the edges of the filter bandpasses will be monitored to the best of the ability of the photometric calibration hardware, with the limit likely imposed by the laser performance and ability to characterize its output spectrum.
 \alg Created from measurements in \secsymbol\ref{sec:CPP:inputs:CBP}.
@@ -248,7 +248,7 @@ Whilst the flat-top portion of the filter pass-band will be monitored, given the
 \end{note}
 
 
-\subsubsection{Ghost catalog}\label{sec:CPP:output:GhostCatalog} 
+\subsubsection{Ghost catalog}\label{sec:CPP:output:GhostCatalog}
 A catalog of the optical ghosts and glints which is available for use in other parts of the system. Detailed characterization of ghosts in the LSST system will only be possible once the system is operational. The baseline design therefore calls for this system to be prototyped using data from precursor instrumentation; we note that ghosts and ghoulies in \eg HSC are well-known and more significant than are expected in LSST.
 \begin{note}[Note from John Swinbank]
 It is not currently clear where the responsibility for characterizing ghosts and glints in the system lies. We assume it is outside this WBS. On realising this, RHL instructed that it be noted that this constitutes a possible new entry to the risk registry.
@@ -261,7 +261,7 @@ The plan, as it stands from Robert in an email, was that we would apply an overs
 
 
 
-%\subsubsection{Stellar spectra}\label{sec:CPP:output:starSpectrum} 
+%\subsubsection{Stellar spectra}\label{sec:CPP:output:starSpectrum}
 %One or more spectrophotometrically-calibrated star(s) in the field of view for every visit.
 %\alg How these will be chosen or produced is TBD.
 %
@@ -271,15 +271,15 @@ The plan, as it stands from Robert in an email, was that we would apply an overs
 %\alg How these will be chosen or produced is TBD.
 
 
-%\subsubsection{Photometric Standards}\label{sec:CPP:output:photometricStandards} 
+%\subsubsection{Photometric Standards}\label{sec:CPP:output:photometricStandards}
 %A set of photometric standard stars covering a range of colors lying within an appropriate magnitude range; the likely source of this data is Gaia. However, should this prove not to be a suitable source\footnote{ This is likely to be the case in the $u$-band, where Gaia's SNR for the BP spectra falls off rapidly.}, a catalog will be carefully generated using the survey's most photometric data, utilizing an \"ubercal/jointcal type approach.
 %\alg Color transformations need to be constructed from the Gaia measurements, based on assumptions about the objects' intrinsic SEDs, \ie not using only color terms. In the case that Gaia does not provide the catalog, a process similar to the Forward Global Calibration Model (FGCM) implemented by Eli Rykoff and David Burke for DES would be used. The latter process would likely be able to share atmospheric modelling code with the reductions performed for the \auxtelescope.
 %
 %
-%\subsubsection{Spectrophotometric Standards}\label{sec:CPP:output:spectrophotometricStandards} 
+%\subsubsection{Spectrophotometric Standards}\label{sec:CPP:output:spectrophotometricStandards}
 %xxx TODO
 
-\subsubsection{Spectral Standards}\label{sec:CPP:output:spectralStandards} 
+\subsubsection{Spectral Standards}\label{sec:CPP:output:spectralStandards}
 A set of standard stars, spectrally characterized above the atmosphere, covering a range of colors, and lying within an appropriate magnitude range, with one or more stars per LSST pointing; the likely source of this data is Gaia. However, should this prove not to be a suitable source\footnote{ This is likely to be the case in the $u$-band, where Gaia's SNR for the BP spectra falls off rapidly.}, a catalog will be carefully generated using the survey's most photometric data, utilizing an \"ubercal/jointcal type approach.
 \alg Color transformations need to be constructed from the Gaia measurements, based on assumptions about the objects' intrinsic SEDs, \ie not using only color terms. In the case that Gaia does not provide the catalog, a process similar to the Forward Global Calibration Model (FGCM) implemented by Eli Rykoff and David Burke for DES would be used. The latter process would likely be able to share atmospheric modelling code with the reductions performed for the \auxtelescope.
 
@@ -289,7 +289,7 @@ A set of photometrically characterized stars with well known spectra, distribute
 \alg Exactly how these stars will be chosen and cataloged remains TBD.
 
 
-\subsubsection{Astrometric Standards}\label{sec:CPP:output:astrometricStandards} 
+\subsubsection{Astrometric Standards}\label{sec:CPP:output:astrometricStandards}
 A set of stars used for the \emph{absolute} astrometric calibration of each visit, \ie the determination of the nominal pointing for each exposure. The likely source of this data is Gaia; there will be \smalltilde4 magnitudes of overlap between Gaia's faintest astrometric sources and LSST's brightest unsaturated sources, with the absolute astrometry provided by Gaia on these objects expected to be \smalltilde 450\microarcsec at the faint end. This data will be made available in Gaia Data Release 2.
 
 
@@ -320,8 +320,8 @@ Control scripts for the CBP and interfaces with the OCS will be written, to allo
 This section details the input data required to calibrate the \auxtelescope itself. Broadly, this will include most of the ingredients listed in \secsymbol\ref{sec:CPP:inputs}, but namely:
 
 \begin{itemize}
-	\item Gain values 
-	\subitem Less accuracy is needed here than for the main camera; a PTC-based measurement using flats will likely be sufficient if the data is binned and a quadratic fitted to correct for the \bfeffect, and will therefore reuse the PTC-based algorithm from the 8.4m. 
+	\item Gain values
+	\subitem Less accuracy is needed here than for the main camera; a PTC-based measurement using flats will likely be sufficient if the data is binned and a quadratic fitted to correct for the \bfeffect, and will therefore reuse the PTC-based algorithm from the 8.4m.
 	\item Crosstalk matrix
 	\subitem This will reuse the algorithm designed for the 8.4m assuming we have a previous CBP version available, otherwise this will be calculated from saturated stars and/or cosmic rays.
 	\item Linearity curves for each amplifier
@@ -341,7 +341,7 @@ This section details the input data required to calibrate the \auxtelescope itse
 	\item Disperser (grating/grism) transmission
 	\subitem The baseline specification is for a Ronchi grating to be used as the dispersive element in the optical design. Although the transmission of a Ronchi grating is flat in wavelength, because it will be placed in a non-parallel beam second order light contamination means that its effective transmission will not be perfectly flat, and this will need to be corrected for. Furthermore, a grism or blazed-grating are also being considered for use as the dispersive element, neither of which have flat responses in wavelength. However, the smoothly varying nature of their transmission functions will allow these to be fit for along at the same time as performing the fit to the atmospheric model.
 %	\item Filter transmission
-%	\subitem Assuming we have a previous CBP version available, the transmission of the \emph{ugrizy} filters will be monitored reusing the algorithms from the 8.4m. 
+%	\subitem Assuming we have a previous CBP version available, the transmission of the \emph{ugrizy} filters will be monitored reusing the algorithms from the 8.4m.
 
 %	\subitem Assuming we have a previous CBP version available, this will be measured by comparing spot fluxes...
 \end{itemize}
@@ -367,7 +367,7 @@ This section details the calibrated outputs from the \auxtelescope, which, like 
 
 
 \subsubsection{Atmospheric Absorption}\label{sec:CPP:aux:atmosphericAbsorption}
-As shown in Figure~\ref{fig:aux_telescope}, the determination of the atmospheric transmission starts with a two images, one dispersed and one direct and unfiltered, acquired back-to-back with the \auxtelescope, where the camera rotator will likely be set to align the spectra with the parallactic angle. A suitably scaled direct image is subtracted from the dispersed image to remove the zeroth-order light, leaving only the spectra. Regions in which the spectra fall are identified, and the strongest lines in these crude uncorrected-spectra are identified and used in conjunction with the astrometry from the direct image to determine the incident wavelength as function of position on the detector. 
+As shown in Figure~\ref{fig:aux_telescope}, the determination of the atmospheric transmission starts with a two images, one dispersed and one direct and unfiltered, acquired back-to-back with the \auxtelescope, where the camera rotator will likely be set to align the spectra with the parallactic angle. A suitably scaled direct image is subtracted from the dispersed image to remove the zeroth-order light, leaving only the spectra. Regions in which the spectra fall are identified, and the strongest lines in these crude uncorrected-spectra are identified and used in conjunction with the astrometry from the direct image to determine the incident wavelength as function of position on the detector.
 
 This information is then used to construct an appropriate flat-field for the main target object  in a narrow strip around the source, as a set of parallel stripes perpendicular to the dispersion direction, constructed from the monochromatic flatfield data-cube. If the dispersion is not parallel to the CCD's serial or parallel direction, \ie if we choose to disperse along the parallactic angle as above, then the Bresenham algorithm will be used to construct the appropriate flats. With the appropriate flat-fielding performed, the remainder of the normal ISR processing is completed.
 
@@ -383,7 +383,7 @@ The 1D spectra are then extracted from the image, flux calibrated, and corrected
 The \hyperref[sec:CPP:output:spectrophotometricStandards]{source's true SED} and the calibrated spectrophotometric observation are then used in conjunction with the observational meta-data, \eg the zenith angle, temperature, and barometric pressure, to derive an empirical measurement of the atmospheric transmission. This absorption profile is then fitted to an atmospheric transmission model to improve the delivered spectral absorption measurement, as well to provide a parametric description of the state of the atmosphere at the time of observation.
 
 
- 
+
 \subsubsection{Night Sky Spectrum}\label{sec:CPP:aux:nightSkySpectrum}
 The acquisition of a night sky spectrograph is unlikely as it is not in the baseline design specification. However, in the eventuality that such an instrument is obtained, we provision for the determination of the emission spectrum of the night sky near the \auxtelescope boresight, with $R \sim 200$\footnote{ It is not entirely clear yet whether these will be taken on the Calypso or the 8.4m boresight.}, which will be used to synthesize flat-field images matching the sky's SED using the \hyperref[sec:CPP:output:monoFlat]{monochromatic dome flats}.
 \alg Assuming we have a sky spectrograph this is simple. In the absence of a sky spectrograph, an $R \sim 10$ spectrum will be acquired using standard/narrowband filters. Furthermore, if the fringe structures are sufficiently stable, \ie they are well described by \smalltilde 3 PCA components, we may be able to simply use a classic fringe subtraction.
@@ -420,7 +420,7 @@ The Calibration Products Production section aims to provide all the ingredients 
 
 The effective end-to-end instrumental throughput, as a function of wavelength, focal-plane/pupil position, and time, is known from the \hyperref[sec:CPP:output:monoPhotoFlat]{ghost-corrected monochromatic flat-fields} and the \hyperref[sec:CPP:output:filterTransmission]{filter transmission functions}.
 
-The atmospheric transmission as a function of wavelength, at the time each observation is made, is known at some position in the field-of-view by taking the ratio of \hyperref[sec:CPP:output:spectrophotometricStandards]{spectrophotometricly calibrated stellar spectrum} of a bright ($8^{\text{th}}-10^{\text{th}}$ magnitude) star, as measured by the \auxtelescope, to the BP/RP spectrum as measured above the atmosphere by Gaia. 
+The atmospheric transmission as a function of wavelength, at the time each observation is made, is known at some position in the field-of-view by taking the ratio of \hyperref[sec:CPP:output:spectrophotometricStandards]{spectrophotometricly calibrated stellar spectrum} of a bright ($8^{\text{th}}-10^{\text{th}}$ magnitude) star, as measured by the \auxtelescope, to the BP/RP spectrum as measured above the atmosphere by Gaia.
 
 
 It should be noted that the effective delivered spectral resolution of both the \hyperref[sec:CPP:output:spectrophotometricStandards]{Gaia spectrophotometry} and the \hyperref[sec:CPP:aux:atmosphericAbsorption]{atmospheric absorption} can be improved using model fits. The stellar spectra from Gaia, with ($R \sim 40-70$) for the BP and RP spectra respectively\cite{GaiaSpecs}, can be fitted to standard stellar spectral types, as will be done internally by Gaia for their data releases\citep{2010MNRAS.403...96B}. For the atmospheric absorption profile, as described in \secsymbol\ref{sec:CPP:aux:atmosphericAbsorption}, the absorption features from the atmosphere will be fitted to an atmospheric transmission model (\eg MODTRAN \etc), allowing us to improve the delivered measurement of the spectral absorption features present at the time of observation.
@@ -428,7 +428,7 @@ It should be noted that the effective delivered spectral resolution of both the 
 %% Above line is commented out, as I think we plan to use the stellar model fitting from Gaia whatever happens.
 
 
-Images are flat-fielded using the color of the sky at the time of observation, and then re-flatfield with some pre-selected SED\footnote{ Whether this is a flat SED, some nominal SED \eg a G-star's, remains TBD.}. After this, per-object corrections are made, to correct for both the object's assumed SED and the atmospheric transmission at the time of observation. 
+Images are flat-fielded using the color of the sky at the time of observation, and then re-flatfield with some pre-selected SED\footnote{ Whether this is a flat SED, some nominal SED \eg a G-star's, remains TBD.}. After this, per-object corrections are made, to correct for both the object's assumed SED and the atmospheric transmission at the time of observation.
 %With each object correctly flat-fielded, and the atmospheric transmission and system response function corrected for in each visit, the entire visit has a photometric zeropoint assigned by fitting the stars in the visit to those in the \hyperref[sec:CPP:output:spectrophotometricStandards]{spectrophotometric catalogue.}, leaving each visit in each band corrected and tied together.
 With each object now flat-fielded with the appropriate spectrum, and the atmospheric transmission and system response functions corrected for in each visit, the photometric zero-point for the visit is fitted using the \hyperref[sec:CPP:output:spectrophotometricStandards]{photometric standard star set}. This therefore leaves just the overall flux level unknown, thus bringing us to one global photometric zero-point for the entire survey.
 
@@ -456,12 +456,12 @@ It should be noted that it is not yet known whether the atmospheric transmission
 
 
 
-%\hyperref[sectionlink]{text} 
-%\hyperref[sectionlink]{text} 
-%\hyperref[sectionlink]{text} 
-%\hyperref[sectionlink]{text} 
-%\hyperref[sectionlink]{text} 
-%\hyperref[sectionlink]{text} 
+%\hyperref[sectionlink]{text}
+%\hyperref[sectionlink]{text}
+%\hyperref[sectionlink]{text}
+%\hyperref[sectionlink]{text}
+%\hyperref[sectionlink]{text}
+%\hyperref[sectionlink]{text}
 
 
 
@@ -552,21 +552,21 @@ While parts of the Calibration Products Pipeline have been prototyped by the LSS
 %	\begin{note}
 %		Need to go back and add in doing monochromatic composite flat-fielding of this telescope, \emph{and} add that these need to be applied somewhere/somehow. The application of \emph{these} to the \auxtelescope\ data really doesn't belong in AP or DRP as all the other photocal stuff does.
 %	\end{note}
-	
+
 %	\item Crosstalk coupling: depending on where this happens in the electronic chain, this may be ``conservative" or ``generative", \ie\ if the crosstalk is from a capacitive coupling at an early stage of the readout then the crosstalk which is removed from the victims should be added back in to the aggressors, as this is signal which has been \emph{lost}. However, if it occurs after a significant amount of amplification (likely), then it should just be removed. Again, I'm sure this is known but I'd just like to check as this matters at the sub 1\% level. \rednote{Answer: Very likely generative, but the reasoning for this assumes a low impedance on the output analog lines (such that the voltage does not drop when capacitive coupling occurs) but this is actually not necessarily the case, and perhaps should be checked more thoroughly. Can likely persuade Paul O'Connor/Andrei Nomerotski/Hyeyun Park to investigate if necessary.}
-	
+
 %	\item Crosstalk (again): I am lead to believe that crosstalk correction will be applied in the DAQ. If this is correct, then this point is just to note that the calibration system needs to be able to disable this and access the truly raw images in order to make the crosstalk matrix measurements using CBP spots. It will also need to be able to push a new crosstalk matix to the DAQ to confirm meaurements (and to update the system in general). \rednote{RHL says this is already captured somewhere relevant.}
-	
+
 %	\item Crosstalk (yet again): Has anyone considered the nightmare scenario where crosstalk is a function of alt, az and rotator position due to changes in these couplings from cable movement? Or is this certain to be only a 1\% change in a 1\% effect, and therefore not a concern? \rednote{Answer: Turns out that it really is very unlikely indeed, as almost everything comes from intra-flex-cable coupling and wire-bond coupling, which won't move when the camera is repositioned.}
-	
+
 %	\begin{note}
 %		Need to include algorithm for applying crosstalk corrections after the fact in the event that the data-buffer overflows in the case of internet outages between the summit and the US. The also implies that a time history of the measured crosstalk matrices needs to be stored somewhere.
 %	\end{note}
-		
+
 %	\item Does bleeding occur only in the serial register? (surely not) If not then why do we expect it to be a per-amplifier thing particularly, rather than a per pixel effect, as it is presumably defined by the depth of each well? This is surely known, but I should discuss with someone. \rednote{Answer: There is more than one thing here: bleeding/blooming $\neq$ saturation. Blooming levels are a per-pixel effect (though likely very similar throughout a chip), whilst ``saturation'' is in the amplifier/ADC, which is obviously per-channel. }
-	
+
 %	\item Pulse-to-pulse variation in the narrowband laser. When averaged over, what is the RMS? And how stable is the mean over time? (I have met lasers which drift \bfeffect{like crazy}). How do these properties change as one sweeps the wavelength around as would be required for taking the 20nm width flats?
-	
+
 
 %\end{itemize}
 
