@@ -244,7 +244,7 @@ Whilst the flat-top portion of the filter pass-band will be monitored, given the
 \alg Created from measurements in \secsymbol\ref{sec:CPP:inputs:CBP}.
 
 \begin{note}
-	JIRA ticket \hyperref{https://jira.lsstcorp.org/browse/DM-9046}{}{}{\texttt{DM-9046}} has been filed to determine whether, given recent results from DESC showing that 0.1nm resolution on the evolution of the filter edges is required for SNIa cosmology with LSST, this will be added to the SRD and the requirements flowed down to here.
+	JIRA ticket \hyperref{https://jira.lsstcorp.org/browse/DM-9046}{}{}{\texttt{DM-9046}} has been filed to determine whether, given recent results from DESC showing that 0.1nm resolution on the evolution of the filter edges is required for SNIa cosmology with LSST, this will be added to the \SRD and the requirements flowed down to here.
 \end{note}
 
 
@@ -428,7 +428,7 @@ It should be noted that the effective delivered spectral resolution of both the 
 %% Above line is commented out, as I think we plan to use the stellar model fitting from Gaia whatever happens.
 
 
-Images are flat-fielded using the color of the sky at the time of observation, and then re-flatfield with some pre-selected SED\footnote{ Whether this is a flat SED, some nominal SED \eg a G-star's, remains TBD.}. After this, per-object corrections are made, to correct for both the object's assumed SED and the atmospheric transmission at the time of observation.
+Images are initially flat-fielded using the color of the sky at the time of observation. This ensures that the sky background is correctly flat-fielded, and can therefore be smoothly subtracted across amplifier and chip boundaries without residual discontinuities. This flat-fielding is then reversed, and the resulting sky-background-subtracted image is re-flatfield with some pre-selected SED\footnote{Whether this is a flat SED or some nominal SED \eg a G-star's remains TBD.} in order to obtain a first-order estimate of the object's SED. Later in processing, when an assumed SED has been derived for each object, per-object corrections are made to adjust both for the derived SED and for the atmospheric transmission at the time of observation.
 %With each object correctly flat-fielded, and the atmospheric transmission and system response function corrected for in each visit, the entire visit has a photometric zeropoint assigned by fitting the stars in the visit to those in the \hyperref[sec:CPP:output:spectrophotometricStandards]{spectrophotometric catalogue.}, leaving each visit in each band corrected and tied together.
 With each object now flat-fielded with the appropriate spectrum, and the atmospheric transmission and system response functions corrected for in each visit, the photometric zero-point for the visit is fitted using the \hyperref[sec:CPP:output:spectrophotometricStandards]{photometric standard star set}. This therefore leaves just the overall flux level unknown, thus bringing us to one global photometric zero-point for the entire survey.
 
@@ -617,7 +617,7 @@ While parts of the Calibration Products Pipeline have been prototyped by the LSS
 %
 %\subsection{Key Requirements}
 %
-%The Photometric Calibration Pipeline is required to internally calibrate the relative photometric zero-points of every observation, enabling the Level 2 catalogs to reach the required SRD precision.
+%The Photometric Calibration Pipeline is required to internally calibrate the relative photometric zero-points of every observation, enabling the Level 2 catalogs to reach the required \SRD precision.
 %
 %\subsection{Baseline Design}
 %
@@ -640,7 +640,7 @@ While parts of the Calibration Products Pipeline have been prototyped by the LSS
 %
 %\subsection{Key Requirements}
 %
-%The Astrometric Calibration Pipeline is required to calibrate the relative and absolute astrometry of the LSST survey, enabling the Level 2 catalogs to reach the required SRD precision.
+%The Astrometric Calibration Pipeline is required to calibrate the relative and absolute astrometry of the LSST survey, enabling the Level 2 catalogs to reach the required \SRD precision.
 %
 %\subsection{Baseline Design}
 %
