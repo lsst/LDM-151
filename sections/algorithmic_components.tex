@@ -808,7 +808,7 @@ The essence of image subtraction is to astrometrically register the science imag
 \item Includes identifying sources to use to determine matching kernel, fitting the kernel, and convolving by it.
 \end{itemize}
 
-The current implementation of the PSF matching algorithm is summarized in detail by Becker, et al. (2013) (\url{http://ls.st/x9f}).  We model the PSF--matching kernel by decomposing it into a set of basis functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$ \citep{1998ApJ...503..325A}, where the coefficients are determined via ordinary least-squares estimation:
+The current implementation of the PSF matching algorithm is summarized in detail in \citell{LDM-227}.  We model the PSF--matching kernel by decomposing it into a set of basis functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$ \citep{1998ApJ...503..325A}, where the coefficients are determined via ordinary least-squares estimation:
 %
 \begin{eqnarray}
 C_i & \equiv & (\kappa_i \otimes T); \\ \nonumber
@@ -1027,7 +1027,7 @@ Issues arising from complications often seen in real-world data such as spatiall
 \subsection{Variability Characterization}
 \label{sec:acVariabilityCharacterization}
 
-Following the \DPDD{}, lightcurve variability is characterized by providing a series of numeric summary `features' derived from the lightcurve. The DPDD baselines an approach based on Richards et al. \cite{2011ApJ...733...10R}, with the caveat that ongoing work in time domain astronomy may change the definition, but not the number or type, of features being provided.
+Following the \DPDD{}, lightcurve variability is characterized by providing a series of numeric summary `features' derived from the lightcurve. The \DPDD baselines an approach based on Richards et al. \cite{2011ApJ...733...10R}, with the caveat that ongoing work in time domain astronomy may change the definition, but not the number or type, of features being provided.
 
 Richards et al. define two classes of features: those designed to characterize variability which is periodic, and those for which the period, if any, is not important. We address both below.
 
