@@ -815,7 +815,7 @@ functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$, where the coefficients
 are determined via ordinary least-squares estimation.  The basis functions
 $\kappa_i(u,v)$ are a degree of freedom in this problem.
 \footnote{The current implementation of the A\&L matching algorithm is
-summarized in detail by \citet{Becker13}.}
+summarized in detail in \citeds{LDM-227}.}
 
 A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image after brighter-fatter corrections have been applied.  The kernel candidates are selected using a star selector to query the appropriate reference catalog for sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures.
 
