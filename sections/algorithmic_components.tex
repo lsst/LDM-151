@@ -704,7 +704,7 @@ across the CCD.
 
 AP will need good astrometeric calibration on single frames in order to do the relative warping between the template and science images.  We have seen that the kernel matching algorithm can take out bulk astrometric errors up to a significant fraction of a pixel.  However, we expect subtraction performance to improve if astrometric errors are minimized.  Astrometric errors between the science and template coordinate systems should therefore be less than 15\,mas.  We expect to use the internal reference catalog used in DRP as the reference catalog.  This will be based on astrometry from an external source and will be extended using high quality measurements on coadds from DRP.
 
-We can project the per-chip coordinates into a flat projection in the focalplane.
+We can project the per-chip coordinates onto the surface of a unit sphere.
 This will take out the bulk of the optical distortion.
 We will then match the science and template sources and fit a distortion model to minimize the residual positional offsets.
 
@@ -716,7 +716,7 @@ This introduces a dependency on DRP's internal reference catalog not capture els
 \label{sec:acSingleVisitAstrometricFit}
 Full visit astrometric fitting will be done as a bootstrapping step toward higher quality calibration in DRP.  All measurements in the visit will be projected to a tangent plane, taking into account all knowledge of the sensor arrangement and optics.  The reference catalog (likely the DRP reference catalog) will be projected to the same tangent plane.
 
-Sources will be matched, again using a \cite{2007PASA...24..189T}-like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for the Von Karman turbulence.
+Sources will be matched, again using a \cite{2007PASA...24..189T}-like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for atmospheric (von K\'{a}rm\'{a}n) turbulence.
 
 \subsubsection{Joint Multi-Visit}
 \label{sec:acJointAstrometricFit}
@@ -816,9 +816,9 @@ functions $\kappa(u,v) = \sum_i a_i \kappa_i(u,v)$, where the coefficients
 are determined via ordinary least-squares estimation.  The basis functions
 $\kappa_i(u,v)$ are a degree of freedom in this problem.
 \footnote{The current implementation of the A\&L matching algorithm is
-summarized in detail by Becker et al. (2013) (\url{http://ls.st/x9f}).}
+summarized in detail by \citet{Becker13}.}
 
-A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image after brighter-fatter corrections have been applied.  The kernel candidates are selected using the {\tt DiaCatalogSourceSelector} to query the appropriate reference catalog for sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures.
+A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image after brighter-fatter corrections have been applied.  The kernel candidates are selected using a star selector to query the appropriate reference catalog for sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures.
 
 Detection on the difference image occurs through correlation of $D(x,y)$ with the science image's PSF, yielding a detection image $D'(x,y) = D(x,y) \otimes PSF(u,v;x,y)$. The values of the pixels in $D'(x,y)$ provide a maximum likelihood estimate of there being a point source at that position.  Detection occurs by simply finding pixels that are more than $N \times \sigma$ above the square root of the per--pixel variance, allowing for covariances.
 
@@ -1177,14 +1177,13 @@ Given a set of sources detected on a single sensor, and a corresponding referenc
 We assume that the sources detected on the sensor have approximate positions given by the telescope's initial estimate of a WCS, that we know the plate scale of the system, and that positional errors are available for both the sensor and reference catalog.
 
 Cross-matching may be undertaken using the Optimistic Pattern Matching (B) algorithm of Tabur \cite{2007PASA...24..189T}.
-The algorithm defines an order $m$ (default 6) size $m-1$ acyclic connected tree as the pattern to match between catalogs.
-Trees are constructed and matched for the brightest $n$ stars (default = 50) in descending order until a match is found.
+The algorithm defines an order $m$ size $m-1$ acyclic connected tree as the pattern to match between catalogs.
+Trees are constructed and matched for the brightest $n$ stars in descending order until a match is found.
 
 After a matched solution is found, we will verify the quality of the match by comparing the positions of the science and reference objects.
 
 For the case of no WCS for the sensor or a significant error in the
-WCS ($> 3$ arcsec), blind matching will be undertaken (e.g., by using the
-algorithms in astrometry.net).
+WCS ($> 3$ arcsec), matching with a blind solver will be undertaken.
 
 \subsubsection{Single Visit to Reference Catalog, Semi-Blind}
 \label{sec:acSingleVisitReferenceMatching}
