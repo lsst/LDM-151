@@ -10,7 +10,7 @@ Alert Production is run each night to produce catalogs and images for sources th
 \small
 \begin{tabularx}{\textwidth}{ | l | l | X | }
   \hline
-  {\bf Name} & {\bf Availability} & {\bf Description} \\
+  \textbf{Name} & \textbf{Availability} & \textbf{Description} \\
   \hline
   \DIASource & Stored &
   Measurements from difference image analysis of individual exposures. \\
@@ -228,7 +228,7 @@ The Alert Generation pipeline is required to difference, and detect and characte
 \subsubsection{Template Generation}
 \label{sec:apCRTemplates}
 
-Template generation requires the creation or retrieval (see \ref{sec:acRetrieveTemplate}) of a TemplateCoadd that is matched to the position and spatial extent of the input CalExp. Generation of the TemplateCoadd could be from a persisted Coadd that was generated from CalExp exposures with comparable (within a predefined tolerance) airmass and parallactic angles, or from a model that corrects for the effect of  differential chromatic refraction (see \ref{sec:acDCRTemplates}). It is expected that these operations would be undertaken on a CCD level but for efficiency the TemplateCoadd might be returned for a full focal plane or a series of {\it patches}  or a {\it tract}.
+Template generation requires the creation or retrieval (see \ref{sec:acRetrieveTemplate}) of a TemplateCoadd that is matched to the position and spatial extent of the input CalExp. Generation of the TemplateCoadd could be from a persisted Coadd that was generated from CalExp exposures with comparable (within a predefined tolerance) airmass and parallactic angles, or from a model that corrects for the effect of  differential chromatic refraction (see \ref{sec:acDCRTemplates}). It is expected that these operations would be undertaken on a CCD level but for efficiency the TemplateCoadd might be returned for a full focal plane or a series of \textit{patches}  or a \textit{tract}.
 
 
 \paragraph{Pipeline Tasks}
@@ -328,7 +328,7 @@ Creates the associated image cutouts (30x30 pixels on average) for all detect \D
 \subsubsection{Alert queuing and persistance}
 \label{sec:apQueue}
 
-The alert queue  distributes and persists \DIAObject with new \DIASources as \VOEvents through a message queue. It includes a {\it limited} filtering interface but persists the full \VOEvents in an AlertDB. The event message stream and the AlertDB will be  synchronized at least once every 24 hours.
+The alert queue  distributes and persists \DIAObject with new \DIASources as \VOEvents through a message queue. It includes a \textit{limited} filtering interface but persists the full \VOEvents in an AlertDB. The event message stream and the AlertDB will be  synchronized at least once every 24 hours.
 
 
 \paragraph{Pipeline Tasks}
