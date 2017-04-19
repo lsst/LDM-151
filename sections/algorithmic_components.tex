@@ -772,7 +772,7 @@ It is possible that the calibration products production may not produce adequate
 
 Global photometric fitting (as opposed to tract-level \hyperref[sec:acJointPhotometricFit]{Joint Multi-Visit Photometric Fitting}) will most likely not be run in Data Release Production, as we expect to be able to use the Gaia catalogs to calibrate between tracts.  The suitability of the Gaia catalogs for this purpose still needs to be confirmed in detail (it depends on our ability to predict LSST colors from Gaia BP/RP spectra).  Even if Gaia is used, a global photometric fit may still be useful as a QA tool (run after DRP) to verify the quality of the global photometric.
 
-Tract-level photometric calibration leaves a ``floating zeropoint" in the solution (if you add X to all the $m_i$'s, and -X to all the $z_j$'s the solution is the same).  If one solves regions of the sky independently, then the floating zeropoints $T_j$ of each tract need to be matched:
+Tract-level photometric calibration leaves a ``floating zeropoint'' in the solution (if you add X to all the $m_i$'s, and -X to all the $z_j$'s the solution is the same).  If one solves regions of the sky independently, then the floating zeropoints $T_j$ of each tract need to be matched:
 \begin{equation}
 p_{i,j} = p_i + T_j
 \end{equation}
