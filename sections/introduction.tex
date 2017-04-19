@@ -32,7 +32,6 @@ To carry out this mission the Data Management System (DMS) performs the followin
 \end{itemize}
 
 The overall architecture of the DMS is discussed in more detail in the Data Management System Design (\DMSD) document. The overall architecture of the DMS is shown in Figure~\ref{fig:DMS}.
-\\
 
 This document discusses the role of the Applications layer in the first three functions listed above (the functions involving \emph{science pipelines}).  The fourth is discussed separately in the SUI Conceptual Design Document (\SUI).
 
@@ -115,5 +114,3 @@ As shown in Figure~\ref{fig:DMS}, the Applications Layer is itself split into th
 Pipelines are largely composed of Algorithmic Components: mid-level algorithmic code that we expect to reuse (possibly with different configuration) across different productions.  These components constitute the bulk of the new code and algorithms to be developed for Alert Production and Data Release Production, and are discussed in section~\ref{sec:algorithmic-components}.  Most algorithmic components are applicable to any sort of astronomical imaging data, but some will be customized for LSST.
 
 The lowest level in the Applications Layer is made up of our shared software primitives: libraries that provide important data structures and low-level algorithms, such as images, tables, coordinate transformations, and nonlinear optimizers.  Much (but not all) of this content is astronomy-related, but essentially none of it is specific to LSST, and hence we can and will make use of third-party libraries whenever possible.  These primitives also play an important role in connecting the Science User Interface Toolkit and Level 3 processing environment with Level 1 and Level 2 data products, as they constitute the programmatic representation of those data products.  Shared software primitives are discussed in section~\ref{sec:software-primitives}.
-
-
