@@ -462,7 +462,7 @@ Need to find someone (probably on AP team) to write this section.
 
 Arising primarily due to slight astrometric alignment or PSF matching errors between the two images, or effects such as differential chromatic aberration, flux “dipoles” are a common artifact often observed in image differences. These dipoles will lead to false detections of transients unless correctly identified and eliminated. Importantly, dipoles will also be observed in image differences in which a source has moved less than the width of the PSF. Such objects must be correctly identified and measured as dipoles in order to obtain accurate fluxes and positions of these objects.
 
-Putative dipoles in image differences are identified as a positive and negative source whose footprints overlap by at least one pixel. These overlapping footprints are merged, and only the sources containing one and only one positive and negative merged footprint are passed to the dipole modeling task. There is a documented degeneracy (\url{http://dmtn-007.lsst.io}) between dipole separation and flux, such that dipoles with closely-separated lobes of high flux are statistically indistinguishable from ones with low flux and wider separations. We remove this degeneracy by using the {\em pre-subtraction images} (i.e., the warped, PSF-matched template image and the pre-convolved science image) to constrain the lobe positions (specifically, to constrain the centroid of the positive lobe in the science image and of the negative lobe in the template image). This is done by first fitting and subtracting a second-order 2-D polynomial to the background within a subimage surrounding each lobe footprint in the pre-subtraction images to remove any flux from background galaxies (we assume that this gradient, if it exists, is identical in both pre-subtraction images). Then, a dipole model is fit simultaneously to the background-subtracted pre-subtraction images and the image difference.
+Putative dipoles in image differences are identified as a positive and negative source whose footprints overlap by at least one pixel. These overlapping footprints are merged, and only the sources containing one and only one positive and negative merged footprint are passed to the dipole modeling task. There is a documented degeneracy (\url{http://dmtn-007.lsst.io}) between dipole separation and flux, such that dipoles with closely-separated lobes of high flux are statistically indistinguishable from ones with low flux and wider separations. We remove this degeneracy by using the \emph{pre-subtraction images} (i.e., the warped, PSF-matched template image and the pre-convolved science image) to constrain the lobe positions (specifically, to constrain the centroid of the positive lobe in the science image and of the negative lobe in the template image). This is done by first fitting and subtracting a second-order 2-D polynomial to the background within a subimage surrounding each lobe footprint in the pre-subtraction images to remove any flux from background galaxies (we assume that this gradient, if it exists, is identical in both pre-subtraction images). Then, a dipole model is fit simultaneously to the background-subtracted pre-subtraction images and the image difference.
 
 The dipole model consists of positive and negative instances of the PSF in the difference image at the dipole's location. The six dipole model parameters (positive and negative lobe centroids and fluxes) are estimated using non-linear weighted least-squares minimization (we currently use the Levenberg-Marquardt minimization algorithm). The resulting reduced $\chi^2$ and signal-to-noise estimates provide a measure by which the source(s) may be classified as a dipole.
 
@@ -624,7 +624,7 @@ same coverage, finding the best reference image reduces to the problem of weight
 
 For example, the reference image that minimizes the variance in the co-add is the minimum variance \texttt{CoaddTempExp}, and
 the reference image that maximizes SNR in coadd point source measurements is the \texttt{CoaddTempExp} with the maximum
-$T^2_i/{\rm FWHM}^2_i \sigma^2_i$, where $T_i$ is
+$T^2_i/\mathrm{FWHM}^2_i \sigma^2_i$, where $T_i$ is
 the normalization factor necessary to put the input \texttt{CoaddTempExp}s on the same photometric system (a proxy for the atmospheric transparency),
 and $\sigma^2_i$ the average variance of the pre-scaled exposure.  By combining one of
 these statistics with coverage, we can construct an objective/cost function that relates the importance of
@@ -772,7 +772,7 @@ It is possible that the calibration products production may not produce adequate
 
 Global photometric fitting (as opposed to tract-level \hyperref[sec:acJointPhotometricFit]{Joint Multi-Visit Photometric Fitting}) will most likely not be run in Data Release Production, as we expect to be able to use the Gaia catalogs to calibrate between tracts.  The suitability of the Gaia catalogs for this purpose still needs to be confirmed in detail (it depends on our ability to predict LSST colors from Gaia BP/RP spectra).  Even if Gaia is used, a global photometric fit may still be useful as a QA tool (run after DRP) to verify the quality of the global photometric.
 
-Tract-level photometric calibration leaves a ``floating zeropoint" in the solution (if you add X to all the $m_i$'s, and -X to all the $z_j$'s the solution is the same).  If one solves regions of the sky independently, then the floating zeropoints $T_j$ of each tract need to be matched:
+Tract-level photometric calibration leaves a ``floating zeropoint'' in the solution (if you add X to all the $m_i$'s, and -X to all the $z_j$'s the solution is the same).  If one solves regions of the sky independently, then the floating zeropoints $T_j$ of each tract need to be matched:
 \begin{equation}
 p_{i,j} = p_i + T_j
 \end{equation}
@@ -846,7 +846,7 @@ an ``afterburner'' rescaling of the A\&L difference image \citep{DMTN-021}.
 \item Match science image to predetermined analytic PSF, as in PSF-matched coaddition.
 \end{itemize}
 
-In PSF-matched coaddition, input images are convolved by a kernel that matches their PSF to a predefined constant PSF before they are combined. This so-called ``model PSF matching'' uses the PSF-matching algorithm described in the previous section to match the PSF {\em   model} from an exposure to a pre-determined template (e.g., a constant-across-the-sky double Gaussian) PSF model. For this task, we realize each PSF model into an exposure-sized grid, and then utilize those as kernel candidates as input for the PSF matching algorithm described above.
+In PSF-matched coaddition, input images are convolved by a kernel that matches their PSF to a predefined constant PSF before they are combined. This so-called ``model PSF matching'' uses the PSF-matching algorithm described in the previous section to match the PSF \emph{  model} from an exposure to a pre-determined template (e.g., a constant-across-the-sky double Gaussian) PSF model. For this task, we realize each PSF model into an exposure-sized grid, and then utilize those as kernel candidates as input for the PSF matching algorithm described above.
 
 \subsection{Image Coaddition}
 \label{sec:acCoaddition}
@@ -990,7 +990,7 @@ For each approach the number of wavelength bins that $I(x)$ can be decomposed in
 \subsubsection{Difference Image Decorrelation}
 \label{sec:acDiffImDecorrelation}
 
-In situations where the signal-to-noise in the template image is not insignificant (e.g., when the template is constructed by co-addition of a small number of exposures), the resulting image difference will contain autocorrelated noise arising from the convolution of the template with the PSF matching kernel prior to subtraction. This will result in inaccurate estimates of thresholds for {\tt diaSource} detection if the (potentially spatially-varying) covariances in the image difference are not properly accounted for.
+In situations where the signal-to-noise in the template image is not insignificant (e.g., when the template is constructed by co-addition of a small number of exposures), the resulting image difference will contain autocorrelated noise arising from the convolution of the template with the PSF matching kernel prior to subtraction. This will result in inaccurate estimates of thresholds for \texttt{diaSource} detection if the (potentially spatially-varying) covariances in the image difference are not properly accounted for.
 
 A viable alternative in the case of noisy template images is to construct a difference image with a flat noise spectrum, like the original input images \citep{Kaiser04, 2016ApJ...830...27Z}. This simply involves multiplying the image difference by a term which removes its frequency dependence,
 
@@ -1247,7 +1247,7 @@ w = \sqrt(w_1^2 + w_2^2 +2 w_1 w_2 \cos(\phi)
 \end{equation}
 and
 \begin{equation}
-B=\frac{2}{\sigma_1^2 + \sigma_2^2} \, {\rm exp}(-\frac{\phi^2}{2(\sigma_1^2 + \sigma_2^2)})
+B=\frac{2}{\sigma_1^2 + \sigma_2^2} \, \textrm{exp}(-\frac{\phi^2}{2(\sigma_1^2 + \sigma_2^2)})
 \end{equation}
 with $\phi$ the angle between the positions.
 
@@ -1293,8 +1293,8 @@ Ephemeris calculation for the purpose of association in the nightly pipelines an
 
 There are tools that allow for orbit prediction.  As a baseline, we suggest using the OOrb (https://github.com/oorb/oorb).  Regardless of the tool we use in production, it will need the following features:
 \begin{itemize}
-\item {\tt Propagation}: Take a set of orbits and do the full numerical integration forward/backward in time to produce a new set of orbital elements
-\item {\tt Prediction}: Produce a set of topocentric positions for a given set of objects at a particular time
+\item \texttt{Propagation}: Take a set of orbits and do the full numerical integration forward/backward in time to produce a new set of orbital elements
+\item \texttt{Prediction}: Produce a set of topocentric positions for a given set of objects at a particular time
 \end{itemize}
 
 In order to make spatial lookup of the orbits of interest fast, we will checkpoint the location of every Solar System object at the beginning, middle and end of each upcoming night.  The checkpointing will involve saving topocentric positions for all Solar System objects and saving the propagated orbital parameters at the end of the night.  We cannot precompute this for the duration of the survey because we will find new objects and we will update orbits of known objects.  This computation will be done daily as part of the preparatory work for nightly observing.  This is not a large computational challenge and is pleasingly parallel.
