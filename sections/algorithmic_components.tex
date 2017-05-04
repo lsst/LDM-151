@@ -688,14 +688,16 @@ across the CCD.
 
 \subsubsection{Full Visit PSF Estimation}
 \label{sec:acFullVisitPSF}
-%AUTHOR: Jim
-\begin{itemize}
-\item Decompose PSF into optical + atmosphere (and maybe sensor).
-\item Constrain model with stars, telemetry, and wavefront data.
-\item Wavelength-dependent.
-\item Used in *ImChar in DRP.
-\item Must include some approach to dealing with wings of bright stars (not trivial)
-\end{itemize}
+
+This algorithm represents our most careful and computationally expensive PSF estimation algorithm, and will be run only in DRP.  We anticipate a model that decomposes the PSF into components for the optical system and the atmosphere.  This should improve our ability to interpolate between star positions, provide physically-motivated wavelength dependence, and a way to interpolate the PSF model between CCDs.
+
+The optical component will be modeled in wavefront space using Zernike polynomials, but we will not use Zernike polynomial coefficients directly; instead, we will use an exploration of out-of-focus images to develop a model that relates the physical degrees of freedom (or some empirical-determined estimate of these) to the changes in the wavefront across the focal plane, and use those degrees of freedom as the free parameters in the optical model.
+
+The model for the atmospheric componet is less clear.  A simple elliptical model with a standard (Moffat, Kolmogorov, multi-Gaussian) profile may be adequate, with ellipticity and size interpolated using Gaussian processes.  If not, we will consider using such a model as a starting point from which we can iteratively fit a pixel-based (or other similarly flexible) model with the optical model; a major concern is that a too-flexible model will be degenerate with the optical model.
+
+The parameters of both components will be fit either iteratively or simultaneously to the images of a set of secure stars across the entire focal plane.  Images of out-of-focus stars from wavefront sensors may be utilized as well, but it is not clear yet how helpful they will be.
+
+In addition to using the above techniques to model the core of PSF, this algorithm is also responsible for estimating the wings of the PSF for bright stars, which may use entirely different (likely fully empirical) techniques.
 
 \subsection{Aperture Correction}
 \label{sec:acApCorr}
