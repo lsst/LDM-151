@@ -729,7 +729,7 @@ This will take out the bulk of the optical distortion.
 We will then match the science and template sources and fit a distortion model to minimize the residual positional offsets.
 
 \begin{note}[Dependency]
-This introduces a dependency on DRP's internal reference catalog not capture elsewhere.
+This introduces a dependency on DRP's internal reference catalog not captured elsewhere.
 \end{note}
 
 \subsubsection{Single Visit}
@@ -870,16 +870,35 @@ In PSF-matched coaddition, input images are convolved by a kernel that matches t
 
 \subsection{Image Coaddition}
 \label{sec:acCoaddition}
-%AUTHOR: Jim
+
+Once images are on a common pixel grid (either via
+\hyperref[sec:spWarping]{Warping}, or naturally in the case of snaps within a
+visit) and optionally \hyperref[sec:acPSFHomogenization]{PSF-homogenized},
+this algorithm is responsible for combining them into a single image.
+
+This is closely tied to \hyperref[sec:acWarpedImageArtifactDetection]{Warped
+Image Comparison}, which will not be used in all coaddition contexts but will
+either run simultaneously with coaddition or just before coaddition in some.
+
+Coaddition is more than a simple sum of images for two reasons:
 \begin{itemize}
-\item Must be able to do generalized outlier rejection, using histograms of detection masks produced on difference images.
-\item Needs to propagate full uncertainty somehow.
-\item Needs to propagate PSFs.
-\item Needs to propagate wavelength-dependent photometric calibration.
-\item May need to propagate larger-scale per-exposure masks to get right PSF model or other coadded quantities.
-\item Should be capable of combining coadds from different bands and/or epoch ranges ranges as well as combining individual exposures.
-\item Also needs to support combining snaps
+    \item it must be able to ignore selected pixels from one or more inputs, as indicated by mask images;
+    \item it must be able to propagate other objects associated with the image through the sum.  This includes full uncertainty information (or at least an approximation to it; not just variances), PSF models, wavelength-dependenth photometric calibration, and aperture corrections.
 \end{itemize}
+
+The associated object sums need not be computed in advance; in cases many
+cases it will be more efficient (in storage and computation) to store the
+full set of inputs and compute the sums at particular points on the image on-
+demand.  This will probably be the case for PSFs, aperture corrections, and
+wavelength-dependent photometric calibration.  Coaddition of uncertainty
+information will probably need to take hybrid approach; the variance, at
+least, will probably need to be computed in advance.
+
+Associated object sums also do not need to take into account which pixels on
+the inputs were ignored (doing so would virtually guarantee that neither
+advance nor on-demand calculaton would be efficient).  Coaddition must
+propagate sufficient information into the coadd mask image to allow regions
+in which the associated sums are incorrect to be identified.
 
 \subsection{DCR-Corrected Template Generation}
 \label{sec:acDCRTemplates}
