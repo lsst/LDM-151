@@ -164,12 +164,12 @@ The CR rejection algorithm does not depend on the PSF of the image.  The single 
 
 \subsubsection{Linear feature detection and removal}
 
-Satellite trails, out of focus airplanes, and meteors all cause long linear features in astronomical images.  The Hough Transform \citep{c1962method} is a common tool used in computer vison applications to detect linear features.  Linear features are parameterized by $r$, the perpendicular distance to the line from the origin and $\theta$, the the angle of $r$ with the x-axis.  The $(r, \theta)$ space is binned and each pixel in the image adds its flux to all the bins consistent with that pixel location.  For bright linear features, the bin at the true location of the feature will fill up because more than one bright pixel is contributing to that location in parameter space.  After all pixels have been polled, the highest bins correspond to the linear features in the image.
+Satellite trails, out of focus airplanes, and meteors all cause long linear features in astronomical images.  The Hough Transform \citep{c1962method} is a common tool used in computer vision applications to detect linear features.  Linear features are parameterized by $r$, the perpendicular distance to the line from the origin and $\theta$, the the angle of $r$ with the x-axis.  The $(r, \theta)$ space is binned and each pixel in the image adds its flux to all the bins consistent with that pixel location.  For bright linear features, the bin at the true location of the feature will fill up because more than one bright pixel is contributing to that location in parameter space.  After all pixels have been polled, the highest bins correspond to the linear features in the image.
 
 This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.
 
 An algorithm that takes care of both of these issues is presented in \cite{2016acs..rept....1B}.  We will use this
-as our baseline.  First the image is rescaled to maximize the contrast of faint linear features.  Next an edge detection algorithm is run on the image.  The reference implementation uses a Canny algorithm \citep{Canny:1986:CAE:11274.11275}.  This algorithm produces a set of edges that can then be mined for linear features.  They use a probababalistic Hough Transforms \citep{Galamhos:1999:IEEE:786993} to cut down on computational costs.  The probabalistic version limits the number of pixels that vote.  This results in a list of line segments.  The segments are binned in angle and any sement that is outside some tolorance of the mode is culled.  This cleaned set of segments is fed to the masking algorithm.
+as our baseline.  First the image is rescaled to maximize the contrast of faint linear features.  Next an edge detection algorithm is run on the image.  The reference implementation uses a Canny algorithm \citep{Canny:1986:CAE:11274.11275}.  This algorithm produces a set of edges that can then be mined for linear features.  They use a probabilistic Hough Transforms \citep{Galamhos:1999:IEEE:786993} to cut down on computational costs.  The probabilistic version limits the number of pixels that vote.  This results in a list of line segments.  The segments are binned in angle and any segment that is outside some tolerance of the mode is culled.  This cleaned set of segments is fed to the masking algorithm.
 
 The masking algorithm traverses each line segment found in the previous step by selecting a subregion around the segment and flattening the subregion.  A weighted mean of the subregion is computed and any pixels above some threshold are considered part of the trail and masked.  The subregion is moved along the segment until the end is reached.  This is repeated for every segment.
 
@@ -183,7 +183,7 @@ The masking algorithm traverses each line segment found in the previous step by 
 \end{note}
 
 \begin{note}[Bickerton writeup]
-Note that there is a writeup by Steve Bickerton on a different way to modify the Hough Transform to find satelite trails and it has been tried on HSC, but the paper is not complete.  Thus, I didn't use it as the baseline here.  The writeup is linked from DM-5872.
+Note that there is a writeup by Steve Bickerton on a different way to modify the Hough Transform to find satellite trails and it has been tried on HSC, but the paper is not complete.  Thus, I didn't use it as the baseline here.  The writeup is linked from DM-5872.
 \end{note}
 
 \subsubsection{Snap Subtraction}
@@ -200,9 +200,9 @@ Snap differences will provide significant leverage for masking linear features. 
 \subsubsection{Warped Image Comparison}
 \label{sec:acWarpedImageArtifactDetection}
 
-Additional artifacts will be detected in DRP by comparing multiple vists that have already been resampled to the same coordinate system.  This is similar conceptually to \hyperref[sec:acSnapSubtraction]{Span Subtraction}, but will operate quite differently in practice, in that we do not expect to combine this stage with the morphological detection stages; instead we assume that everything we can detect morphologically will have already been detected.
+Additional artifacts will be detected in DRP by comparing multiple visits that have already been resampled to the same coordinate system.  This is similar conceptually to \hyperref[sec:acSnapSubtraction]{Span Subtraction}, but will operate quite differently in practice, in that we do not expect to combine this stage with the morphological detection stages; instead we assume that everything we can detect morphologically will have already been detected.
 
-Instead, this stage will examine the full 3-d data cube (two spatial dimensions as well as the epoch dimension) for outliers in the epoch dimension that are contiguous in the spatial dimensions.  This is an extension of traditional coadd outlier-rejection, which can cause spurious rejections of single pixels (or small groups of pixels) due to noise and differing PSFs.  This can obviously detect astrophysical transients as well as image artifacts, and this is usually desirable; this stage is responsible for determing which pixels should contribute to our definition of the static sky, and we want to reject astrophysical transients from that as well.
+Instead, this stage will examine the full 3-d data cube (two spatial dimensions as well as the epoch dimension) for outliers in the epoch dimension that are contiguous in the spatial dimensions.  This is an extension of traditional coadd outlier-rejection, which can cause spurious rejections of single pixels (or small groups of pixels) due to noise and differing PSFs.  This can obviously detect astrophysical transients as well as image artifacts, and this is usually desirable; this stage is responsible for determining which pixels should contribute to our definition of the static sky, and we want to reject astrophysical transients from that as well.
 
 The largest challenge for this algorithm is probably handling highly variable astrophysical sources that are the nevertheless present in most epochs.  For these, defining the static sky is more subjective, and we may need to modify our criteria for rejecting a region on a visit as an outlier.
 
@@ -228,12 +228,12 @@ In the limit of faint, isolated objects and white noise, detection should be equ
 \begin{itemize}
   \item In crowded stellar fields, we expect to need to detect iteratively while subtracting the brightest objects at each iteration (see e.g. Section~\ref{sec:drpBootstrapImChar}).
   \item Optimal detection of diffuse galaxies may require correlating with kernels broader than the PSF.
-  \item When blending or any signficant sub-threshold objects are present, the noise properties may be sufficiently different from the usual assumptions in maximum-likelihood detection to allow those methods, and an alternate approach may be necessary.
+  \item When blending or any significant sub-threshold objects are present, the noise properties may be sufficiently different from the usual assumptions in maximum-likelihood detection to allow those methods, and an alternate approach may be necessary.
   \item When processing preconvolved difference images or likelihood coadds, detection will need to operate on images that have already been correlated with the desired filter.
   \item When operating on non-likelihood coadds and standard difference images, detection may need to operate on images with significant correlated noise.
 \end{itemize}
 
-In deep DRP processing (Section~\ref{sec:drp_coadd_processing}), detection is closely tied to the \hyperref[drpDeepAssociate]{deep association} and \hyperref[drpDeepDeblend]{deep deblending} algorithms, and may change signficantly from the baseline plan based on developments in those algorithms.  For example, we may need to adopt a multi-scale approach to these operations (and \hyperref[sec:drpCoaddBackgroundEstimation]{background estimation}) that essentially merges these into a single algorithmic component with no well-defined boundaries.
+In deep DRP processing (Section~\ref{sec:drp_coadd_processing}), detection is closely tied to the \hyperref[drpDeepAssociate]{deep association} and \hyperref[drpDeepDeblend]{deep deblending} algorithms, and may change significantly from the baseline plan based on developments in those algorithms.  For example, we may need to adopt a multi-scale approach to these operations (and \hyperref[sec:drpCoaddBackgroundEstimation]{background estimation}) that essentially merges these into a single algorithmic component with no well-defined boundaries.
 
 
 \subsection{Deblending}
