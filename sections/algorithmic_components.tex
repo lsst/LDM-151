@@ -189,7 +189,7 @@ Note that there is a writeup by Steve Bickerton on a different way to modify the
 \subsubsection{Snap Subtraction}
 \label{sec:acSnapSubtraction}
 \paragraph{Cosmic Rays}
-We will need to still run some sort of morphological identifier like the one outlined above.  This is because there will be real transients and we still only want to pick out the sharp features as CRs.  It will help to have less crowding, so we should do CR rejection on the snap difference if we have it.
+When subtracting snaps to form a visit, we will need to still run some sort of morphological identifier like the one outlined above to identify cosmic rays.  This is because there will be real transients and we still only want to pick out the sharp features as CRs.  It will also help to have less crowding, so we should do CR rejection on the snap difference if we have it.
 
 \paragraph{Ghosts}
 Snap differences will not help with ghosting as the ghosts should difference almost perfectly.
@@ -200,7 +200,7 @@ Snap differences will provide significant leverage for masking linear features. 
 \subsubsection{Warped Image Comparison}
 \label{sec:acWarpedImageArtifactDetection}
 
-Additional artifacts will be detected in DRP by comparing multiple visits that have already been resampled to the same coordinate system.  This is similar conceptually to \hyperref[sec:acSnapSubtraction]{Span Subtraction}, but will operate quite differently in practice, in that we do not expect to combine this stage with the morphological detection stages; instead we assume that everything we can detect morphologically will have already been detected.
+Additional artifacts will be detected in DRP by comparing multiple visits that have already been resampled to the same coordinate system.  This is similar conceptually to \hyperref[sec:acSnapSubtraction]{Snap Subtraction}, but will operate quite differently in practice, in that we do not expect to combine this stage with the morphological detection stages; instead we assume that everything we can detect morphologically will have already been detected.
 
 Instead, this stage will examine the full 3-d data cube (two spatial dimensions as well as the epoch dimension) for outliers in the epoch dimension that are contiguous in the spatial dimensions.  This is an extension of traditional coadd outlier-rejection, which can cause spurious rejections of single pixels (or small groups of pixels) due to noise and differing PSFs.  This can obviously detect astrophysical transients as well as image artifacts, and this is usually desirable; this stage is responsible for determining which pixels should contribute to our definition of the static sky, and we want to reject astrophysical transients from that as well.
 
@@ -573,7 +573,7 @@ Another option would be to fit both models simultaneously, by introducing a high
 
 \subsection{Spatial Models}
 \label{sec:acSpatialModels}
-In many areas we will need to represent spatial models.  This will include models fit to sparse and non-uniformly sampled data.  We will support fitting Chebyshev polynomials and splines.  We will also support regression techniques like Gaussian Processes.
+In many areas we will need to represent spatial models (generally over CCDs, visits, or coadd patches).  PSF models, sky backgrounds, aperture corrections, and WCSs all involve spatial variation on these scales, and at least some of these should share lower-level algorithm code to fit the spatila models.  This will include models fit to sparse and non-uniformly sampled data.  We will support fitting Chebyshev polynomials and splines.  We will also support regression techniques like Gaussian Processes.
 
 \subsection{Background Estimation}
 \label{sec:acBackgroundEstimation}
