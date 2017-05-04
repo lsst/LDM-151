@@ -661,6 +661,20 @@ P = \Sigma_n c_n\Psi_n
 where $\Psi_n$ is the $n^{th}$ basis function, and $c_n$ is the coefficient for that basis function.  We can solve for the coefficients for each PSF candidate in a least squares sense along with a model for the spatial variation of the PSF
 across the CCD.
 
+\begin{note}{JFB}
+    This algorithm is unlikely to work in crowded fields, where are no
+    isolated stars and hence it will probably be impossible to perform a PCA
+    of star images, and there's no way to separate kernel image fitting from
+    spatial interpolation.  If fitting a PSF in crowded fields is necessary
+    (for some image differencing algorithms, building image differencing
+    templates, or the stretch goal of performing crowded-field photometry),
+    we should consider starting with something simple, like a double-Gaussian
+    and iteratively running a traditional (Alard-Lupton-style) image-
+    differencing code between the science image and the model image to
+    generate an update to the PSF model (this is RHL's idea; I'm just stating
+    it).
+\end{note}
+
 \subsubsection{Wavefront Sensor PSF Estimation}
 \label{sec:acWavefrontSensorPSF}
 %AUTHOR: Jim
