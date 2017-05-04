@@ -701,13 +701,21 @@ In addition to using the above techniques to model the core of PSF, this algorit
 
 \subsection{Aperture Correction}
 \label{sec:acApCorr}
-%AUTHOR: Jim
+
+While photometric calibration is responsible for ensuring that one measure of flux is defined consistently both across epochs and with external datasets, aperture corrections are responsible for ensuring internal consistency between different flux measures.
+
+Aperture corrections for stars are straightforward but difficult in practice:
 \begin{itemize}
-\item Measure curves of growth from bright stars (visit-level, at least in DRP)
-\item Correct various flux measurements to infinite (CCD-level).  Stellar measurements are easy, galaxies are hard (impossible to do formally correctly?).
-\item Probably want sequence of apertures to agree asymptotically?
-\item Propagate uncertainty in aperture correction to corrected fluxes; covariance is tricky.
+\item Using a sequence of fixed-aperture fluxes from a sample of secure bright stars in a visit, we model the curve of growth as a (weak) function of position on the focal plane.  This may involve utilizing measurements from saturated stars to improve the signal-to-noise ratio in the largest apertures.
+\item Given this model, define the aperture correction for a photometry algorithm as the spatially-varying ratio of the extrapolated curve-of-growth flux to the flux measured by that algorithm (on the same sample of stars); like the curve-of-growth model, these aperture corrections are modeled as a weak function of position on the focal plane.
 \end{itemize}
+This scheme naturally puts the sequence of fixed-radius aperture fluxes on the same photometric system as the aperture-corrected fluxes if they are considered as a radial profile (i.e. they approach the total flux as the radius increases).  We may also want to aperture-correct some fixed-radius aperture fluxes so they too reflect the total flux.
+
+The uncertainty in estimating aperture corrections should be estimated and propagated to the corrected fluxes.  This is tricky, because the sequence of aperture fluxes use many of the same pixels for each as the algorithm we are tying to them, making them their uncertainties highly correlated.  To address this, all aperture-corrected photometry algorithms will have to be able to report the pixels they use in a measurement to allow this uncertainty to be estimated.  Once the aperture correction uncertainties are estimated, however, it should be acceptable to assume these are independent from the uncertainties of the fluxes to be corrected, even for the stars used to compute the aperture corrections, simply because the contribution of any one star should be small.
+
+Aperture-correcting galaxy photometry is essentially an unsolved problem: because galaxies have different profiles, we have no expectation that different measures of flux will generate the same result; the problems here are astrophysical, not observational.  For unresolved galaxies, however, it is clearly desirable that galaxy flux estimates be consistent with those for point sources, and that we at least approach consistency with point sources for resolved galaxies as their sizes decreases.  We will thus apply the stellar aperture corrections to all galaxy photometry algorithms as well.
+
+Like PSF models, aperture corrections cannot be measured directly on coadds, as their spatial variation becomes discontinuous when multiple dithered images are combined.  We intend to coadd aperture corrections in the same way we do PSFs.
 
 \subsection{Astrometric Fitting}
 \label{sec:acAstrometricFitting}
