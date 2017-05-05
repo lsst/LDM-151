@@ -739,7 +739,7 @@ Most LSST software development will be tested on precursor datasets, such as ima
 \label{sec:acRetrieveTemplate}
 In difference imaging a major contributor to the quality of the difference image is the choice of template.  We expect that the DRP template generation algorithm will be quite complex.  It will involve synthesizing multiple monochromatic templates that will be used to model the effects of DCR.
 
-The sub-band models of the DCR free scene will be used to realize an optimized template for the exposure in question.  Though the models will be expensive to produce, the algorithm for producing optimized templates will be much less so.  We expect to be able to run the tempate generation algorithm in real time. 
+The sub-band models of the DCR free scene will be used to realize an optimized template for the exposure in question.  Though the models will be expensive to produce, the algorithm for producing optimized templates will be much less so.  We expect to be able to run the tempate generation algorithm in real time.
 
 \subsection{PSF Matching}
 \label{sec:acPSFMatching}
@@ -818,7 +818,7 @@ astronomical image along the ``parallactic angle''. The fact that astronomical
 sources are not monochromatic causes a dispersion of the PSF as well
 as the bulk displacement.  The amplitude of
 this dispersion depends on the spectral energy distribution (SED) of
-the source because of the wavelength dependence of the refractive index 
+the source because of the wavelength dependence of the refractive index
 of the atmosphere. Differential
 chromatic refraction (DCR) refers to the SED dependent refraction
 within a given photometric passband. For the airmass range of the LSST
@@ -879,8 +879,9 @@ image.  The convolution can be written as a transfer matrix, $T$,
 where the elements of the matrix correspond to the fraction of pixel $x'$ that maps to pixel $x$ in the observed image. Under this mapping, we can write the linear equations as $TI=O$ and by inverting the matrix solve for $I$.
 
 There are various approaches to computing the inverse.  They have different tradeoffs
-and will be the subject of quantitative investigation.  This work is being
-documented at \href{https://dmtn-037.lsst.io/}{DMTN-037}.
+and will be the subject of quantitative investigation.
+This work is being documented in \citeds{DMTN-037}.
+
 \subsection{Image Decorrelation}
 \label{sec:acImageDecorrelation}
 \subsubsection{Difference Image Decorrelation}
@@ -890,7 +891,7 @@ In situations where the noise in the template image is significant (e.g., when t
 
 A viable alternative in the case of noisy template images is to construct a difference image with a flat noise spectrum, like the original input images \citep{Kaiser04, 2016ApJ...830...27Z}. Given knowledge of the noise properties of the input images and any convolution kernels one can construct a correction term that, when applied to the Fourier transform of the difference image can remove the frequency dependence of the noise in the difference.  This allows for the same detection algorithms to be used on difference images as the science image.  Otherwise, the correlated noise would need to be accounted for by other means.
 
-These corrections are derived in Fourier space, but issues arising from complications often seen in real-world data such as spatially-varying PSFs and/or poorly-evaluated matching kernels, spatially variable backgrounds and/or noise, and possibly non-Gaussian or heteroschedastic noise make it difficult to work exclusively in Fourier space. In the production system, a hybrid system of correction kernels calculated in Fourier space and applied as convolutions in real space may be the solution to these problems. 
+These corrections are derived in Fourier space, but issues arising from complications often seen in real-world data such as spatially-varying PSFs and/or poorly-evaluated matching kernels, spatially variable backgrounds and/or noise, and possibly non-Gaussian or heteroschedastic noise make it difficult to work exclusively in Fourier space. In the production system, a hybrid system of correction kernels calculated in Fourier space and applied as convolutions in real space may be the solution to these problems.
 
 \subsubsection{Coadd Decorrelation}
 \label{sec:acCoaddDecorrelation}
@@ -1100,7 +1101,7 @@ AUTHOR: Jim
 Assuming that all \DIAObject positions been propagated to the MJD of
 the visit (including proper motion and the generation of ephemerides
 for \SSObjects) association of a \DIASource with a \DIAObject simplifies
-to the probabilistic assignment of a \DIASource to a \DIAObject. See 
+to the probabilistic assignment of a \DIASource to a \DIAObject. See
 \cite{2008ApJ...679..301B} for a treatment of this problem.  Extensions
 to account for association in the presence of unknown proper motion are
 also possible \citep{2010ApJ...719...59K}.
