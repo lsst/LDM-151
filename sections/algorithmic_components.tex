@@ -1051,11 +1051,8 @@ Issues arising from complications often seen in real-world data such as spatiall
 
 \subsubsection{Coadd Decorrelation}
 \label{sec:acCoaddDecorrelation}
-%AUTHOR: Jim
-\begin{itemize}
-\item Fourier-space/iterative deconvolution of likelihood coadds, as in \citeds{DMTN-015}.
-\item Need to test with small-scale research before committing to this approach.
-\end{itemize}
+
+The plan image coaddition in DRP currently contains a major decision point regarding how to use optimal coadds (options \ref{itm:drpA}, \ref{itm:drpB}, \ref{itm:drpC} in Section~\ref{sec:drp_coaddition_and_diffim}).  If options \ref{itm:drpA} are chosen \ref{itm:drpB}, we will need to develop and implement an algorithm to decorrelate likelihood coadds.  This algorithmic problem is discussed at length in \citeds{DMTN-015}.
 
 \subsection{Star/Galaxy Classification}
 \label{sec:acClassification}
