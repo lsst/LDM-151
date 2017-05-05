@@ -1256,10 +1256,12 @@ Modifications from the single sensor cross matching are:
 
 \subsubsection{Multiple Visits to Reference Catalog}
 \label{sec:acJointCalMatching}
-AUTHOR: Jim
-\begin{itemize}
-\item Match sources from multiple visits to a single reference catalog, assuming good WCS solutions.
-\end{itemize}
+
+Before running the main algorithmic pieces of \hyperref[sec:drpStandardJointCal]{JointCal}, we will need to match sources from all visits in an area of sky to both each other and an external reference catalog.  Sources that are matched internally but not matched to a reference object must be included in the results as well.
+
+The solutions from \hyperref[sec:acSingleVisitAstrometricFit]{Per-Visit Astrometric Fitting} will be good enough that we will not need to worry about unknown offsets or distortions in this matching step; the main challenge is just dealing sensibly with ``disagreements'' between the visit-level source catalogs, primarily from differences in seeing that lead to differences in detection and/or deblending.  This will require some heuristic logic to reject cases where a source in one visit is deblended into multiple sources in another visit, but unlike the \hyperref[sec:acObjectGeneration]{Object Generation} case, here we can simply reject problematic sources from a match as long as the overall number and spatial coverage of the matches remains high.
+
+The scale of this matching problem is large enough that it will require an optimized implementation using spatial indices and careful management of memory and disk I/O.  Ideally, much of this work will be delegated to the \hyperref[spTablesNWayMatching]{N-Way Matching} software primitive.
 
 \subsubsection{DIAObject Generation}
 \label{sec:acDIAObjectGeneration}
@@ -1313,28 +1315,27 @@ proper motions is also possible \citep{2010ApJ...719...59K}.
 
 \subsubsection{Object Generation}
 \label{sec:acObjectGeneration}
-%AUTHOR: Jim
-\begin{itemize}
-\item Match coadd detections from different bands/SEDs/epoch-ranges, merging Footprints and associating peaks.
-\item Also merge in DIASources or (if already self-associated) DIAObjects.
-\end{itemize}
+
+Object Generation is the algorithmic core of the DRP \hyperref[sec:drpDeepAssociate]{DeepAssociate} pipeline, and will only be used there.  We refer the reader to the description of that pipeline for the requirements and design plans for this algorithm.
 
 \subsubsection{Blended Overlap Resolution}
 \label{sec:acBlendedOverlapResolution}
-%AUTHOR: Jim
-\begin{itemize}
-\item Given two or more overlapping blend families (with associated measurements), merge them by selecting the ``best'' measurement for each child object.
-\end{itemize}
+
+Blended Overlap Resolution is the algorithmic core of the DRP \hyperref[sec:drpResolvePatchOverlaps]{ResolvePatchOverlaps} and \hyperref[sec:drpResolveTractOverlaps]{ResolveTractOverlaps} overlaps pipelines, and will only be used there.  We refer the reader to the description of those pipelines for the requirements and design plans for this algorithm.
 
 \subsection{Raw Measurement Calibration}
 \label{sec:acRawMeasurementCalibration}
 
-%AUTHOR: Jim
+The process of calibrating raw measurements (in units of e.g. pixels or ADUs) to generate science-ready quantities is complicated by three factors:
 \begin{itemize}
-\item Apply astrometric and photometric calibrations to measurements in raw units, transforming them to calibrated quantities.
-\item May be applied within the database after ingest in some contexts, but needs to be available outside the database as well.
+    \item The final photometric calibration for an object will require assuming an SED, which we plan to infer from its colors.  Because the same SED should be used to evaluate the PSF model when measuring the object, the SED may need to be inferred from preliminary colors rather than the final ones, which would in turn require a preliminary photometric calibration at that stage.  Because the initial calibration and colors used to infer the SED probably do not need to be very good, this is not a hard algorithmic or scientific problem, but will require careful attention to detail in recording the provenance of these quantities.
+    \item Science users will need to be able to the recalibrate photometry of an object based on an SED they provide.  This can use the same code used to generate our own best-effort photometric calibration, but it adds a requirement that the code be usable from within the public database system and/or science platform.
+    \item While some measurements (like fluxes and centroids) can be calibrated in a generic way, other measured quantities are highly algorithm-dependent.  Because the set of algorithms is itself a dynamic, configurable part of our system, the algorithmic framework must provide a generic interface that allows each algorithm to define its own calibration procedure when a generic one will not suffice.
 \end{itemize}
 
+\begin{note}[JFB]
+    We need to make sure the requirement that we be able to recalibrate photometry inside the database and/or science platform is recognized by the teams responsible for those components as well.
+\end{note}
 
 \subsection{Ephemeris Calculation}
 \label{sec:acEphemerisCalculation}
