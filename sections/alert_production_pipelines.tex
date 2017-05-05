@@ -219,7 +219,7 @@ The Alert Generation pipeline is required to difference, and detect and characte
 
 \paragraph*{DiffExp Images:} Image differences derived by subtracting a TemplateCoadd from a CalExp image.
 
-\paragraph*{DIASource Databases:} \DIASources detected and measured from the DiffExps using the set of parameters described in Table~\ref{table:ap_features} will be persisted.
+\paragraph*{DIASource Databases:} \DIASources detected and measured from the DiffExps using the set of parameters described in \DPDD will be persisted.
 
 
 \paragraph*{DIAObject Databases:} \DIASource will be associated with existing \DIAObjects and persisted. New \DIASource (i.e.\ those not associated) will generate a new instance of a \DIAObject.
@@ -334,7 +334,7 @@ The alert queue  distributes and persists \DIAObject with new \DIASources as \VO
 \paragraph{Pipeline Tasks}
 
 \begin{itemize}
-\item Publish \DIAObjects to a caching message queue (e.g.\ \hyperref[http://kafka.apache.org]{Apache Kafka}) through the butler. The prototype implementation assumes a distributed and partitioned messaging system that uses a \hyperref[https://en.wikipedia.org/wiki/Publish_subscribe_pattern]{publication-subscription} model for communication between clients and the queue. This model maintains feeds of messages in categories called topics. An example topic would be a \DIAObject. Whether a topic would comprise a full \DIAObject or a subset of the data remains open (passing subsets of parameters as individual topics would require that the client be able to synchronize and join topics into a full \DIAObject). For each of the 189 CCDs, approximately 50 events will be passed as messages to the messaging queuing system. The distribution of the events from a given CCD will not be synchronized with other CCDs within the focal plane (alerts from each CCD will be independently processed).
+\item Publish \DIAObjects to a caching message queue (e.g.\ \href{http://kafka.apache.org}{Apache Kafka}) through the butler. The prototype implementation assumes a distributed and partitioned messaging system that uses a \href{https://en.wikipedia.org/wiki/Publish_subscribe_pattern}{publication-subscription} model for communication between clients and the queue. This model maintains feeds of messages in categories called topics. An example topic would be a \DIAObject. Whether a topic would comprise a full \DIAObject or a subset of the data remains open (passing subsets of parameters as individual topics would require that the client be able to synchronize and join topics into a full \DIAObject). For each of the 189 CCDs, approximately 50 events will be passed as messages to the messaging queuing system. The distribution of the events from a given CCD will not be synchronized with other CCDs within the focal plane (alerts from each CCD will be independently processed).
 
 \item A consumer layer will subscribe to the  message queue and package them as \VOEvents and distribute these events to external users. To allow for network outages between the message queue and the consumer the message queue must be able to replay previous events.
 \item  The consumer layer will provide a command line API to define simple queries or filters of the events (limited to querying on existing \DIAObject fields, or filtering the attributes of the \DIAObject). Web-based interfaces to the consumer layer will be developed by SUIT.

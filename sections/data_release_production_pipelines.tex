@@ -516,7 +516,7 @@ Most of the work is done by the \hyperref[sec:acDCRTemplates]{DCR-Corrected Temp
 \subsubsection{DiffIm}
 \label{sec:drpDiffIm}
 
-In the DiffIm pipeline, we subtract a warped TemplateCoadd from each CalExp, yielding the DiffExp image, where we detect and characterize DIASources.  This is quite similar to Alert Production's \hyperref[sec:apAlertDetection]{Alert Detection} pipeline but may not be identical for several reasons.  The AP variant must be optimized for low latency, and hence may avoid full-visit processing that is perfectly acceptable in DRP.  In addition, the input CalExps will have been better characterized in DRP, which may make some steps taken in AP unimportant or even counterproductive.  However, we expect that the algorithmic components utilized in DRP are the same as those used by AP.
+In the DiffIm pipeline, we subtract a warped TemplateCoadd from each CalExp, yielding the DiffExp image, where we detect and characterize DIASources.  This is quite similar to Alert Production's \hyperref[sec:apAlertGeneration]{Alert Detection} pipeline but may not be identical for several reasons.  The AP variant must be optimized for low latency, and hence may avoid full-visit processing that is perfectly acceptable in DRP.  In addition, the input CalExps will have been better characterized in DRP, which may make some steps taken in AP unimportant or even counterproductive.  However, we expect that the algorithmic components utilized in DRP are the same as those used by AP.
 
 The steps taken by DRP DiffIm are:
 \begin{enumerate}

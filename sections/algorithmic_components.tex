@@ -11,9 +11,9 @@ We expect that these components will form the bulk of the LSST Science Pipelines
 \subsubsection{Alert Production Reference Catalogs}
 \label{sec:acAlertProductionReferenceCatalogs}
 
-Alert Production will use a subset of the DRP Object table as a reference catalog.  As the DRP Object table is regenerated on the same schedule as the template images used in Alert Production, we should always be able to guarantee that the reference catalog and the template images are consistent and cover the same area.
+Alert Production will use a subset of the DRP \Object table as a reference catalog.  As the DRP \Object table is regenerated on the same schedule as the template images used in Alert Production, we should always be able to guarantee that the reference catalog and the template images are consistent and cover the same area.
 
-Obtaining this catalog from the DRP database should simply be a matter of executing a SQL query, though some experimentation and iteration may be necessary to define this query.
+Obtaining this catalog from the \DR should simply be a matter of executing a SQL query, though some experimentation and iteration may be necessary to define this query.
 
 \subsubsection{Data Release Production Reference Catalogs}
 \label{sec:acDataReleaseProductionReferenceCatalogs}
@@ -95,48 +95,11 @@ Flat fielding will be performed as for DRP, but because the \hyperref[sec:CPP:au
 
 \subsubsection{Cosmic Ray Identification}
 \label{sec:acCosmicRayDetection}
-Cosmic rays will be identified using a Laplacian edge detection algorithm \citep{2001PASP..113.1420V}.  Laplacian edge detection involves convolving the image (I) with a smoothing function (f) tuned to the size of the expected edge width.
-\[
-L = \bigtriangledown^2f\ast I
-\]
-In the case of cosmic rays, this implies a very sharp edge.  A natural choice is a Gaussian with small $\sigma$.  The discrete kernel chosen in \citep{2001PASP..113.1420V} is
-\begin{align}
-\bigtriangledown^2 = \frac{1}{4}\left( \begin{array}{ccc}
-0 & -1 & 0 \\
--1 & 4 & -1 \\
-0 & -1 & 0 \end{array} \right)
-\end{align}
-If just used on the native image, this filter would attenuate the signal from CRs that effect multiple
-adjacent pixels.  So, the image is subsampled by some factor $f_s$.  Before downsampling to the native resolution, the negative pixel values are clamped to zero.  The resultant image in native pixelization will be referred to as $L^+$.
+The need for a morphological cosmic ray rejection algorithm is motivated on multiple fronts.  Firstly, the science pipelines are explicitly required to run on visits that are taken in the traditional way, i.e. one single continuous integration, and in a series of snaps where multiple exposures are taken in series and then aggregated in ISR \ossreq{0288}.  Even when the pipelines have the luxury of having multiple exposures taken in quick succession at the same pointing, we cannot simply reject anything in the difference of the snaps as a cosmic ray since we wish to be able to utilize measurements on the snap differences to identify very rapidly varying objects.
 
-We construct a SNR image by dividing the Laplacian image by the noise in the image and adjusting by the subsampling factor.
-\[
-S = \frac{L^+}{f_s N}
-\]
+Given the need for the morphological cosmic ray detection algorithm, we will, as the baseline, adopt an algorithm similar to that used in the SDSS \texttt{photo} pipeline.  The baseline algorithm requires some modest knowledge of the PSF and looks for features that are sharp relative to the PSF.  Qualitatively, this works well on a variety of data though does require some tuning depending on the inputs.
 
-This CR detection image can be cleaned further by removing extended sources using a median filter. $M_n$ is the median over a $n \times n$ box.
-\[
-S^\prime = (S \ast M_5)
-\]
-If the PSF is well sampled, this SNR image can be used to detect the CRs by simply drawing a threshold in SNR.
-If the PSF is undersampled, the author uses the assumption that undersampled point sources are more symmetric
-than CRs.  By constructing a ``fine-structure'' image, one can place a minimum contrast between the Laplacian image and the fine structure image that further improves differentiation between CRs and point sources.
-\[
-F = (M_3 \ast I) - [(M_3 \ast I) \ast M_7]
-\]
-
-So the final CR selection criteria are: $S^\prime > \sigma_{lim}$ and $L^+/F > F_{lim}$.  The tuning
-parameters are: $f_s$ the subsampling rate, $\sigma_{lim}$ the SNR of the CRs in the detection image,
-$f_{lim}$ the minimum contrast relative to the ``fine-structure'' image. Assuming reasonable values for optical
-images, we will define a set of default values.
-
-For the case of Alert Production cosmic ray detection can be applied to the difference of the individual snaps which should improve the performance of the algorithm within the cores of sources.
-
-
-\begin{note}[Add to SFM section]
-We can use something like L.A.COSMIC (or CRBLASTER) but if it is too slow, we can fall back to the SDSS algorithm which does a similar thing, but does no convolutions.
-We should also consider why we do not use a Canny algorithm instead.
-\end{note}
+\cite{2001PASP..113.1420V} present an alternative algorithm that does not depend on knowledge of the PSF, but instead assumes that cosmic ray features will be sharp from pixel to pixel. If an algorithm different from the baseline is necessary, an algorithm like the one described in \cite{2001PASP..113.1420V} would be an option for exploration.
 
 \subsubsection{Optical ghosts}
 We will have a set of optical ghost models.  Some of these will be models of stationary ghosts (e.g. pupil
@@ -158,33 +121,19 @@ point source ghosts, but we will not know the location of the bright sources in 
 source ghosts can appear at significant separations, this may be a source of spurious detections.
 \end{note}
 
-\begin{note}[dependence on PSF]
-The CR rejection algorithm does not depend on the PSF of the image.  The single source ghosts may be a function of the PSF, but not very strongly I don't think.
-\end{note}
-
 \subsubsection{Linear feature detection and removal}
+\label{sec:acLinearFeatureDetection}
+
 
 Satellite trails, out of focus airplanes, and meteors all cause long linear features in astronomical images.  The Hough Transform \citep{c1962method} is a common tool used in computer vision applications to detect linear features.  Linear features are parameterized by $r$, the perpendicular distance to the line from the origin and $\theta$, the the angle of $r$ with the x-axis.  The $(r, \theta)$ space is binned and each pixel in the image adds its flux to all the bins consistent with that pixel location.  For bright linear features, the bin at the true location of the feature will fill up because more than one bright pixel is contributing to that location in parameter space.  After all pixels have been polled, the highest bins correspond to the linear features in the image.
 
 This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.
 
-An algorithm that takes care of both of these issues is presented in \cite{2016acs..rept....1B}.  We will use this
-as our baseline.  First the image is rescaled to maximize the contrast of faint linear features.  Next an edge detection algorithm is run on the image.  The reference implementation uses a Canny algorithm \citep{Canny:1986:CAE:11274.11275}.  This algorithm produces a set of edges that can then be mined for linear features.  They use a probabilistic Hough Transforms \citep{Galamhos:1999:IEEE:786993} to cut down on computational costs.  The probabilistic version limits the number of pixels that vote.  This results in a list of line segments.  The segments are binned in angle and any segment that is outside some tolerance of the mode is culled.  This cleaned set of segments is fed to the masking algorithm.
+The Hough transform is the correct tool for finding leanear features whent the feature is high signal to noise.  Since this is not always true in astronomical images, it's necessary to use some form of a modified Hough transform that preferentially boosts the signal to noise of linear features in high dynamic range data.
 
-The masking algorithm traverses each line segment found in the previous step by selecting a subregion around the segment and flattening the subregion.  A weighted mean of the subregion is computed and any pixels above some threshold are considered part of the trail and masked.  The subregion is moved along the segment until the end is reached.  This is repeated for every segment.
+One could imagine a variety of ways to do this.  For example, \cite{2016acs..rept....1B} first apply an edge detection algorithm to pull out linear features and then use the result to line up the edges to form longer linear features.  Another approach suggested by Steve Bickerton (HSC; private communication) is to compute the PCA of pixel values in a localized region around each pixel.  In linear features, there will be a high amount of correlation in a certain direction for the surrounding pixels.  This effectively boosts the linear feature's signal to noise in the PCA image and can produce a linear feature mask by simply applying a threshold.
 
-\begin{note}[Outstanding questions]
-\begin{itemize}
-\item Is the rescaling to improve linear feature contrast necessary?
-\item Can we relax the requirement that the trail spans the image?
-\item Is the Canny algorithm step actually necessary, i.e. can we run a Hough directly on the detected pixels?
-\item Can we use the fact that we have access to aircraft transponders to remove some plane trails?
-\end{itemize}
-\end{note}
-
-\begin{note}[Bickerton writeup]
-Note that there is a writeup by Steve Bickerton on a different way to modify the Hough Transform to find satellite trails and it has been tried on HSC, but the paper is not complete.  Thus, I didn't use it as the baseline here.  The writeup is linked from DM-5872.
-\end{note}
+The baseline for the science pipelines will be to use a modified Hough transform to identify and mask linear features in visit images.
 
 \subsubsection{Snap Subtraction}
 \label{sec:acSnapSubtraction}
@@ -241,7 +190,7 @@ In deep DRP processing (Section~\ref{sec:drp_coadd_processing}), detection is cl
 
 Deblending is both one of the most important and one of the most difficult algorithmic challenges for LSST, and our plans for deblending algorithms are best described as a research project at this stage.
 
-The baseline interface takes as input a set of \hyperref[sec:spFootprints]{Footprints} (including peaks), possibly merged from detections on several images (see \hyperref[sec:acObjectGeneration]{Object Generation}, and a set of images (related to, but not necessarly identical to the set of deytection images).  It returns a tree of \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} that contain the deblended images of objects.  The tree may have multiple levels, indicating a sequence of blend hypotheses that subdivide an image into more and more objects.  There may be different \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} for each deblended image (at least one for every band), making the size of all \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} comparable to this size of the image data, at least for coadds.  Depending on the deblending algorithm chosen, a more compact representation of the deblend results may be possible (in that that it would allow the full \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} to be regenerated quickly from the image data).
+The baseline interface takes as input a set of \hyperref[sec:spFootprints]{Footprints} (including peaks), possibly merged from detections on several images (see \hyperref[sec:acObjectGeneration]{\Object Generation}, and a set of images (related to, but not necessarly identical to the set of deytection images).  It returns a tree of \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} that contain the deblended images of objects.  The tree may have multiple levels, indicating a sequence of blend hypotheses that subdivide an image into more and more objects.  There may be different \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} for each deblended image (at least one for every band), making the size of all \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} comparable to this size of the image data, at least for coadds.  Depending on the deblending algorithm chosen, a more compact representation of the deblend results may be possible (in that that it would allow the full \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} to be regenerated quickly from the image data).
 
 As deblending may involve \hyperref[sec:acSimultaneousFitting]{simultaneous fitting} of galaxy and point source models, it may also output the parameters of these models directly as measurements, in addition to generating a pixel-level separation of neighboring objects that can be used by other measurement algorithms via \hyperref[sec:acNeighborReplacement]{NeighborReplacement}.
 
@@ -307,7 +256,7 @@ The driver for Single Frame Measurement is passed an input/output \hyperref[sec:
 
 The driver for Multi-Coadd Measurement is passed an input/output \hyperref[sec:spTablesObject]{ObjectCatalog} and a dict of \hyperref[sec:spImagesExposure]{Exposures} to be measured.  Plugins take an input/output \hyperref[sec:spTablesObject]{ObjectRecord} and a dict of \hyperref[sec:spImagesExposure]{Exposures}, each containing only the object to be measured.  Some plugins will also support simultanous measurement of multiple objects, which requires they be provided the subset of the \hyperref[sec:spTablesObject]{ObjectCatalog} to be measured and a dict of \hyperref[sec:spImagesExposure]{Exposures} containing just those objects.
 
-\paragraph{Difference Image Measurement:} Measure a difference image, potentially using the associated direct image as well.  Difference image measurement is run in AP's \hyperref[sec:apAlertDetection]{Alert Detection} pipeline and DRP's \hyperref[sec:drpDiffIm]{DiffIm} pipeline.
+\paragraph{Difference Image Measurement:} Measure a difference image, potentially using the associated direct image as well.  Difference image measurement is run in AP's \hyperref[sec:apAlertGeneration]{Alert Detection} pipeline and DRP's \hyperref[sec:drpDiffIm]{DiffIm} pipeline.
 \label{sec:acDiffImMeasurement}
 
 The signatures of difference image measurement's drivers and algorithms are at least somewhat TBD; they will take at least a difference image \hyperref[sec:spImagesExposure]{Exposure} and a \hyperref[sec:spTablesSource]{SourceCatalog/SourceRecord}, but some plugins such as dipole measurement may require access to a direct image as well.  Because difference imaging dramatically reduces blending, difference image measurement may not require any approach to blended measurement (though any use of the associated direct image would require deblending).
@@ -716,7 +665,7 @@ This introduces a dependency on DRP's internal reference catalog not capture els
 \label{sec:acSingleVisitAstrometricFit}
 Full visit astrometric fitting will be done as a bootstrapping step toward higher quality calibration in DRP.  All measurements in the visit will be projected to a tangent plane, taking into account all knowledge of the sensor arrangement and optics.  The reference catalog (likely the DRP reference catalog) will be projected to the same tangent plane.
 
-Sources will be matched, again using a \cite{2007PASA...24..189T}-like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for atmospheric (von K\'{a}rm\'{a}n) turbulence.
+\Sources will be matched, again using a \cite{2007PASA...24..189T}-like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for atmospheric (von K\'{a}rm\'{a}n) turbulence.
 
 \subsubsection{Joint Multi-Visit}
 \label{sec:acJointAstrometricFit}
@@ -752,9 +701,8 @@ In joint photometric calibration, all observations within a tract are combined t
 
 This includes:
 \begin{itemize}
-\item Deriving SEDs for calibration stars from colors and reference catalog classifications.
-\item Utilizing additional information from wavelength-dependent photometric calibration built by the calibration products production to convert observed flux to a flux through a standard atmosphere.
-\item Fitting zeropoint and possibly perturbations to all CCDs on multiple visits simultaneously after matching to reference catalog.
+\item Deriving SEDs for a suitable set of stars from colors and reference catalog classifications: e.g. spectral type.
+\item Fitting a smoothly varying zeropoint to all CCDs on multiple visits simultaneously after matching to reference catalog.
 \end{itemize}
 
 The first step is to solve:
@@ -789,9 +737,9 @@ Most LSST software development will be tested on precursor datasets, such as ima
 
 \subsection{Retrieve Diffim Template for a Visit}
 \label{sec:acRetrieveTemplate}
-In difference imaging a major contributor to the quality of the difference image is the choice of template.  We expect that the DRP template generation algorithm will be quite complex.  It will potentially involve synthesizing multiple monochromatic templates that will be used to model the effects of DCR.
+In difference imaging a major contributor to the quality of the difference image is the choice of template.  We expect that the DRP template generation algorithm will be quite complex.  It will involve synthesizing multiple monochromatic templates that will be used to model the effects of DCR.
 
-Ideally, the retrieval will be to select the correct bounding box from the correct master template for the current observation.  In the simplest implementation, we would build reference templates on a grid of hour angle and positions.  If we need a more complicated algorithm for generating reference templates, we expect the template generation algorithm will provide an algorithm to interpret the templates.
+The sub-band models of the DCR free scene will be used to realize an optimized template for the exposure in question.  Though the models will be expensive to produce, the algorithm for producing optimized templates will be much less so.  We expect to be able to run the tempate generation algorithm in real time. 
 
 \subsection{PSF Matching}
 \label{sec:acPSFMatching}
@@ -817,7 +765,7 @@ $\kappa_i(u,v)$ are a degree of freedom in this problem.
 \footnote{The current implementation of the A\&L matching algorithm is
 summarized in detail in \citeds{LDM-227}.}
 
-A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image after brighter-fatter corrections have been applied.  The kernel candidates are selected using a star selector to query the appropriate reference catalog for sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures.
+A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image after brighter-fatter corrections have been applied.  The kernel candidates are selected using a star selector to query the appropriate reference catalog for sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. \Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures.
 
 Detection on the difference image occurs through correlation of $D(x,y)$ with the science image's PSF, yielding a detection image $D'(x,y) = D(x,y) \otimes PSF(u,v;x,y)$. The values of the pixels in $D'(x,y)$ provide a maximum likelihood estimate of there being a point source at that position.  Detection occurs by simply finding pixels that are more than $N \times \sigma$ above the square root of the per--pixel variance, allowing for covariances.
 
@@ -863,31 +811,35 @@ In PSF-matched coaddition, input images are convolved by a kernel that matches t
 
 \subsection{DCR-Corrected Template Generation}
 \label{sec:acDCRTemplates}
-%AUTHOR: Simon
 
-Refraction by the Earth's atmosphere results in a dispersion of an
-astronomical image along the ``parallactic angle''. This amplitude of
+Refraction by the Earth's atmosphere results in a wavelength dependent
+displacement of an
+astronomical image along the ``parallactic angle''. The fact that astronomical
+sources are not monochromatic causes a dispersion of the PSF as well
+as the bulk displacement.  The amplitude of
 this dispersion depends on the spectral energy distribution (SED) of
-the source and the refractive index of the atmosphere. Differential
+the source because of the wavelength dependence of the refractive index 
+of the atmosphere. Differential
 chromatic refraction (DCR) refers to the SED dependent refraction
 within a given photometric passband. For the airmass range of the LSST
-and its filter complement the amplitude of the DCR could be up to 1.1
+and its filter complement the amplitude of the DCR between the
+red and blue cutoff is up to 1.1
 arcsec in the u band and 0.8 arcsec in the g band. Image subtraction
 templates that do not account for DCR will result in dipoles in the
 subtracted images.
 
-The baseline approach for minimizing DCR induced dipoles in image
-differences is to selected coadded templates that are close in airmass
-\hyperref[sec:acRetrievTemplate]. This will identify three airmass bins (XXX
-where is this defined) from which PSF matched coadds will be \hyperref[sec:acCoaddition]{generated}.
+With enough data, one could imagine making templates in small airmass and
+paralactic angle bins and only using the template from the nearest bin for
+each exposure.  In reality, the LSST will not produce enough data to bin
+on a fine enough grid to make this a tractable approach early in the survey
+for the bluer bands.
 
 Given the sensitivity of the number of false positives to the
 astrometric accuracy of the registration of images and the dependence
 of this astrometric accuracy on DCR we plan to define an interpolation
 scheme for generating DCR corrected templates.
 
-\subsubsection{Refraction from the Atmosphere}
-%reference stone and community posting on DCR
+\subsubsection{Generating a DCR Corrected Template}
 
 Refraction is dependent on the local index of refraction of air $n_0(\lambda)$ at the observatory and, as a function of wavelength is given by,
 
@@ -898,59 +850,9 @@ R(\lambda) &= r_0 n_0(\lambda) \sin z_0 \int_1^{n_0(\lambda)} \frac{dn}{n \left(
 
 with $z_0$ the zenith distance.
 
-
-% \begin{align}
-%	n_0(\lambda) =&1 + \left(\left[2371.34 +\frac{683939.7}{130 - \sigma(\lambda)} +\frac{4547.3}{38.9 - \sigma(\lambda)^2}\right] D_s
-%		+ \left(6487.31 + 58.058 \sigma(\lambda)^2 - 0.71150 \sigma(\lambda)^4 +0.08851 \sigma(\lambda)^6\right) D_w \right)\times 10^{-8} \label{eqn:index_refraction}\\*
-%	& where \nonumber\\*
-%	\sigma(\lambda) &= 10^4 /\lambda \;\;\;\;\left(\mu m^{-1}\right)\nonumber \\*
-%	D_s =& \left[1 + (P_s-P_w) \left(57.90\times10^{-8} - \frac{9.3250\times10^{-4}}{T}+\frac{0.25844}{T^2}\right)\right] \frac{(P_s-P_w)}{T} \nonumber \\*
-%	D_w =& \left[1 + P_w \left(1 + 3.7\times10^{-4} P_w\right)\left(-2.37321\times10^{-3} + \frac{2.23366}{T} - \frac{710.792}{T^2} + \frac{7.75141\times10^4}{T^3}\right)\right] \frac{P_w}{T} \nonumber \\
-%	P_w =& RH\times 10^{-4} \times e^{(77.3450 + 0.0057 T - 7235.0/T)}/T^{8.2} \nonumber
-% \end{align}
-% where the parameters $D_s$ and $D_w$ are the density factors for dry air and water vapor, respectively, taken from \cite{Owens:67}.
-
-
-% The ratio of local gravity at the observing site to $g = 9.81 m/s^2$ is given by
-% \begin{equation}
-% \kappa = g_0/g = 1 + 5.302\times 10^{-3} \sin^2\phi - 5.83\times 10^{-6} \sin^2(2\phi) - 3.15\times 10^{-7} h \label{eqn:kappa}
-% \end{equation}
-
-% and, assuming an exponential density profile for the atmosphere, then
-% the ratio $\beta$ of the scale height of the atmosphere to radius of
-% the observing site from the Earth's core can be approximated by
-% \begin{equation}
-%	\beta =  4.5908\times 10^{-6} T \label{eqn:beta}
-% \end{equation}
-% where $m$ is the average mass of molecules in the atmosphere, $R_\oplus$ is the radius of the Earth, $k_B$ is the Boltzmann constant, and $g_0$ is the acceleration due to gravity at the Earth's surface.
-
-
-
-% \begin{table}[h!]
-%	\begin{center}
-%	\begin{tabular}{c | c | c | c}
-%		Parameter & valid range & description & units \\
-%		\hline
-%		$P_s$& $0$ mbar$ < P_s < 4000$ mbar & Atmospheric pressure & millibar  \\
-%		$RH$ & $0\% < RH < 100\%$ & Relative humidity & Percent \\
-%		$\lambda$& $2302$\AA{}$ < \lambda < 20,586 $\AA{} & Wavelength  & Angstroms \\
-%		$T$& $250K < T < 320K$ & Temperature & Kelvin \\
-%		$\phi$ & $0^\circ \leq \phi < 360^\circ$ & Latitude of the observing site & Degrees \\
-%		$h$ & $0\,m\leq h$ & Elevation of the observing site & meters \\
-%		$z_0$ & $0^\circ\leq z_0 < 75^\circ$ & Zenith angle & Degrees
-
-%	\end{tabular}
-%	\end{center}
-%	\caption{Definition of parameters and their units}
-%	\label{table:parameters}
-% \end{table}
-% %\vspace{-0.7cm}
-
-\subsubsection{Generating a DCR Corrected Template}
-
 Given a set of observed images, $O(x, z)$, at an airmass of $z$, and
 assuming that we know the wavelength dependence of the refraction, we
-can model the corresponding image at the zenith (or any other
+can model the corresponding image at the zenith (or any other specified
 airmass), $I(x, 0)$. For simplicity, we will consider only a single
 row of a sensor as comprising an image, that the direction of the DCR
 is aligned along the row, and that the PSF is constant between
@@ -976,39 +878,19 @@ There are a number of possible approaches for finding the ``zenith''
 image.  The convolution can be written as a transfer matrix, $T$,
 where the elements of the matrix correspond to the fraction of pixel $x'$ that maps to pixel $x$ in the observed image. Under this mapping, we can write the linear equations as $TI=O$ and by inverting the matrix solve for $I$.
 
-While,  $T$, is clearly sparse the number of terms that must be solved for given the number of wavelengths $\lambda$ that $I$ is decomposed into, means that we require a heavily regularized regression. The initial implementation for the DCR corrected template will invert the linear equations assuming smoothness between adjacent pixels and as a function of wavelength, by adopting first and second
-order finite difference matrices. % (ref nate).
-A prototype implementation has been demonstrated for the 1D case.
-
-A second approach will be to forward model the problem by iteratively updating
-$I$ based on a set of observations $O$.
-
-For each approach the number of wavelength bins that $I(x)$ can be decomposed into will depend on the number of observations at different airmass. The assumption of a constant PSF will clearly not hold for the LSST observations but can be incorporated within the convolution \autoref{eq:convDCR} or addressed through a separable, wavelength dependent, PSF convolution. The robustness of these techniques will need to be evaluated for low signal-to-noise sources and in the presence of scattered light and artifacts.
-
+There are various approaches to computing the inverse.  They have different tradeoffs
+and will be the subject of quantitative investigation.  This work is being
+documented at \href{https://dmtn-037.lsst.io/}{DMTN-037}.
 \subsection{Image Decorrelation}
 \label{sec:acImageDecorrelation}
 \subsubsection{Difference Image Decorrelation}
 \label{sec:acDiffImDecorrelation}
 
-In situations where the signal-to-noise in the template image is not insignificant (e.g., when the template is constructed by co-addition of a small number of exposures), the resulting image difference will contain autocorrelated noise arising from the convolution of the template with the PSF matching kernel prior to subtraction. This will result in inaccurate estimates of thresholds for \texttt{diaSource} detection if the (potentially spatially-varying) covariances in the image difference are not properly accounted for.
+In situations where the noise in the template image is significant (e.g., when the template is constructed by co-addition of a small number of exposures), the resulting image difference will contain correlated noise arising from the convolution of the template with the PSF matching kernel prior to subtraction. This will result in inaccurate estimates of thresholds for \texttt{diaSource} detection if the (potentially spatially-varying) covariances in the image difference are not properly accounted for.
 
-A viable alternative in the case of noisy template images is to construct a difference image with a flat noise spectrum, like the original input images \citep{Kaiser04, 2016ApJ...830...27Z}. This simply involves multiplying the image difference by a term which removes its frequency dependence,
+A viable alternative in the case of noisy template images is to construct a difference image with a flat noise spectrum, like the original input images \citep{Kaiser04, 2016ApJ...830...27Z}. Given knowledge of the noise properties of the input images and any convolution kernels one can construct a correction term that, when applied to the Fourier transform of the difference image can remove the frequency dependence of the noise in the difference.  This allows for the same detection algorithms to be used on difference images as the science image.  Otherwise, the correlated noise would need to be accounted for by other means.
 
-\begin{equation}
-  D(k) = \left[S(k) - \kappa(k) T(k)\right]\sqrt{\frac{\sigma_S^2+\sigma_T^2}{\sigma_S^2 + \kappa^2(k)\sigma_T^2}},
-  \label{eqn:decorr}
-\end{equation}
-
-\noindent
-where $S$ is the science image, $T$ is the template, $\sigma_S^2$ and $\sigma_T^2$ are their respective variances, and $\kappa$ is the PSF-matching kernel which, when convolved with the template, matches the PSF of the template to that of the science image. $\kappa$ may be solved for (in real space) as described in Section~\ref{sec:acPSFMatching}. Then the multiplication by the square-root term in Equation~\ref{eqn:decorr} may be interpreted as applying a post-image-differencing convolution kernel which ``removes'' the pixel-wise correlation which was added by convolution of the template by the PSF-matching kernel. The PSF of the resulting decorrelated difference image $\phi_D$ then equals the PSF of the science image $\phi_S$, convolved with the post-differencing kernel:
-
-\begin{equation}
-  \phi_D(k) = \phi_S(k) \sqrt{\frac{\sigma_S^2+\sigma_T^2}{\sigma_S^2 + \kappa^2(k)\sigma_T^2}}.
-\end{equation}
-
-We are investigating this approach and have shown that, for idealized situations, the resulting image differences are statistically indistinguishable from those generated using the ``Proper image subtraction'' technique proposed by \cite{2016ApJ...830...27Z}.
-
-Issues arising from complications often seen in real-world data such as spatially-varying PSFs and/or poorly-evaluated matching kernels, spatially variable backgrounds and/or noise, and possibly non-Gaussian or heteroschedastic noise need to be further evaluated. Such tests are currently underway on simulated and real data. These tests could highlight the advantages of the method proposed here over the proposal of \cite{2016ApJ...830...27Z}, including: no requirement for accurate measurement of the PSFs of the science or template images, and thus the ability to to account for errors in astrometric alignment and to directly model spatially varying differential PSFs.
+These corrections are derived in Fourier space, but issues arising from complications often seen in real-world data such as spatially-varying PSFs and/or poorly-evaluated matching kernels, spatially variable backgrounds and/or noise, and possibly non-Gaussian or heteroschedastic noise make it difficult to work exclusively in Fourier space. In the production system, a hybrid system of correction kernels calculated in Fourier space and applied as convolutions in real space may be the solution to these problems. 
 
 \subsubsection{Coadd Decorrelation}
 \label{sec:acCoaddDecorrelation}
@@ -1031,7 +913,7 @@ Issues arising from complications often seen in real-world data such as spatiall
 \begin{itemize}
 \item Aggregate of single-visit S/G post-PSF numbers in jointcal.
 \end{itemize}
-\subsubsection{Object Classification}
+\subsubsection{\Object Classification}
 \label{sec:acObjectClassification}
 \begin{itemize}
 \item Best classification derived from multifit and possibly variability.
@@ -1044,7 +926,7 @@ Following the \DPDD{}, lightcurve variability is characterized by providing a se
 
 Richards et al. define two classes of features: those designed to characterize variability which is periodic, and those for which the period, if any, is not important. We address both below.
 
-All of these metrics are calculated for both Objects (\DPDD{} table 4, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}) and DIAObjects (\DPDD{} table 2, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}). They are calculated and recorded separately in each band. Calculations for Objects are performed based on forced point source model fits (\DPDD{} table 5, \texttt{psFlux}).  Calculations for DIAObjects are performed based on point source model fits to DIASources (\DPDD{} table 1, \texttt{psFlux}). In each case, calculation requires the fluxes and errors for all of the sources in the lightcurve to be available in memory simultaneously.
+All of these metrics are calculated for both \Objects (\DPDD{} table 4, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}) and \DIAObjects (\DPDD{} table 2, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}). They are calculated and recorded separately in each band. Calculations for \Objects are performed based on forced point source model fits (\DPDD{} table 5, \texttt{psFlux}).  Calculations for \DIAObjects are performed based on point source model fits to \DIASources (\DPDD{} table 1, \texttt{psFlux}). In each case, calculation requires the fluxes and errors for all of the sources in the lightcurve to be available in memory simultaneously.
 
 \subsubsection{Characterization of Periodic Variability}
 
@@ -1137,9 +1019,9 @@ QSO similarity metrics, as defined by Butler \& Bloom \cite{2011AJ....141...93B}
 \item{$\chi_{\mathrm{False}}^2 / \nu$.}
 \end{itemize}
 
-\subsection{Proper Motion and Parallax from DIASources}
+\subsection{Proper Motion and Parallax from \DIASources}
 \label{sec:acStellarMotionFitting}
-Every time we observe another apparition of a DIAObject, we have an opportunity to update/improve the proper motion and parallax models.  The DIASources are associated with the current best model from the DIAObject.  The proper motion and parallax are then refit using the new observation.
+Every time we observe another apparition of a \DIAObject, we have an opportunity to update/improve the proper motion and parallax models.  The \DIASources are associated with the current best model from the \DIAObject.  The proper motion and parallax are then refit using the new observation.
 
 \begin{note}[Do we actually want to do this]
 I had a conversation about this with Colin.  In reqlity we can't do as good a job with proper motion and parallax in nightly processing as we can in DRP.  It's true that we would have no estimate of the proper motion or parallax until the first release if we do not calculate it in nightly, but I'd argue that before the first release we don't have the baseline to calculate an accurate anyway.  Further, the measurement in DRP can be much better since we can do it as part of joint astrometric fitting.  If we don't measure pm and parallax in nightly, we could still use the DRP measurement in the associated DRP object for association.
@@ -1152,7 +1034,7 @@ Association between an external catalog of sources with objects
 detected from an LSST visit is critical to many aspects of the nightly
 and data release processing. External catalogs may come from
 photometric or astrometric standards (e.g.\ catalogs from GAIA), from
-previous LSST observations (e.g. Objects), or from catalogs derived
+previous LSST observations (e.g. \Objects), or from catalogs derived
 from previous observations (e.g.\ the ephemerides of moving
 sources).
 
@@ -1212,62 +1094,24 @@ AUTHOR: Jim
 \item Match sources from multiple visits to a single reference catalog, assuming good WCS solutions.
 \end{itemize}
 
-\subsubsection{DIAObject Generation}
+\subsubsection{\DIAObject Generation}
 \label{sec:acDIAObjectGeneration}
 
-Assuming that all DIAObject positions been propagated to the MJD of
+Assuming that all \DIAObject positions been propagated to the MJD of
 the visit (including proper motion and the generation of ephemerides
-for SSObjects) association of a DIASource with a DIAObject simplifies
-to the probabilistic assignment of a DIASource to a DIAObject.
-
-We define this assignment in terms of the Bayes Factor, $B$, that defines
-the ratio of the probability that the observed data, $D$, is more
-likely given a model, $H$, that the DIASource and DIAObject are
-matched, than for a model $K$, where the sources do not match.
-\begin{equation}
-B(H,K|D) = \frac{p(D|H)}{p(D|K)}
-\end{equation}
-see Budavari and Szalay \cite{2008ApJ...679..301B}.
-
-Assuming a normal distribution for positional uncertainties the Bayes
-Factor is given by,
-\begin{equation}
-B(H,K|D) = \frac{sinh (w)}{w} \prod_{i=1}^n \frac{w_i}{sinh (w_i)}
-\end{equation}
-with
-\begin{equation}
-w = |\sum_{i=1}^n w_i \bar{x_i} |
-\end{equation}
-with $x_i$ the 3D unit vector for a position on a sphere, and
-$w=1/\sigma^2$ with $\sigma$ the uncertainty on the position.
-
-For the case of two sources and small uncertainties on the positions this simplifies to
-\begin{equation}
-w = \sqrt(w_1^2 + w_2^2 +2 w_1 w_2 \cos(\phi)
-\end{equation}
-and
-\begin{equation}
-B=\frac{2}{\sigma_1^2 + \sigma_2^2} \, \textrm{exp}(-\frac{\phi^2}{2(\sigma_1^2 + \sigma_2^2)})
-\end{equation}
-with $\phi$ the angle between the positions.
-
-For all pairs of sources within a given tolerance the Bayes Factor
-will be calculated and the source with the largest Bayes Factor
-assigned to the DIAObject. For sources above the Bayes Factor
-threshold that were not assigned, the Bayes Factor and DIAObject ID
-will be persisted in the DIASource. Thresholds for the Bayes Factor
-will be derived from simulations.
-
-An extension to Bayes Factor association that accounts for unknown
-proper motions is also possible \citep{2010ApJ...719...59K}.
+for \SSObjects) association of a \DIASource with a \DIAObject simplifies
+to the probabilistic assignment of a \DIASource to a \DIAObject. See 
+\cite{2008ApJ...679..301B} for a treatment of this problem.  Extensions
+to account for association in the presence of unknown proper motion are
+also possible \citep{2010ApJ...719...59K}.
 
 
-\subsubsection{Object Generation}
+\subsubsection{\Object Generation}
 \label{sec:acObjectGeneration}
 %AUTHOR: Jim
 \begin{itemize}
 \item Match coadd detections from different bands/SEDs/epoch-ranges, merging Footprints and associating peaks.
-\item Also merge in DIASources or (if already self-associated) DIAObjects.
+\item Also merge in \DIASources or (if already self-associated) \DIAObjects.
 \end{itemize}
 
 \subsubsection{Blended Overlap Resolution}
@@ -1291,7 +1135,7 @@ proper motions is also possible \citep{2010ApJ...719...59K}.
 \label{sec:acEphemerisCalculation}
 Ephemeris calculation for the purpose of association in the nightly pipelines and for attribution and precovery in dayMOPS will require an indexing algorithm as well as a numerical integration phase. The JPL Horizons page reports $~700,000$ asteroid orbits.  This is far too many to run forward for every observation we will take.  Thus, we will need to predict which bodies are likely to cross an aperture on the sky.
 
-There are tools that allow for orbit prediction.  As a baseline, we suggest using the OOrb (https://github.com/oorb/oorb).  Regardless of the tool we use in production, it will need the following features:
+There are tools that allow for orbit prediction.  As a baseline, we suggest using the OOrb (\url{https://github.com/oorb/oorb}).  Regardless of the tool we use in production, it will need the following features:
 \begin{itemize}
 \item \texttt{Propagation}: Take a set of orbits and do the full numerical integration forward/backward in time to produce a new set of orbital elements
 \item \texttt{Prediction}: Produce a set of topocentric positions for a given set of objects at a particular time
@@ -1311,11 +1155,11 @@ When tracklets are collapsed, we gain more information about the collapsed track
 
 \subsection{Attribution and Precovery}
 \label{sec:acAttributionAndPrecovery}
-Precovery is the process of adding 'orphan' DIASources, those that do not belong to a SSObject or DIAObject, to a SSObject.  Any time an SSObject's orbital parameters change significantly, it's possible that DIASources not associated previously could now match.  The process is to calculate ephemerides backward in time from the earliest observation as far as is possible given the uncertainty in the orbit.  These ephemerides are compared to the orphan DIASources.  If a match is found, a new orbit is fit and if the new orbit is a better fit than the old one, the SSObject is updated with the new fit.
+Precovery is the process of adding 'orphan' \DIASources, those that do not belong to a \SSObject or \DIAObject, to a \SSObject.  Any time an \SSObject's orbital parameters change significantly, it's possible that \DIASources not associated previously could now match.  The process is to calculate ephemerides backward in time from the earliest observation as far as is possible given the uncertainty in the orbit.  These ephemerides are compared to the orphan \DIASources.  If a match is found, a new orbit is fit and if the new orbit is a better fit than the old one, the \SSObject is updated with the new fit.
 
-Attribution is the process of adding tracklets to known SSObjects.  For a given time window, topocentric ephemerides are calculated for all SSobjects that could potentially intersect any of the images in that window at the observation times of each of the images.  These ephemerides are then compared to the tracklets in the time window.  If any of them match in location and velocity, a new orbit is calculated.  If the new orbit is better than the old one, the tracklet is tagged as being part of that SSObject and the SSOBject is updated with the new orbital parameters.
+Attribution is the process of adding tracklets to known \SSObjects.  For a given time window, topocentric ephemerides are calculated for all SSobjects that could potentially intersect any of the images in that window at the observation times of each of the images.  These ephemerides are then compared to the tracklets in the time window.  If any of them match in location and velocity, a new orbit is calculated.  If the new orbit is better than the old one, the tracklet is tagged as being part of that \SSObject and the \SSObject is updated with the new orbital parameters.
 
-Since both attribution and precovery involve updating the SSObject, this process is recursive.  The cadence of the recursion will be daily.  Since we run attribution and precovery at least once during every run of the moving object pipeline, there is little need to recurse on shorter timescales.
+Since both attribution and precovery involve updating the \SSObject, this process is recursive.  The cadence of the recursion will be daily.  Since we run attribution and precovery at least once during every run of the moving object pipeline, there is little need to recurse on shorter timescales.
 
 
 \subsection{Orbit Fitting}
@@ -1328,4 +1172,4 @@ In order to validate candidate tracks, a quadratic fit to the orbit is attempted
 
 \subsection{Orbit Merging}
 \label{sec:acOrbitMerging}
-Bin all SSObjects of interest in orbital parameter space, by building a tree on the SSObject database.  If there are any orbits that are sufficiently close in parameter space, they will be merged into a single orbit and the SSObject database updated.
+Bin all \SSObjects of interest in orbital parameter space, by building a tree on the \SSObject database.  If there are any orbits that are sufficiently close in parameter space, they will be merged into a single orbit and the \SSObject database updated.
