@@ -256,7 +256,7 @@ The driver for Single Frame Measurement is passed an input/output \hyperref[sec:
 
 The driver for Multi-Coadd Measurement is passed an input/output \hyperref[sec:spTablesObject]{ObjectCatalog} and a dict of \hyperref[sec:spImagesExposure]{Exposures} to be measured.  Plugins take an input/output \hyperref[sec:spTablesObject]{ObjectRecord} and a dict of \hyperref[sec:spImagesExposure]{Exposures}, each containing only the object to be measured.  Some plugins will also support simultanous measurement of multiple objects, which requires they be provided the subset of the \hyperref[sec:spTablesObject]{ObjectCatalog} to be measured and a dict of \hyperref[sec:spImagesExposure]{Exposures} containing just those objects.
 
-\paragraph{Difference Image Measurement:} Measure a difference image, potentially using the associated direct image as well.  Difference image measurement is run in AP's \hyperref[sec:apAlertDetection]{Alert Detection} pipeline and DRP's \hyperref[sec:drpDiffIm]{DiffIm} pipeline.
+\paragraph{Difference Image Measurement:} Measure a difference image, potentially using the associated direct image as well.  Difference image measurement is run in AP's \hyperref[sec:apAlertGeneration]{Alert Detection} pipeline and DRP's \hyperref[sec:drpDiffIm]{DiffIm} pipeline.
 \label{sec:acDiffImMeasurement}
 
 The signatures of difference image measurement's drivers and algorithms are at least somewhat TBD; they will take at least a difference image \hyperref[sec:spImagesExposure]{Exposure} and a \hyperref[sec:spTablesSource]{SourceCatalog/SourceRecord}, but some plugins such as dipole measurement may require access to a direct image as well.  Because difference imaging dramatically reduces blending, difference image measurement may not require any approach to blended measurement (though any use of the associated direct image would require deblending).
@@ -880,7 +880,7 @@ where the elements of the matrix correspond to the fraction of pixel $x'$ that m
 
 There are various approaches to computing the inverse.  They have different tradeoffs
 and will be the subject of quantitative investigation.  This work is being
-documented at \hyperref[https://dmtn-037.lsst.io/]{DMTN-037}.
+documented at \href{https://dmtn-037.lsst.io/}{DMTN-037}.
 \subsection{Image Decorrelation}
 \label{sec:acImageDecorrelation}
 \subsubsection{Difference Image Decorrelation}
@@ -1135,7 +1135,7 @@ also possible \citep{2010ApJ...719...59K}.
 \label{sec:acEphemerisCalculation}
 Ephemeris calculation for the purpose of association in the nightly pipelines and for attribution and precovery in dayMOPS will require an indexing algorithm as well as a numerical integration phase. The JPL Horizons page reports $~700,000$ asteroid orbits.  This is far too many to run forward for every observation we will take.  Thus, we will need to predict which bodies are likely to cross an aperture on the sky.
 
-There are tools that allow for orbit prediction.  As a baseline, we suggest using the OOrb (https://github.com/oorb/oorb).  Regardless of the tool we use in production, it will need the following features:
+There are tools that allow for orbit prediction.  As a baseline, we suggest using the OOrb (\url{https://github.com/oorb/oorb}).  Regardless of the tool we use in production, it will need the following features:
 \begin{itemize}
 \item \texttt{Propagation}: Take a set of orbits and do the full numerical integration forward/backward in time to produce a new set of orbital elements
 \item \texttt{Prediction}: Produce a set of topocentric positions for a given set of objects at a particular time
