@@ -11,9 +11,9 @@ We expect that these components will form the bulk of the LSST Science Pipelines
 \subsubsection{Alert Production Reference Catalogs}
 \label{sec:acAlertProductionReferenceCatalogs}
 
-Alert Production will use a subset of the DRP Object table as a reference catalog.  As the DRP Object table is regenerated on the same schedule as the template images used in Alert Production, we should always be able to guarantee that the reference catalog and the template images are consistent and cover the same area.
+Alert Production will use a subset of the DRP \Object table as a reference catalog.  As the DRP \Object table is regenerated on the same schedule as the template images used in Alert Production, we should always be able to guarantee that the reference catalog and the template images are consistent and cover the same area.
 
-Obtaining this catalog from the DRP database should simply be a matter of executing a SQL query, though some experimentation and iteration may be necessary to define this query.
+Obtaining this catalog from the \DR should simply be a matter of executing a SQL query, though some experimentation and iteration may be necessary to define this query.
 
 \subsubsection{Data Release Production Reference Catalogs}
 \label{sec:acDataReleaseProductionReferenceCatalogs}
@@ -190,7 +190,7 @@ In deep DRP processing (Section~\ref{sec:drp_coadd_processing}), detection is cl
 
 Deblending is both one of the most important and one of the most difficult algorithmic challenges for LSST, and our plans for deblending algorithms are best described as a research project at this stage.
 
-The baseline interface takes as input a set of \hyperref[sec:spFootprints]{Footprints} (including peaks), possibly merged from detections on several images (see \hyperref[sec:acObjectGeneration]{Object Generation}, and a set of images (related to, but not necessarly identical to the set of deytection images).  It returns a tree of \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} that contain the deblended images of objects.  The tree may have multiple levels, indicating a sequence of blend hypotheses that subdivide an image into more and more objects.  There may be different \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} for each deblended image (at least one for every band), making the size of all \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} comparable to this size of the image data, at least for coadds.  Depending on the deblending algorithm chosen, a more compact representation of the deblend results may be possible (in that that it would allow the full \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} to be regenerated quickly from the image data).
+The baseline interface takes as input a set of \hyperref[sec:spFootprints]{Footprints} (including peaks), possibly merged from detections on several images (see \hyperref[sec:acObjectGeneration]{\Object Generation}, and a set of images (related to, but not necessarly identical to the set of deytection images).  It returns a tree of \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} that contain the deblended images of objects.  The tree may have multiple levels, indicating a sequence of blend hypotheses that subdivide an image into more and more objects.  There may be different \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} for each deblended image (at least one for every band), making the size of all \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} comparable to this size of the image data, at least for coadds.  Depending on the deblending algorithm chosen, a more compact representation of the deblend results may be possible (in that that it would allow the full \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} to be regenerated quickly from the image data).
 
 As deblending may involve \hyperref[sec:acSimultaneousFitting]{simultaneous fitting} of galaxy and point source models, it may also output the parameters of these models directly as measurements, in addition to generating a pixel-level separation of neighboring objects that can be used by other measurement algorithms via \hyperref[sec:acNeighborReplacement]{NeighborReplacement}.
 
@@ -665,7 +665,7 @@ This introduces a dependency on DRP's internal reference catalog not capture els
 \label{sec:acSingleVisitAstrometricFit}
 Full visit astrometric fitting will be done as a bootstrapping step toward higher quality calibration in DRP.  All measurements in the visit will be projected to a tangent plane, taking into account all knowledge of the sensor arrangement and optics.  The reference catalog (likely the DRP reference catalog) will be projected to the same tangent plane.
 
-Sources will be matched, again using a \cite{2007PASA...24..189T}-like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for atmospheric (von K\'{a}rm\'{a}n) turbulence.
+\Sources will be matched, again using a \cite{2007PASA...24..189T}-like algorithm.  Once the reference and observations are matched, a multi-component WCS will be fit.  We expect the components will be related to residuals on the optical model and will included a component to account for atmospheric (von K\'{a}rm\'{a}n) turbulence.
 
 \subsubsection{Joint Multi-Visit}
 \label{sec:acJointAstrometricFit}
@@ -765,7 +765,7 @@ $\kappa_i(u,v)$ are a degree of freedom in this problem.
 \footnote{The current implementation of the A\&L matching algorithm is
 summarized in detail in \citeds{LDM-227}.}
 
-A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image after brighter-fatter corrections have been applied.  The kernel candidates are selected using a star selector to query the appropriate reference catalog for sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures.
+A spatially-invariant matching kernel $\kappa(u,v)$ is determined separately for image substamps centered on multiple kernel candidates across the image after brighter-fatter corrections have been applied.  The kernel candidates are selected using a star selector to query the appropriate reference catalog for sources to use for PSF matching. This selector allows the user to specify the brightness and color range of the objects, toggle star or galaxy selection, and to include variable objects or not. \Sources are vetted for signal-to-noise and masked pixels (in both the template and science image). The matching (spatially-invariant) kernel models $\kappa_j(u,v)$, determined for each kernel candidate $j$ as described above, are examined and filtered by various quality measures.
 
 Detection on the difference image occurs through correlation of $D(x,y)$ with the science image's PSF, yielding a detection image $D'(x,y) = D(x,y) \otimes PSF(u,v;x,y)$. The values of the pixels in $D'(x,y)$ provide a maximum likelihood estimate of there being a point source at that position.  Detection occurs by simply finding pixels that are more than $N \times \sigma$ above the square root of the per--pixel variance, allowing for covariances.
 
@@ -913,7 +913,7 @@ These corrections are derived in Fourier space, but issues arising from complica
 \begin{itemize}
 \item Aggregate of single-visit S/G post-PSF numbers in jointcal.
 \end{itemize}
-\subsubsection{Object Classification}
+\subsubsection{\Object Classification}
 \label{sec:acObjectClassification}
 \begin{itemize}
 \item Best classification derived from multifit and possibly variability.
@@ -926,7 +926,7 @@ Following the \DPDD{}, lightcurve variability is characterized by providing a se
 
 Richards et al. define two classes of features: those designed to characterize variability which is periodic, and those for which the period, if any, is not important. We address both below.
 
-All of these metrics are calculated for both Objects (\DPDD{} table 4, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}) and DIAObjects (\DPDD{} table 2, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}). They are calculated and recorded separately in each band. Calculations for Objects are performed based on forced point source model fits (\DPDD{} table 5, \texttt{psFlux}).  Calculations for DIAObjects are performed based on point source model fits to DIASources (\DPDD{} table 1, \texttt{psFlux}). In each case, calculation requires the fluxes and errors for all of the sources in the lightcurve to be available in memory simultaneously.
+All of these metrics are calculated for both \Objects (\DPDD{} table 4, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}) and \DIAObjects (\DPDD{} table 2, \texttt{lcPeriodic} and \texttt{lcNonPeriodic}). They are calculated and recorded separately in each band. Calculations for \Objects are performed based on forced point source model fits (\DPDD{} table 5, \texttt{psFlux}).  Calculations for \DIAObjects are performed based on point source model fits to \DIASources (\DPDD{} table 1, \texttt{psFlux}). In each case, calculation requires the fluxes and errors for all of the sources in the lightcurve to be available in memory simultaneously.
 
 \subsubsection{Characterization of Periodic Variability}
 
@@ -1019,9 +1019,9 @@ QSO similarity metrics, as defined by Butler \& Bloom \cite{2011AJ....141...93B}
 \item{$\chi_{\mathrm{False}}^2 / \nu$.}
 \end{itemize}
 
-\subsection{Proper Motion and Parallax from DIASources}
+\subsection{Proper Motion and Parallax from \DIASources}
 \label{sec:acStellarMotionFitting}
-Every time we observe another apparition of a DIAObject, we have an opportunity to update/improve the proper motion and parallax models.  The DIASources are associated with the current best model from the DIAObject.  The proper motion and parallax are then refit using the new observation.
+Every time we observe another apparition of a \DIAObject, we have an opportunity to update/improve the proper motion and parallax models.  The \DIASources are associated with the current best model from the \DIAObject.  The proper motion and parallax are then refit using the new observation.
 
 \begin{note}[Do we actually want to do this]
 I had a conversation about this with Colin.  In reqlity we can't do as good a job with proper motion and parallax in nightly processing as we can in DRP.  It's true that we would have no estimate of the proper motion or parallax until the first release if we do not calculate it in nightly, but I'd argue that before the first release we don't have the baseline to calculate an accurate anyway.  Further, the measurement in DRP can be much better since we can do it as part of joint astrometric fitting.  If we don't measure pm and parallax in nightly, we could still use the DRP measurement in the associated DRP object for association.
@@ -1034,7 +1034,7 @@ Association between an external catalog of sources with objects
 detected from an LSST visit is critical to many aspects of the nightly
 and data release processing. External catalogs may come from
 photometric or astrometric standards (e.g.\ catalogs from GAIA), from
-previous LSST observations (e.g. Objects), or from catalogs derived
+previous LSST observations (e.g. \Objects), or from catalogs derived
 from previous observations (e.g.\ the ephemerides of moving
 sources).
 
@@ -1094,24 +1094,24 @@ AUTHOR: Jim
 \item Match sources from multiple visits to a single reference catalog, assuming good WCS solutions.
 \end{itemize}
 
-\subsubsection{DIAObject Generation}
+\subsubsection{\DIAObject Generation}
 \label{sec:acDIAObjectGeneration}
 
-Assuming that all DIAObject positions been propagated to the MJD of
+Assuming that all \DIAObject positions been propagated to the MJD of
 the visit (including proper motion and the generation of ephemerides
-for SSObjects) association of a DIASource with a DIAObject simplifies
-to the probabilistic assignment of a DIASource to a DIAObject. See 
+for \SSObjects) association of a \DIASource with a \DIAObject simplifies
+to the probabilistic assignment of a \DIASource to a \DIAObject. See 
 \cite{2008ApJ...679..301B} for a treatment of this problem.  Extensions
 to account for association in the presence of unknown proper motion are
-also possible possible \citep{2010ApJ...719...59K}.
+also possible \citep{2010ApJ...719...59K}.
 
 
-\subsubsection{Object Generation}
+\subsubsection{\Object Generation}
 \label{sec:acObjectGeneration}
 %AUTHOR: Jim
 \begin{itemize}
 \item Match coadd detections from different bands/SEDs/epoch-ranges, merging Footprints and associating peaks.
-\item Also merge in DIASources or (if already self-associated) DIAObjects.
+\item Also merge in \DIASources or (if already self-associated) \DIAObjects.
 \end{itemize}
 
 \subsubsection{Blended Overlap Resolution}
@@ -1155,11 +1155,11 @@ When tracklets are collapsed, we gain more information about the collapsed track
 
 \subsection{Attribution and Precovery}
 \label{sec:acAttributionAndPrecovery}
-Precovery is the process of adding 'orphan' DIASources, those that do not belong to a SSObject or DIAObject, to a SSObject.  Any time an SSObject's orbital parameters change significantly, it's possible that DIASources not associated previously could now match.  The process is to calculate ephemerides backward in time from the earliest observation as far as is possible given the uncertainty in the orbit.  These ephemerides are compared to the orphan DIASources.  If a match is found, a new orbit is fit and if the new orbit is a better fit than the old one, the SSObject is updated with the new fit.
+Precovery is the process of adding 'orphan' \DIASources, those that do not belong to a \SSObject or \DIAObject, to a \SSObject.  Any time an \SSObject's orbital parameters change significantly, it's possible that \DIASources not associated previously could now match.  The process is to calculate ephemerides backward in time from the earliest observation as far as is possible given the uncertainty in the orbit.  These ephemerides are compared to the orphan \DIASources.  If a match is found, a new orbit is fit and if the new orbit is a better fit than the old one, the \SSObject is updated with the new fit.
 
-Attribution is the process of adding tracklets to known SSObjects.  For a given time window, topocentric ephemerides are calculated for all SSobjects that could potentially intersect any of the images in that window at the observation times of each of the images.  These ephemerides are then compared to the tracklets in the time window.  If any of them match in location and velocity, a new orbit is calculated.  If the new orbit is better than the old one, the tracklet is tagged as being part of that SSObject and the SSOBject is updated with the new orbital parameters.
+Attribution is the process of adding tracklets to known \SSObjects.  For a given time window, topocentric ephemerides are calculated for all SSobjects that could potentially intersect any of the images in that window at the observation times of each of the images.  These ephemerides are then compared to the tracklets in the time window.  If any of them match in location and velocity, a new orbit is calculated.  If the new orbit is better than the old one, the tracklet is tagged as being part of that \SSObject and the \SSObject is updated with the new orbital parameters.
 
-Since both attribution and precovery involve updating the SSObject, this process is recursive.  The cadence of the recursion will be daily.  Since we run attribution and precovery at least once during every run of the moving object pipeline, there is little need to recurse on shorter timescales.
+Since both attribution and precovery involve updating the \SSObject, this process is recursive.  The cadence of the recursion will be daily.  Since we run attribution and precovery at least once during every run of the moving object pipeline, there is little need to recurse on shorter timescales.
 
 
 \subsection{Orbit Fitting}
@@ -1172,4 +1172,4 @@ In order to validate candidate tracks, a quadratic fit to the orbit is attempted
 
 \subsection{Orbit Merging}
 \label{sec:acOrbitMerging}
-Bin all SSObjects of interest in orbital parameter space, by building a tree on the SSObject database.  If there are any orbits that are sufficiently close in parameter space, they will be merged into a single orbit and the SSObject database updated.
+Bin all \SSObjects of interest in orbital parameter space, by building a tree on the \SSObject database.  If there are any orbits that are sufficiently close in parameter space, they will be merged into a single orbit and the \SSObject database updated.
