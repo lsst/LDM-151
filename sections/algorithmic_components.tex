@@ -138,7 +138,7 @@ The baseline for the science pipelines will be to use a modified Hough transform
 \subsubsection{Snap Subtraction}
 \label{sec:acSnapSubtraction}
 \paragraph{Cosmic Rays}
-We will need to still run some sort of morphological identifier like the one outlined above.  This is because there will be real transients and we still only want to pick out the sharp features as CRs.  It will help to have less crowding, so we should do CR rejection on the snap difference if we have it.
+When subtracting snaps to form a visit, we will need to still run some sort of morphological identifier like the one outlined above to identify cosmic rays.  This is because there will be real transients and we still only want to pick out the sharp features as CRs.  It will also help to have less crowding, so we should do CR rejection on the snap difference if we have it.
 
 \paragraph{Ghosts}
 Snap differences will not help with ghosting as the ghosts should difference almost perfectly.
@@ -149,7 +149,7 @@ Snap differences will provide significant leverage for masking linear features. 
 \subsubsection{Warped Image Comparison}
 \label{sec:acWarpedImageArtifactDetection}
 
-Additional artifacts will be detected in DRP by comparing multiple visits that have already been resampled to the same coordinate system.  This is similar conceptually to \hyperref[sec:acSnapSubtraction]{Span Subtraction}, but will operate quite differently in practice, in that we do not expect to combine this stage with the morphological detection stages; instead we assume that everything we can detect morphologically will have already been detected.
+Additional artifacts will be detected in DRP by comparing multiple visits that have already been resampled to the same coordinate system.  This is similar conceptually to \hyperref[sec:acSnapSubtraction]{Snap Subtraction}, but will operate quite differently in practice, in that we do not expect to combine this stage with the morphological detection stages; instead we assume that everything we can detect morphologically will have already been detected.
 
 Instead, this stage will examine the full 3-d data cube (two spatial dimensions as well as the epoch dimension) for outliers in the epoch dimension that are contiguous in the spatial dimensions.  This is an extension of traditional coadd outlier-rejection, which can cause spurious rejections of single pixels (or small groups of pixels) due to noise and differing PSFs.  This can obviously detect astrophysical transients as well as image artifacts, and this is usually desirable; this stage is responsible for determining which pixels should contribute to our definition of the static sky, and we want to reject astrophysical transients from that as well.
 
@@ -522,7 +522,7 @@ Another option would be to fit both models simultaneously, by introducing a high
 
 \subsection{Spatial Models}
 \label{sec:acSpatialModels}
-In many areas we will need to represent spatial models.  This will include models fit to sparse and non-uniformly sampled data.  We will support fitting Chebyshev polynomials and splines.  We will also support regression techniques like Gaussian Processes.
+In many areas we will need to represent spatial models (generally over CCDs, visits, or coadd patches).  PSF models, sky backgrounds, aperture corrections, and WCSs all involve spatial variation on these scales, and at least some of these should share lower-level algorithm code to fit the spatila models.  This will include models fit to sparse and non-uniformly sampled data.  We will support fitting Chebyshev polynomials and splines.  We will also support regression techniques like Gaussian Processes.
 
 \subsection{Background Estimation}
 \label{sec:acBackgroundEstimation}
@@ -592,10 +592,6 @@ cast as a constrained convex optimization problem\footnote{probably}, and mosaic
 mosaicking techniques.  Finally, the most expensive option would use all the visits to simultaneously tie the
 visits together using all overlaps while background matching.
 
-\begin{itemize}
-\item Given multiple overlapping visit images (already warped to a common coordinate system), synthesize a continuous single-epoch image that can be used as a reference for background matching.
-\end{itemize}
-
 \subsection{PSF Estimation}
 \label{sec:acPSFEstimation}
 
@@ -614,6 +610,20 @@ P = \Sigma_n c_n\Psi_n
 where $\Psi_n$ is the $n^{th}$ basis function, and $c_n$ is the coefficient for that basis function.  We can solve for the coefficients for each PSF candidate in a least squares sense along with a model for the spatial variation of the PSF
 across the CCD.
 
+\begin{note}{JFB}
+    This algorithm is unlikely to work in crowded fields, where are no
+    isolated stars and hence it will probably be impossible to perform a PCA
+    of star images, and there's no way to separate kernel image fitting from
+    spatial interpolation.  If fitting a PSF in crowded fields is necessary
+    (for some image differencing algorithms, building image differencing
+    templates, or the stretch goal of performing crowded-field photometry),
+    we should consider starting with something simple, like a double-Gaussian
+    and iteratively running a traditional (Alard-Lupton-style) image-
+    differencing code between the science image and the model image to
+    generate an update to the PSF model (this is RHL's idea; I'm just stating
+    it).
+\end{note}
+
 \subsubsection{Wavefront Sensor PSF Estimation}
 \label{sec:acWavefrontSensorPSF}
 %AUTHOR: Jim
@@ -627,24 +637,34 @@ across the CCD.
 
 \subsubsection{Full Visit PSF Estimation}
 \label{sec:acFullVisitPSF}
-%AUTHOR: Jim
-\begin{itemize}
-\item Decompose PSF into optical + atmosphere (and maybe sensor).
-\item Constrain model with stars, telemetry, and wavefront data.
-\item Wavelength-dependent.
-\item Used in *ImChar in DRP.
-\item Must include some approach to dealing with wings of bright stars (not trivial)
-\end{itemize}
+
+This algorithm represents our most careful and computationally expensive PSF estimation algorithm, and will be run only in DRP.  We anticipate a model that decomposes the PSF into components for the optical system and the atmosphere.  This should improve our ability to interpolate between star positions, provide physically-motivated wavelength dependence, and a way to interpolate the PSF model between CCDs.
+
+The optical component will be modeled in wavefront space using Zernike polynomials, but we will not use Zernike polynomial coefficients directly; instead, we will use an exploration of out-of-focus images to develop a model that relates the physical degrees of freedom (or some empirical-determined estimate of these) to the changes in the wavefront across the focal plane, and use those degrees of freedom as the free parameters in the optical model.
+
+The model for the atmospheric componet is less clear.  A simple elliptical model with a standard (Moffat, Kolmogorov, multi-Gaussian) profile may be adequate, with ellipticity and size interpolated using Gaussian processes.  If not, we will consider using such a model as a starting point from which we can iteratively fit a pixel-based (or other similarly flexible) model with the optical model; a major concern is that a too-flexible model will be degenerate with the optical model.
+
+The parameters of both components will be fit either iteratively or simultaneously to the images of a set of secure stars across the entire focal plane.  Images of out-of-focus stars from wavefront sensors may be utilized as well, but it is not clear yet how helpful they will be.
+
+In addition to using the above techniques to model the core of PSF, this algorithm is also responsible for estimating the wings of the PSF for bright stars, which may use entirely different (likely fully empirical) techniques.
 
 \subsection{Aperture Correction}
 \label{sec:acApCorr}
-%AUTHOR: Jim
+
+While photometric calibration is responsible for ensuring that one measure of flux is defined consistently both across epochs and with external datasets, aperture corrections are responsible for ensuring internal consistency between different flux measures.
+
+Aperture corrections for stars are straightforward but difficult in practice:
 \begin{itemize}
-\item Measure curves of growth from bright stars (visit-level, at least in DRP)
-\item Correct various flux measurements to infinite (CCD-level).  Stellar measurements are easy, galaxies are hard (impossible to do formally correctly?).
-\item Probably want sequence of apertures to agree asymptotically?
-\item Propagate uncertainty in aperture correction to corrected fluxes; covariance is tricky.
+\item Using a sequence of fixed-aperture fluxes from a sample of secure bright stars in a visit, we model the curve of growth as a (weak) function of position on the focal plane.  This may involve utilizing measurements from saturated stars to improve the signal-to-noise ratio in the largest apertures.
+\item Given this model, define the aperture correction for a photometry algorithm as the spatially-varying ratio of the extrapolated curve-of-growth flux to the flux measured by that algorithm (on the same sample of stars); like the curve-of-growth model, these aperture corrections are modeled as a weak function of position on the focal plane.
 \end{itemize}
+This scheme naturally puts the sequence of fixed-radius aperture fluxes on the same photometric system as the aperture-corrected fluxes if they are considered as a radial profile (i.e. they approach the total flux as the radius increases).  We may also want to aperture-correct some fixed-radius aperture fluxes so they too reflect the total flux.
+
+The uncertainty in estimating aperture corrections should be estimated and propagated to the corrected fluxes.  This is tricky, because the sequence of aperture fluxes use many of the same pixels for each as the algorithm we are tying to them, making them their uncertainties highly correlated.  To address this, all aperture-corrected photometry algorithms will have to be able to report the pixels they use in a measurement to allow this uncertainty to be estimated.  Once the aperture correction uncertainties are estimated, however, it should be acceptable to assume these are independent from the uncertainties of the fluxes to be corrected, even for the stars used to compute the aperture corrections, simply because the contribution of any one star should be small.
+
+Aperture-correcting galaxy photometry is essentially an unsolved problem: because galaxies have different profiles, we have no expectation that different measures of flux will generate the same result; the problems here are astrophysical, not observational.  For unresolved galaxies, however, it is clearly desirable that galaxy flux estimates be consistent with those for point sources, and that we at least approach consistency with point sources for resolved galaxies as their sizes decreases.  We will thus apply the stellar aperture corrections to all galaxy photometry algorithms as well.
+
+Like PSF models, aperture corrections cannot be measured directly on coadds, as their spatial variation becomes discontinuous when multiple dithered images are combined.  We intend to coadd aperture corrections in the same way we do PSFs.
 
 \subsection{Astrometric Fitting}
 \label{sec:acAstrometricFitting}
@@ -658,7 +678,7 @@ This will take out the bulk of the optical distortion.
 We will then match the science and template sources and fit a distortion model to minimize the residual positional offsets.
 
 \begin{note}[Dependency]
-This introduces a dependency on DRP's internal reference catalog not capture elsewhere.
+This introduces a dependency on DRP's internal reference catalog not captured elsewhere.
 \end{note}
 
 \subsubsection{Single Visit}
@@ -798,16 +818,35 @@ In PSF-matched coaddition, input images are convolved by a kernel that matches t
 
 \subsection{Image Coaddition}
 \label{sec:acCoaddition}
-%AUTHOR: Jim
+
+Once images are on a common pixel grid (either via
+\hyperref[sec:spWarping]{Warping}, or naturally in the case of snaps within a
+visit) and optionally \hyperref[sec:acPSFHomogenization]{PSF-homogenized},
+this algorithm is responsible for combining them into a single image.
+
+This is closely tied to \hyperref[sec:acWarpedImageArtifactDetection]{Warped
+Image Comparison}, which will not be used in all coaddition contexts but will
+either run simultaneously with coaddition or just before coaddition in some.
+
+Coaddition is more than a simple sum of images for two reasons:
 \begin{itemize}
-\item Must be able to do generalized outlier rejection, using histograms of detection masks produced on difference images.
-\item Needs to propagate full uncertainty somehow.
-\item Needs to propagate PSFs.
-\item Needs to propagate wavelength-dependent photometric calibration.
-\item May need to propagate larger-scale per-exposure masks to get right PSF model or other coadded quantities.
-\item Should be capable of combining coadds from different bands and/or epoch ranges ranges as well as combining individual exposures.
-\item Also needs to support combining snaps
+    \item it must be able to ignore selected pixels from one or more inputs, as indicated by mask images;
+    \item it must be able to propagate other objects associated with the image through the sum.  This includes full uncertainty information (or at least an approximation to it; not just variances), PSF models, wavelength-dependenth photometric calibration, and aperture corrections.
 \end{itemize}
+
+The associated object sums need not be computed in advance; in cases many
+cases it will be more efficient (in storage and computation) to store the
+full set of inputs and compute the sums at particular points on the image on-
+demand.  This will probably be the case for PSFs, aperture corrections, and
+wavelength-dependent photometric calibration.  Coaddition of uncertainty
+information will probably need to take hybrid approach; the variance, at
+least, will probably need to be computed in advance.
+
+Associated object sums also do not need to take into account which pixels on
+the inputs were ignored (doing so would virtually guarantee that neither
+advance nor on-demand calculaton would be efficient).  Coaddition must
+propagate sufficient information into the coadd mask image to allow regions
+in which the associated sums are incorrect to be identified.
 
 \subsection{DCR-Corrected Template Generation}
 \label{sec:acDCRTemplates}
@@ -895,30 +934,37 @@ These corrections are derived in Fourier space, but issues arising from complica
 
 \subsubsection{Coadd Decorrelation}
 \label{sec:acCoaddDecorrelation}
-%AUTHOR: Jim
-\begin{itemize}
-\item Fourier-space/iterative deconvolution of likelihood coadds, as in \citeds{DMTN-015}.
-\item Need to test with small-scale research before committing to this approach.
-\end{itemize}
+
+The plan image coaddition in DRP currently contains a major decision point regarding how to use optimal coadds (options \ref{itm:drpA}, \ref{itm:drpB}, \ref{itm:drpC} in Section~\ref{sec:drp_coaddition_and_diffim}).  If options \ref{itm:drpA} are chosen \ref{itm:drpB}, we will need to develop and implement an algorithm to decorrelate likelihood coadds.  This algorithmic problem is discussed at length in \citeds{DMTN-015}.
 
 \subsection{Star/Galaxy Classification}
 \label{sec:acClassification}
-%AUTHOR: Jim
+
 \subsubsection{Single Frame S/G}
 \label{sec:acSingleFrameClassification}
-\begin{itemize}
-\item Extendedness or trace radius difference that classifies sources based on single frame measurements that can utilize the PSF model.  Used to select single-frame calibration stars, and probably aperture correction stars.
-\end{itemize}
+
+In single-frame processing (in both AP and DRP), we will need to select a secure sample of stars for PSF modeling, aperture corrections, photometric calibration, and possible astrometric calibration.  We should be able to use an external catalog (for AP, this will be generated by DRP) for at least the brightest objects.
+
+Before we have a reliable PSF modeling, a clustering analysis of sizes derived from adaptive moments will probably provide our best classifier.  After a PSF model is available, the difference between the adaptive moments of the source and those of the PSF should be preferred.
+
+Better classifiers based on galaxy model fitting should not be necessary in single-frame processing, but may be available regardless in DRP as galaxy models will be fit to the sample of stars used for aperture correction to determine the aperture corrections for the galaxy-fitting algorithms.
+
 \subsubsection{Multi-Source S/G}
 \label{sec:acJointCalClassification}
-\begin{itemize}
-\item Aggregate of single-visit S/G post-PSF numbers in jointcal.
-\end{itemize}
+
+\hyperref[sec:drpStandardJointCal]{JointCal} will also require a secure sample of stars as inputs, and given that it will operate on the inputs from multiple visits it should be able to aggregate the classifications from all of the visits on which a source appears to generate a more secure classification for more sources.  In particular, the best-seeing images should provide much more information than the worst.
+
+Because we expect JointCal to use sources for internal calibration that are fainter than those in external reference catalogs, this may be the first point at which secure classifications of moderate S/N sources becomes important (i.e. it is likely that \hyperref[sec:acSingleFrameClassification]{SingleFrameClassification} can be handled almost entirely by using reference catalog labels, at least after we have matched to the reference catalog).
+
 \subsubsection{\Object Classification}
 \label{sec:acObjectClassification}
-\begin{itemize}
-\item Best classification derived from multifit and possibly variability.
-\end{itemize}
+
+The star/galaxy classifications for objects will be a direct output to science users, and must be a probability that can be used to construct samples of either stars or galaxies with user-defined purity and/or completeness targets.  We expect it to utilize supervised machine learning (with a training set from higher-resolution data from space) on some combination of the following quantities:
+ - best-fit parameters and goodness-of-fit values from \hyperref[sec:acGalaxyModels]{Galaxy Model} and \hyperref[sec:acMovingPointSourceModels]{Moving Point Source Model} fitting;
+ - colors;
+ - \hyperref[sec:acVariabilityCharacterization]{Variability Characterization} from forced photometry.
+
+Because the number of stars in a field changes significantly with both magntiude and position in the galaxy, we anticipate imposing a Bayesian prior dependent on both of these quantities.  We may use a hierarchical model that allows these priors to be inferred at some level from LSST data.
 
 \subsection{Variability Characterization}
 \label{sec:acVariabilityCharacterization}
@@ -1090,10 +1136,12 @@ Modifications from the single sensor cross matching are:
 
 \subsubsection{Multiple Visits to Reference Catalog}
 \label{sec:acJointCalMatching}
-AUTHOR: Jim
-\begin{itemize}
-\item Match sources from multiple visits to a single reference catalog, assuming good WCS solutions.
-\end{itemize}
+
+Before running the main algorithmic pieces of \hyperref[sec:drpStandardJointCal]{JointCal}, we will need to match sources from all visits in an area of sky to both each other and an external reference catalog.  Sources that are matched internally but not matched to a reference object must be included in the results as well.
+
+The solutions from \hyperref[sec:acSingleVisitAstrometricFit]{Per-Visit Astrometric Fitting} will be good enough that we will not need to worry about unknown offsets or distortions in this matching step; the main challenge is just dealing sensibly with ``disagreements'' between the visit-level source catalogs, primarily from differences in seeing that lead to differences in detection and/or deblending.  This will require some heuristic logic to reject cases where a source in one visit is deblended into multiple sources in another visit, but unlike the \hyperref[sec:acObjectGeneration]{Object Generation} case, here we can simply reject problematic sources from a match as long as the overall number and spatial coverage of the matches remains high.
+
+The scale of this matching problem is large enough that it will require an optimized implementation using spatial indices and careful management of memory and disk I/O.  Ideally, much of this work will be delegated to the \hyperref[spTablesNWayMatching]{N-Way Matching} software primitive.
 
 \subsubsection{\DIAObject Generation}
 \label{sec:acDIAObjectGeneration}
@@ -1109,28 +1157,26 @@ also possible \citep{2010ApJ...719...59K}.
 
 \subsubsection{\Object Generation}
 \label{sec:acObjectGeneration}
-%AUTHOR: Jim
-\begin{itemize}
-\item Match coadd detections from different bands/SEDs/epoch-ranges, merging Footprints and associating peaks.
-\item Also merge in \DIASources or (if already self-associated) \DIAObjects.
-\end{itemize}
+Object Generation is the algorithmic core of the DRP \hyperref[sec:drpDeepAssociate]{DeepAssociate} pipeline, and will only be used there.  We refer the reader to the description of that pipeline for the requirements and design plans for this algorithm.
 
 \subsubsection{Blended Overlap Resolution}
 \label{sec:acBlendedOverlapResolution}
-%AUTHOR: Jim
-\begin{itemize}
-\item Given two or more overlapping blend families (with associated measurements), merge them by selecting the ``best'' measurement for each child object.
-\end{itemize}
+
+Blended Overlap Resolution is the algorithmic core of the DRP \hyperref[sec:drpResolvePatchOverlaps]{ResolvePatchOverlaps} and \hyperref[sec:drpResolveTractOverlaps]{ResolveTractOverlaps} overlaps pipelines, and will only be used there.  We refer the reader to the description of those pipelines for the requirements and design plans for this algorithm.
 
 \subsection{Raw Measurement Calibration}
 \label{sec:acRawMeasurementCalibration}
 
-%AUTHOR: Jim
+The process of calibrating raw measurements (in units of e.g. pixels or ADUs) to generate science-ready quantities is complicated by three factors:
 \begin{itemize}
-\item Apply astrometric and photometric calibrations to measurements in raw units, transforming them to calibrated quantities.
-\item May be applied within the database after ingest in some contexts, but needs to be available outside the database as well.
+    \item The final photometric calibration for an object will require assuming an SED, which we plan to infer from its colors.  Because the same SED should be used to evaluate the PSF model when measuring the object, the SED may need to be inferred from preliminary colors rather than the final ones, which would in turn require a preliminary photometric calibration at that stage.  Because the initial calibration and colors used to infer the SED probably do not need to be very good, this is not a hard algorithmic or scientific problem, but will require careful attention to detail in recording the provenance of these quantities.
+    \item Science users will need to be able to the recalibrate photometry of an object based on an SED they provide.  This can use the same code used to generate our own best-effort photometric calibration, but it adds a requirement that the code be usable from within the public database system and/or science platform.
+    \item While some measurements (like fluxes and centroids) can be calibrated in a generic way, other measured quantities are highly algorithm-dependent.  Because the set of algorithms is itself a dynamic, configurable part of our system, the algorithmic framework must provide a generic interface that allows each algorithm to define its own calibration procedure when a generic one will not suffice.
 \end{itemize}
 
+\begin{note}[JFB]
+    We need to make sure the requirement that we be able to recalibrate photometry inside the database and/or science platform is recognized by the teams responsible for those components as well.
+\end{note}
 
 \subsection{Ephemeris Calculation}
 \label{sec:acEphemerisCalculation}
