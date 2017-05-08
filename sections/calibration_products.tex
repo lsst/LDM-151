@@ -220,13 +220,11 @@ A map of the (effective) pixel-size distortions. At worst, this will be a {$n_{\
 \begin{note}
 	Merlin knows that we are not allowed to \emph{rely} on DESC work in the project, and hopes that the last sentence is phrased in such a way that it is useful to inform readers where to look for work on the subject without making it sound like they're doing critical project work on which we will rely.
 \end{note}
-\\ \dragons ?
 
 
 \subsubsection{Brighter-Fatter Coefficients}\label{sec:CPP:output:brighterFatterCoeffs}
 The coefficients needed to model the \bfeffect. It is hoped that these are a small number of floats per CCD, but this is not yet entirely clear. The input data necessary to calculate these will likely be restricted to \hyperref[sec:CPP:inputs:broadFlat]{superflats} at various flux levels, with the possible addition of some star fields for verification of the coefficients.
 \alg A number of techniques exist to measure these (mostly developed by members of the Princeton LSST/HSC group). Code already exists to estimate the kernel/coefficients, and apply the corrections using a slightly enhanced version of the Astier/Antilogus technique.
-\\ \dragons ?
 
 
 \subsubsection{CTE Measurement}\label{sec:CPP:output:CTE}
