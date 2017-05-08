@@ -13,6 +13,27 @@
 
 \setcounter{secnumdepth}{5}
 
+%%%%%%%%%%%%%%%%%%%%%
+% Introduce mechanism to turn on and off various annotations (\XXX command,
+% \begin{notes}, and anything else bracketed by \ifannotated ... \fi)
+%
+\newif\ifannotated
+\annotatedtrue
+\annotatedfalse	% uncomment this to hide all annotations (comments, notes, etc)
+
+\ifannotated
+	% leave things as-is
+\else
+	% hide all \XXX commands
+	\renewcommand{\XXX}{}
+
+	% hide all \begin{note}...\end{note} text
+	\renewenvironment{note}[1][Note]
+	{}
+	{}
+\fi
+%%%%%%%%%%%%%%%%%%%%%
+
 \title{Data Management Science Pipelines Design}
 \author{
     M.~Juri\'c,
