@@ -129,7 +129,7 @@ Satellite trails, out of focus airplanes, and meteors all cause long linear feat
 
 This works very well in high signal-to-noise images, but is very computationally expensive.  It is also susceptible to bright point sources overwhelming faint linear features.
 
-The Hough transform is the correct tool for finding leanear features whent the feature is high signal to noise.  Since this is not always true in astronomical images, it's necessary to use some form of a modified Hough transform that preferentially boosts the signal to noise of linear features in high dynamic range data.
+The Hough transform is the correct tool for finding linear features whent the feature is high signal to noise.  Since this is not always true in astronomical images, it's necessary to use some form of a modified Hough transform that preferentially boosts the signal to noise of linear features in high dynamic range data.
 
 One could imagine a variety of ways to do this.  For example, \cite{2016acs..rept....1B} first apply an edge detection algorithm to pull out linear features and then use the result to line up the edges to form longer linear features.  Another approach suggested by Steve Bickerton (HSC; private communication) is to compute the PCA of pixel values in a localized region around each pixel.  In linear features, there will be a high amount of correlation in a certain direction for the surrounding pixels.  This effectively boosts the linear feature's signal to noise in the PCA image and can produce a linear feature mask by simply applying a threshold.
 
