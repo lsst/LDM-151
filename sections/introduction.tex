@@ -31,16 +31,9 @@ To carry out this mission the Data Management System (DMS) performs the followin
   Access Centers (``DAC'') and at external sites.
 \end{itemize}
 
-The overall architecture of the DMS is discussed in more detail in the Data Management System Design (\DMSD) document. The overall architecture of the DMS is shown in Figure~\ref{fig:DMS}.
+This document discusses the role of the Science Pipelines software in the first three functions listed above.  The fourth is discussed separately in the SUI Conceptual Design Document (\SUI).
 
-This document discusses the role of the Applications layer in the first three functions listed above (the functions involving \emph{science pipelines}).  The fourth is discussed separately in the SUI Conceptual Design Document (\SUI).
-
-\begin{figure}
-\centering
-\includegraphics[angle=90,scale=0.70]{figures/DMS-Architecture.pdf}
-\caption{Architecture of the Data Management System\label{fig:DMS}}
-\end{figure}
-\nocite{LDM-152,LDM-129,LDM-148}
+The overall architecture of the DMS is discussed in more detail in the Data Management System Design (\DMSD) document.
 
 \begin{figure}
 %\includegraphics[angle=90,scale=0.70]{ApplicationLayerProductionsandPipelines.eps}
@@ -89,13 +82,9 @@ The LSST data products are organized into three groups, based on their intended 
 
 The organization of LSST Data Products is shown in Figure~\ref{fig:DP}.
 
-Level 1 and Level 2 data products that have passed quality control
-tests will be accessible to the public without restriction.
-Additionally, the source code used to generate them will be made
-available, and LSST will provide support for builds on selected
-platforms.
+Level 1 and Level 2 data products that have passed quality control tests will be made accessible to the data rights holders on a cadence determined by the operations policy. Additionally, the source code used to generate these products will be made available to enhance reproducibility and insight into the implementation of algorithms employed. The LSST will provide documentation, and a list of reference platforms on which the software is expected to build and execute.
 
-The pipelines used to produce these public data products will also produce many intermediate data products that may not be made publically available (generally because they are fully superseded in quality by a public data product).  Intermediate products may be important for QA, however, and their specification is an important part of describing the pipelines themselves.
+The pipelines used to produce these public data products will also produce many intermediate data products that may not be made publicly available (generally because they are fully superseded in quality by a public data product).  Intermediate products may be important for QA, however, and their specification is an important part of describing the pipelines themselves.
 
 \subsection{Data Units}
 \label{sec:introDataUnits}
