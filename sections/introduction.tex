@@ -35,12 +35,68 @@ This document discusses the role of the Science Pipelines software in the first 
 
 The overall architecture of the DMS is discussed in more detail in the Data Management System Design (\DMSD) document.
 
-\begin{figure}
-%\includegraphics[angle=90,scale=0.70]{ApplicationLayerProductionsandPipelines.eps}
-\centering
-\includegraphics[angle=90]{figures/DataProductDelivarables.png}
-\caption{Organization of LSST Data Products\label{fig:DP}}
-\end{figure}
+\begin{table}
+\caption{Organization of LSST Data Products\label{tab:DP}}
+\begin{small}
+\begin{tabularx}{\textwidth}{|l | X | X | X |}
+  \hline
+ & \textbf{IMAGES CATEGORY} & \textbf{CATALOG CATEGORY} & \textbf{ALERT CATEGORY} \\
+ & \textbf{(FILES)} & \textbf{(DATABASE)} & \textbf{(DATABASE)} \\ \hline
+\begin{tabular}[t]{l}
+\textbf{NIGHTLY}\\
+\\
+Level 1\\
+\end{tabular}
+ &
+\begin{tabular}[t]{@{}p{1.5in}@{}}
+  Raw science images.\\[0.7ex]
+  Calibrated Science images.\\[0.7ex]
+  Subtracted science images.\\[0.7ex]
+  Data quality analysis.\\
+\end{tabular}
+ &
+\begin{tabular}[t]{@{}p{1.5in}@{}}
+Catalog of sources sources (detections) found on difference images.\\[0.7ex]
+Catalog of objects found on difference images.\\[0.7ex]
+Orbit catalog.\\[0.7ex]
+Data quality analysis.\\
+\end{tabular}
+ &
+\begin{tabular}[t]{@{}p{1.5in}@{}}
+Transient alert.\\[0.7ex]
+Data quality analysis.\\
+\\
+(within 60 seconds)\\
+\end{tabular}
+  \\ \hline
+\begin{tabular}[t]{l}
+\textbf{DATA RELEASE}\\
+  (Annual)\\
+  \\
+  Level 2\\
+  \end{tabular}
+ &
+ \begin{tabular}[t]{@{}p{1.5in}@{}}
+Stacked science images.\\[0.7ex]
+Calibration images.\\[0.7ex]
+RGB JPEG images.\\[0.7ex]
+Data quality analysis.\\
+ \end{tabular}
+ &
+  \begin{tabular}[t]{@{}p{1.5in}@{}}
+    Source (detection) catalog from calibrated science images.\\[0.7ex]
+    Object catalog from optimally measured properties.\\[0.7ex]
+    Data quality analysis.\\
+  \end{tabular}
+ &
+ \begin{tabular}[t]{@{}p{1.5in}@{}}
+   Alert statistics and summaries based on annual reprocessing.\\[0.7ex]
+   Data quality analysis.\\
+ \end{tabular}
+  \\ \hline
+\end{tabularx}
+\end{small}
+\end{table}
 
 \subsection{Data Products}
 
@@ -80,7 +136,7 @@ The LSST data products are organized into three groups, based on their intended 
 
 \end{itemize}
 
-The organization of LSST Data Products is shown in Figure~\ref{fig:DP}.
+The organization of LSST Data Products is shown in Table~\ref{tab:DP}.
 
 Level 1 and Level 2 data products that have passed quality control tests will be made accessible to the data rights holders on a cadence determined by the operations policy. Additionally, the source code used to generate these products will be made available to enhance reproducibility and insight into the implementation of algorithms employed. The LSST will provide documentation, and a list of reference platforms on which the software is expected to build and execute.
 
