@@ -168,7 +168,6 @@ It will be possible to monitor the relative gain within a given CCD by demanding
 Two main techniques exist to measure the gain in CCDs: the \emph{photon transfer curve} technique (PTC), and illumination of the sensor with \fefiftyfive X-rays or those from another similar radioisotope. Both of these techniques need to be applied with care to achieve good results. Given the \bfeffect, it is not clear to what accuracy PTC can be used to measure the gain, though sufficiently large binning of flat-fields can be used to mitigate the majority of this effect, and while radioisotope gain measurement achieves good precision, the ability to illuminate the focal plane in a suitable manner is uncertain. Should the \fefiftyfive measurement technique be used, the flux measurement will use the standard stack source-finding and flux-measurement algorithms.
 
 
-
 \subsubsection{Master Defects}\label{sec:CPP:output:defectList}
 A list of all the bad pixels in each CCD; identical to \secsymbol\ref{sec:CPP:inputs:defectList}, unless updated during operations.
 \alg Perform statistical analysis of dark frames, flats and ``pocket-pumping'' exposures to derive an updated defect list. These algorithms should be transferable from the Camera and electro-optical test teams.
@@ -258,8 +257,6 @@ The plan, as it stands from Robert in an email, was that we would apply an overs
 
 
 
-
-
 \subsubsection{Spectral Standards}\label{sec:CPP:output:spectralStandards}
 A set of standard stars, spectrally characterized above the atmosphere, covering a range of colors, and lying within an appropriate magnitude range, with one or more stars per LSST pointing; the likely source of this data is Gaia. However, should this prove not to be a suitable source\footnote{ This is likely to be the case in the $u$-band, where Gaia's SNR for the BP spectra falls off rapidly.}, a catalog will be carefully generated using the survey's most photometric data, utilizing an \"ubercal/jointcal type approach.
 \alg Color transformations need to be constructed from the Gaia measurements, based on assumptions about the objects' intrinsic SEDs, \ie not using only color terms. In the case that Gaia does not provide the catalog, a process similar to the Forward Global Calibration Model (FGCM) implemented by Eli Rykoff and David Burke for DES would be used. The latter process would likely be able to share atmospheric modelling code with the reductions performed for the \auxtelescope.
@@ -283,12 +280,6 @@ A set of stars used for the \emph{absolute} astrometric calibration of each visi
 The procurement of the CBP hardware includes that of the necessary low-level control drivers/software. T\&S TCS own the task of taking the vendor-provided low-level routines and turning these into real-world usable routines by constructing higher level functions for \eg homing, slew-to-position, mount a mask \etc, though it should be noted that this is a non-exhaustive and purely illustrative list of example functions, and not the requirement for the functionality that will be provided. T\&S will also provide a pointing model for the CBP itself.
 
 Control scripts for the CBP and interfaces with the OCS will be written, to allow taking all the desired measurements, especially as several, if not all of these, require doing so in concert with the 8.4m. As well as writing the necessary scripts to acquire the raw data products outlined in \secsymbol\ref{sec:CPP:inputs}, it will also be necessary to deliver a coordinate transformation package to allow the CBP to maintain a fixed position on the focal plane whilst illuminating different portions of the pupil, and vice versa.
-
-
-
-
-
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -340,8 +331,6 @@ Further to these standard camera calibration data products, an illumination/ghos
 
 
 
-
-
 \subsection{Calibration Telescope Output Data}
 \label{sec:CPP:auxTelescope:outputs}
 This section details the calibrated outputs from the \auxtelescope, which, like items in section \secsymbol\ref{sec:CPP:output}, are outputs from the Calibration Products Pipelines to be used during photometric calibration at various levels.
@@ -373,7 +362,6 @@ The acquisition of a night sky spectrograph is unlikely as it is not in the base
 \alg Assuming we have a sky spectrograph this is simple. In the absence of a sky spectrograph, an $R \sim 10$ spectrum will be acquired using standard/narrowband filters. Furthermore, if the fringe structures are sufficiently stable, \ie they are well described by \smalltilde 3 PCA components, we may be able to simply use a classic fringe subtraction.
 
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -386,16 +374,9 @@ The acquisition of a night sky spectrograph is unlikely as it is not in the base
 %	\mysubitem By looking at the corrections applied to the CBP spot data to arrive at the dome screen data.
 %\end{itemize}
 
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
 
 
 \subsection{Photometric calibration walk-through}
@@ -420,28 +401,7 @@ With each object now flat-fielded with the appropriate spectrum, and the atmosph
 This whole-survey zero-point can then calculated using an empirical approach to tie this back to the definition of the Jansky, and two proposals exist for doing so. The first is to use CBP measurements in conjunction with NIST calibrated photodiodes in the CBP's integrating sphere to measure the absolute instrumental sensitivity, though this will require integrating over the pupil. The second is to use a `son-of-StarDICE' type approach, where precisely calibrated and stabilized LEDs of known wavelength and luminosity are observed by either LSST (or the \auxtelescope, as their observations are already tied together), allowing the absolute system response to be measured using observations which illuminate the entire pupil at a set of wavelengths.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 It should be noted that it is not yet known whether the atmospheric transmission will vary significantly across LSST's field of view, and that this is currently being measured for the first time by wide-field cameras such as DECam and HSC. Should it turn out that the atmospheric transmission varies on spatio-temporal scales relevant to the survey, we propose to make further per-visit corrections by measuring the variation in flux as a function of color/spectral classification for all Gaia sources across the field of view. However, should this not be necessary, measuring this variation anyway will allow the spatial structure of the atmospheric transmission to be constrained, providing a convenient quality-assurance null-test to validate this choice.
-
-
-
-
-
-
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -451,18 +411,6 @@ It should be noted that it is not yet known whether the atmospheric transmission
 \subsection{Prototype Implementation}
 \label{sec:CPP:prototypeImplementation}
 While parts of the Calibration Products Pipeline have been prototyped by the LSST Calibration Group (see the \NewPCP for discussion), these have not been written using LSST Data Management software framework or coding standards. We therefore expect to transfer the know-how, and rewrite the implementation.
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 \clearpage
