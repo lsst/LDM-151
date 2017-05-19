@@ -1,0 +1,144 @@
+% vim: tw=0:wrap:linebreak
+\documentclass[DM,toc]{lsstdoc}
+
+\usepackage{comment}
+\usepackage{datetime}
+\usepackage{microtype}
+
+\newcommand{\microarcsec}{$\mu$as\xspace}
+\interfootnotelinepenalty=10000
+
+
+\setcounter{secnumdepth}{3}
+
+%%%%%%%%%%%%%%%%%%%%%
+% Introduce mechanism to turn on and off various annotations (\XXX command,
+% \begin{notes}, and anything else bracketed by \ifannotated ... \fi)
+%
+\newif\ifannotated
+\annotatedtrue
+\annotatedfalse	% uncomment this to hide all annotations (comments, notes, etc)
+
+\ifannotated
+	% leave things as-is
+\else
+	% hide all \XXX commands
+	\renewcommand{\XXX}{}
+
+	% hide all \begin{note}...\end{note} text
+	\renewenvironment{note}[1][Note]
+	{}
+	{}
+\fi
+%%%%%%%%%%%%%%%%%%%%%
+
+\title{Data Management Science Pipelines Design}
+\author{
+    J.D.~Swinbank,
+    T.~Axelrod,  A.C.~Becker, J.~Becla, E.~Bellm,
+    J.F.~Bosch,  H.~Chiang, D.R.~Ciardi,  A.J.~Connolly,  G.P.~Dubois-Felsmann,
+    F.~Economou, M.~Fisher-Levine, M.~Graham, \v{Z}. Ivezi\'c,  M.~Juri\'c,
+    T.~Jenness,  R.L.~Jones, J.~Kantor, S.~Krughoff, K-T.~Lim, R.H.~Lupton,
+    F.~Mueller,  D.~Petravick, P.A.~Price,  D.J.~Reiss, D.~Shaw, C.~Slater,
+    M.~Wood-Vasey, X.~Wu, P.~Yoachim,
+     \emph{for the LSST Data Management}
+}
+
+\setDocRef{LDM-151}
+\setDocCurator{J.D.~Swinbank}
+\date{2017-05-19}
+
+\setDocAbstract{%
+The LSST Science Requirements Document (the LSST \SRD) specifies a set of data product guidelines, designed to support science goals envisioned to be enabled by the LSST observing program.
+Following these guidlines, the details of these data products have been described in the LSST Data Products Definition Document (\DPDD), and captured in a formal flow-down from the \SRD via the LSST System Requirements (\LSR), Observatory System Specifications (\OSS), to the Data Management System Requirements (\DMSR).
+The LSST Data Management subsystem's responsibilities include the design, implementation, deployment and execution of software pipelines necessary to generate these data products. This document describes the design of the scientific aspects of those pipelines.
+}
+
+%
+%   Revision history
+%
+% OLDEST FIRST: VERSION, DATE, DESCRIPTION, OWNER NAME
+\setDocChangeRecord{%
+\addtohist{1}{2009-03-26}{Initial version as Document-7396}{Tim Axelrod et al.}
+\addtohist{1.2}{2009-03-27}{Minor edits}{Tim Axelrod}
+\addtohist{1.3}{2009-04-17}{General edits and updates}{Tim Axelrod}
+\addtohist{1.4}{2009-05-08}{Explicit reference to multifit added to Section 6.1}{Tim Axelrod}
+\addtohist{1.5}{2010-02-11}{General edits and updates; generated from SysML model}{Jeff Kantor}
+\addtohist{2}{2011-08-04}{Elevated to LDM handle; general updates and edits}{Tim Axelrod}
+\addtohist{3}{2013-10-07}{Updates for consistency with FDR baseline}{Mario Juric}
+\addtohist{}{2017-05-08}{Major reorganization for DM replan}{Mario Juric}
+\addtohist{4.0}{2017-05-19}{Approved in \href{https://jira.lsstcorp.org/browse/RFC-338}{RFC-338} and released.}{Mario Juric (approval), Tim Jenness (release)}
+}
+
+
+\begin{document}
+
+\maketitle
+
+\input{sections/preface}
+
+\include{sections/introduction}
+
+\include{sections/alert_production_pipelines}
+
+\include{sections/calibration_products}
+\include{sections/data_release_production_pipelines}
+
+\include{sections/algorithmic_components}
+\include{sections/software_primitives}
+
+\section{Glossary}
+
+\begin{description}
+\item[ADU] Analogue Digital Unit, also commonly called DN, the unit of measure of an analogue-to-digital-converter.
+\item[AP] Alert Production
+\item[API] Applications Programming Interface
+\item[CBP] Collimated Beam Projector
+\item[CCOB] Camera Calibration Optical Bench
+\item[CPP] Calibration Products Pipeline
+\item[CR] Cosmic Ray, strictly speaking, a cosmic ray \emph{muon}, but in the context of ISR, used to collectively refer to any tracks caused by subatomic particles or nuclear interactions.
+\item[CTE] Charge Transfer Efficiency
+\item[CTI] Charge Transfer Inefficiency; $1 - \mathrm{CTE}$
+\item[DAC] Data Access Center
+\item[DAQ] Data Acquisition
+\item[DMS] Data Management System
+\item[DR] Data Release.
+\item[DRP] Data Release Production
+\item[EPO] Education and Public Outreach
+\item[Footprint] The set of pixels that contains flux from an object. Footprints of multiple objects may have pixels in common.
+\item[FRS] Functional Requirements Specification
+\item[ISR] Instrument Signature Removal
+\item[mask] An integer bitmask used to convey information about a particular pixel, footprint, region, etc.
+\item[map] A spatially varying scalar value representing a varying quantity e.g. coverage.
+\item[MOPS] Moving Object Pipeline System
+\item[OCS] Observatory Control System
+\item[Production] A coordinated set of pipelines
+\item[PFS] Prime Focus Spectrograph. An instrument under development for the Subaru Telescope.
+\item[PSF] Point Spread Function
+\item[PTC] Photon Transfer Curve, method for measuring the gain of a CCD from the variance in a flat-field image.
+\item[QE] Quantum Efficiency
+\item[REB] Readout Electronics Board, the unit of electronics used to readout three CCDs, \ie one third of a raft.
+\item[RGB] Red-Green-Blue image, suitable for color display.
+\item[SDS] Science Array DAQ Subsystem.  The system on the mountain which reads
+out the data from the camera, buffers it as necessary, and supplies it
+to data clients, including the DMS.
+\item[SDQA] Science Data Quality Assessment.
+\item[SNR] Signal-to-Noise Ratio
+\item[SQL] Structured Query Language, the common language for querying relational databases.
+\item[T\&S] Telescope and Site team
+\item[TBD] To Be Determined
+\item[TCS] Telescope Control System
+\item[Visit] A pair of exposures of the same area of the sky taken in immediate
+succession.  A Visit for LSST consists of a 15 second exposure, a 2
+second readout time, and a second 15 second exposure.
+\item[VO] Virtual Observatory
+\item[VOEvent] A VO standard for disseminating information about transient events.
+\item [WBS] Work Breakdown Structure
+\item[WCS] World Coordinate System.  A bidirectional mapping between pixel- and sky-coordinates.
+\end{description}
+
+\clearpage
+
+\bibliography{lsst,refs_ads,refs}
+
+\end{document}

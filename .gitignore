@@ -6,3 +6,7 @@
 *.bbl
 *.blg
 *.synctex.gz
+*.fls
+*.fdb_latexmk
+LDM-151.pdf
+*~
