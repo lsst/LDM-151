@@ -35,13 +35,6 @@ This document discusses the role of the Science Pipelines software in the first 
 
 The overall architecture of the DMS is discussed in more detail in the Data Management System Design (\DMSD) document.
 
-\begin{figure}
-%\includegraphics[angle=90,scale=0.70]{ApplicationLayerProductionsandPipelines.eps}
-\centering
-\includegraphics[angle=90]{figures/DataProductDelivarables.png}
-\caption{Organization of LSST Data Products\label{fig:DP}}
-\end{figure}
-
 \subsection{Data Products}
 
 The LSST data products are organized into three groups, based on their intended use and/or origin. The full description is provided in the Data Products Definition Document (\DPDD); we summarize the key properties here to provide the necessary context for the discussion to follow.
@@ -79,8 +72,6 @@ The LSST data products are organized into three groups, based on their intended 
   into the DMS production flow, thereby promoting them to Level 1 or 2.
 
 \end{itemize}
-
-The organization of LSST Data Products is shown in Figure~\ref{fig:DP}.
 
 Level 1 and Level 2 data products that have passed quality control tests will be made accessible to the data rights holders on a cadence determined by the operations policy. Additionally, the source code used to generate these products will be made available to enhance reproducibility and insight into the implementation of algorithms employed. The LSST will provide documentation, and a list of reference platforms on which the software is expected to build and execute.
 
