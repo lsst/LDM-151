@@ -196,7 +196,8 @@ A preliminary version of the CalExp (calibrated direct exposure).  CalExp is an 
 \paragraph{RunISR}
 \label{sec:drpBootstrapImChar_RunISR}
 
-Delegate to the \hyperref[sec:acISR]{ISR algorithmic component} to perform standard detrending as well as brighter-fatter correction and interpolation for pixel-area variations (\hyperref[sec:acFixPixelAreaVariations]{Warping Irregularly-Sampled Images}).  It is possible that these corrections will require a PSF model, and hence must be backed-out and recorrected at a later stage when an improved PSF model is available.
+Delegate to the \hyperref[sec:acISR]{ISR algorithmic component} to perform standard detrending as well as brighter-fatter correction and interpolation for pixel-area variations.
+It is possible that these corrections will require a PSF model, and hence must be backed-out and recorrected at a later stage when an improved PSF model is available.
 
 We assume that the applied flat field is appropriate for background estimation.
 
@@ -458,7 +459,7 @@ Further differences in the pipelines themselves due to the presence or absence o
 \subsubsection{WarpAndPsfMatch}
 \label{sec:drpWarpAndPsfMatch}
 
-This pipeline resamples and then PSF-matches CalExp images from a visit into a single patch-level image with a constant PSF.  The resampling and PSF-matching can probably be accomplished separately by delegating to the \hyperref[sec:acWarping]{Image Warping} and \hyperref[sec:acPSFHomogenization]{PSF Homogenization} algorithmic components, respectively.  These operations can also be performed in the opposite order if the matched-to PSF is first transformed to the CalExp coordinate systems (so subsequent resampling yields a constant PSF in the coadd coordinate system).  Doing PSF-matching first may be necessary (or at least easier to implement) for undersampled images.
+This pipeline resamples and then PSF-matches CalExp images from a visit into a single patch-level image with a constant PSF.  The resampling and PSF-matching can probably be accomplished separately by delegating to the \hyperref[sec:spWarp]{Image Warping} and \hyperref[sec:acPSFHomogenization]{PSF Homogenization} algorithmic components, respectively.  These operations can also be performed in the opposite order if the matched-to PSF is first transformed to the CalExp coordinate systems (so subsequent resampling yields a constant PSF in the coadd coordinate system).  Doing PSF-matching first may be necessary (or at least easier to implement) for undersampled images.
 
 It is possible these operations will be performed simultaneously by a new algorithmic component; this could potentially yield improved computational performance and make it easier to properly track uncertainty.  These improvements are unlikely to be necessary for this pipeline, because these images and the coadds we build from them will only be used to estimate backgrounds and find artifacts, and these operations only require approximate handling of uncertainty.  However, other coaddition pipelines may require building an algorithmic component capable of warping and PSF-matching simultaneously, and if that happens, we would probably use it here as well.  Simultaneously warping and PSF matching could also yield important computational performance improvements.
 
@@ -491,13 +492,13 @@ This pipeline is responsible for generating the resampled visit-level images (Te
 If we are using decorrelated coadds (option \ref{item:drpA}), the output is equivalent to the LikelihoodWarp data product produced by the \hyperref[sec:drpWarpRemaining]{WarpRemaining} pipeline (aside from differences due to the state of the input CalExps), and the algorithm to produce it the same:
 \begin{itemize}
 \item We correlate the image with its own PSF by delegating to the \hyperref[sec:spKernels]{Convolution Kernels} software primitive.
-\item We resample the image by delegating to the \hyperref[sec:acWarping]{Image Warping} algorithmic component.
+\item We resample the image by delegating to the \hyperref[sec:spWarp]{Image Warping} software primitive.
 \end{itemize}
 Here we should strongly consider developing a single algorithmic component to perform both operations.  These operations must include full propogation of uncertainty.
 
 If we are not using decorrelated coadds (\ref{item:drpB1} or \ref{item:drpC1}), the output is equivalent to the MatchedWarp data product, and the algorithm is the same as the \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch} pipeline.  We cannot reuse existing MatchedWarps simply because we need to utilize updated CalExps.
 
-If we are inferring templates (\ref{item:drpB2} or \ref{item:drpC2}), this pipeline is only responsible for resampling, producing an output equivalent to the DirectWarp data product produced by the \hyperref[sec:drpWarpRemaining]{WarpRemaining} pipeline.  This work is delegated to the \hyperref[sec:acWarping]{Image Warping} algorithmic component.
+If we are inferring templates (\ref{item:drpB2} or \ref{item:drpC2}), this pipeline is only responsible for resampling, producing an output equivalent to the DirectWarp data product produced by the \hyperref[sec:drpWarpRemaining]{WarpRemaining} pipeline.  This work is delegated to the \hyperref[sec:spWarp]{Image Warping} software primitive.
 
 \subsubsection{CoaddTemplates}
 \label{sec:drpCoaddTemplates}
@@ -519,7 +520,7 @@ The steps taken by DRP DiffIm are:
 \begin{enumerate}
 \item Retrieve the DiffIm template appropriate for the CalExps to be processed (probably handling a full visit at a time), delegating to the \hyperref[sec:acRetrieveTemplate]{Template Retrieval} algorithmic component.  This selects the appropriate region of sky, and if necessary, collapses a higher-dimensional template dataset to a 2-d image appropriate for the CalExp's level of DCR.
 \item (optional) Correlate the CalExp with its own PSF, delegating to the \hyperref[sec:spKernels]{Convolution Kernel} software primitive.  This is the ``preconvolution'' approach to difference imaging, which makes PSF matching easier by performing PSF-correlation for detection first, reducing or eliminating the need for deconvolution.  This approach is theoretically quite promising but still needs development.
-\item Resample the template to the coordinate system of the CalExp, by delegating to the \hyperref[sec:acWarping]{Image Warping} algorithmic component.
+\item Resample the template to the coordinate system of the CalExp, by delegating to the \hyperref[sec:spWarp]{Image Warping} software primitive.
 \item Match the template's PSF to the CalExp's PSF and subtract them, by delegating to the \hyperref[sec:acImageSubtraction]{Image Subtraction} algorithmic component.
 \item Run \hyperref[sec:acSourceDetection]{Source Detection} on the difference image.  We correlate the image with its PSF first using the \hyperref[sec:spKernels]{Convolution Kernels} software primitive unless this was done prior to subtraction.
 \item (optional) Decorrelate the CalExp by delegating to the \hyperref[sec:acDiffImDecorrelation]{Difference Image Decorrelation} algorithmic component.
@@ -540,9 +541,9 @@ Like \hyperref[sec:drpBackgroundMatchAndReject]{BackgroundMatchAndReject}, Updat
 
 This pipeline is responsible for the full suite of resampled images used to build coadds in \hyperref[sec:drpCoaddRemaining]{CoaddRemaining}, after all CalExp components have been finalized.  It produces some combination of the following data products, depending on the scenario(s) described at the beginning of Section~\ref{sec:drp_coaddition_and_diffim}:
 \begin{description}
-\item[LikelihoodWarp] CalExp images are correlated with their own PSF, then resampled, via the \hyperref[sec:spKernels]{Convolution Kernels} software primitive and the \hyperref[sec:acWarping]{Image Warping} algorithmic component.  LikelihoodWarp is computed in all scenarios, but in option \ref{item:drpC} it may not need to propagate uncertainty beyond the variance, as the resulting coadd will be used only for detection.
-\item[MatchedWarp] As in \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch}, CalExp images are resampled then matched to a common PSF, using \hyperref[sec:acWarping]{Image Warping} and \hyperref[sec:acPSFHomogenization]{PSF Homogenization}.  MatchWarped is only produced in option \ref{item:drpC}.
-\item[DirectWarp] CalExp images are simply resampled, with no further processing of the PSF, using \hyperref[sec:acWarping]{Image Warping}.  DirectWarp is only produced in option \ref{item:drpC}.
+\item[LikelihoodWarp] CalExp images are correlated with their own PSF, then resampled, via the \hyperref[sec:spKernels]{Convolution Kernels} software primitive and the \hyperref[sec:spWarp]{Image Warping} software primitive. LikelihoodWarp is computed in all scenarios, but in option \ref{item:drpC} it may not need to propagate uncertainty beyond the variance, as the resulting coadd will be used only for detection.
+\item[MatchedWarp] As in \hyperref[sec:drpWarpAndPsfMatch]{WarpAndPsfMatch}, CalExp images are resampled then matched to a common PSF, using \hyperref[sec:spWarp]{Image Warping} and \hyperref[sec:acPSFHomogenization]{PSF Homogenization}.  MatchWarped is only produced in option \ref{item:drpC}.
+\item[DirectWarp] CalExp images are simply resampled, with no further processing of the PSF, using \hyperref[sec:spWarp]{Image Warping}.  DirectWarp is only produced in option \ref{item:drpC}.
 \end{description}
 
 Given that all of these steps involve resampling the image, it would be desirable for computational reasons to do the resampling once up front, and then proceed with the PSF processing.  While this is mathematically possible for all of these cases, it would significantly complicate the PSF correlation step required for building LikelihoodWarps.
@@ -591,7 +592,7 @@ The only output of DeepDetect is the suite of CoaddSource tables (one for each d
 \subsubsection{DeepAssociate}
 \label{sec:drpDeepAssociate}
 
-In DeepAssociate, we perform a sophisticated spatial match of all CoaddSources and DIASources, generating tables of DIAObjects, Object candidates, and a table of unassociated DIASources that will be used to construct SSObjects in \hyperref[sec:drpMOPS]{MOPS}.
+In DeepAssociate, we perform a sophisticated spatial match of all CoaddSources and DIASources, generating tables of DIAObjects, Object candidates, and a table of unassociated DIASources that will be used to construct SSObjects in \hyperref[sec:drpMovingObjectPipeline]{MOPS}.
 
 We do \emph{not} include the Source table in this merge, as virtually all Sources correspond to astrophysical objects better detected elsewhere.  Non-moving or slowly-moving astrophysical objects (even variable non-transient objects) will be detected at much higher significance in \hyperref[sec:drpDeepDetect]{DeepDetect} (as CoaddSources).  Transients and fast-moving objects will be detected at similar significance with significantly less blending (and much easier classification) in \hyperref[sec:drpDiffIm]{DiffIm} (as DIASources).  While a small number of transient/moving Sources near the detection limit may not be detected in difference images due to extra noise from the template, these will be nearly impossible to recover without a large false positive rate from a spatial match of the Source table.
 
@@ -615,7 +616,7 @@ This pipeline simply delegates to the \hyperref[sec:acMultiCoaddDeblending]{Mult
 
 While the pipeline-level code and data flow is simple, the algorithmic component is not.  Not only must deblending deal with arbirarily complex superpositions of objects with unknown morphologies, it must do so consistently across bands and epoch ranges (with different PSFs) and ensure proper handling of Objects spawned by DIASources that may not even appear in coadds.  It must also parallelize this work efficiently over multiple cores; in order to fit patch-level images for all coadds in memory, the processing of at least the largest individual blend families must themselves be parallelized.  This may be done by splitting the largest blend families into smaller groups that can be processed in parallel with only a small amount of serial iteration; it may also be done by using low-level multithreading over pixels.
 
-The output of the DeepDeblend pipeline is an update to the Object table, which adds columns to indicate the origins of Objects and the decisions taken by the deblender as well as modifying the set of rows to reflect the current object definitions.  It also includes attaching pixel-level deblend information to each Object.  If stored directly in the form of \hyperref[sec:spFootprintsHeavy]{HeavyFootprints}, this would be a large dataset (comparable to the coadd pixel data).  This form must be available at least to the \hyperref[sec:drpMeasureCoadds]{MeasureCoadds} pipeline, but it almost certainly needs to be available to science users as well.  Depending on the deblender implementation, it may be possible to instead store analytic models or some other compressed form that would allow the full \hyperref[sec:drpFootprintsHeavy]{HeavyFootprints} to be reconstructed quickly on the fly, while requiring a relatively small amount of additional per-object information.  If this compression is lossy, it should probably be applied before the deblend results are first used in \hyperref[sec:drpMeasureCoadds]{MeasureCoadds} so the deblends used there can be exactly reconstructed later.
+The output of the DeepDeblend pipeline is an update to the Object table, which adds columns to indicate the origins of Objects and the decisions taken by the deblender as well as modifying the set of rows to reflect the current object definitions.  It also includes attaching pixel-level deblend information to each Object.  If stored directly in the form of \hyperref[sec:spFootprintsHeavy]{HeavyFootprints}, this would be a large dataset (comparable to the coadd pixel data).  This form must be available at least to the \hyperref[sec:drpMeasureCoadds]{MeasureCoadds} pipeline, but it almost certainly needs to be available to science users as well.  Depending on the deblender implementation, it may be possible to instead store analytic models or some other compressed form that would allow the full \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} to be reconstructed quickly on the fly, while requiring a relatively small amount of additional per-object information.  If this compression is lossy, it should probably be applied before the deblend results are first used in \hyperref[sec:drpMeasureCoadds]{MeasureCoadds} so the deblends used there can be exactly reconstructed later.
 
 \subsubsection{MeasureCoadds}
 \label{sec:drpMeasureCoadds}

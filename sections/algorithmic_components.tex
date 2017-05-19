@@ -182,7 +182,7 @@ In the limit of faint, isolated objects and white noise, detection should be equ
   \item When operating on non-likelihood coadds and standard difference images, detection may need to operate on images with significant correlated noise.
 \end{itemize}
 
-In deep DRP processing (Section~\ref{sec:drp_coadd_processing}), detection is closely tied to the \hyperref[drpDeepAssociate]{deep association} and \hyperref[drpDeepDeblend]{deep deblending} algorithms, and may change significantly from the baseline plan based on developments in those algorithms.  For example, we may need to adopt a multi-scale approach to these operations (and \hyperref[sec:drpCoaddBackgroundEstimation]{background estimation}) that essentially merges these into a single algorithmic component with no well-defined boundaries.
+In deep DRP processing (Section~\ref{sec:drp_coadd_processing}), detection is closely tied to the \hyperref[sec:drpDeepAssociate]{deep association} and \hyperref[sec:drpDeepDeblend]{deep deblending} algorithms, and may change significantly from the baseline plan based on developments in those algorithms.  For example, we may need to adopt a multi-scale approach to these operations (and \hyperref[sec:acBackgroundEstimation]{background estimation}) that essentially merges these into a single algorithmic component with no well-defined boundaries.
 
 
 \subsection{Deblending}
@@ -192,7 +192,7 @@ Deblending is both one of the most important and one of the most difficult algor
 
 The baseline interface takes as input a set of \hyperref[sec:spFootprints]{Footprints} (including peaks), possibly merged from detections on several images (see \hyperref[sec:acObjectGeneration]{\Object Generation}, and a set of images (related to, but not necessarly identical to the set of deytection images).  It returns a tree of \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} that contain the deblended images of objects.  The tree may have multiple levels, indicating a sequence of blend hypotheses that subdivide an image into more and more objects.  There may be different \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} for each deblended image (at least one for every band), making the size of all \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} comparable to this size of the image data, at least for coadds.  Depending on the deblending algorithm chosen, a more compact representation of the deblend results may be possible (in that that it would allow the full \hyperref[sec:spFootprintsHeavy]{HeavyFootprints} to be regenerated quickly from the image data).
 
-As deblending may involve \hyperref[sec:acSimultaneousFitting]{simultaneous fitting} of galaxy and point source models, it may also output the parameters of these models directly as measurements, in addition to generating a pixel-level separation of neighboring objects that can be used by other measurement algorithms via \hyperref[sec:acNeighborReplacement]{NeighborReplacement}.
+As deblending may involve \hyperref[sec:acSimultaneousFitting]{simultaneous fitting} of galaxy and point source models, it may also output the parameters of these models directly as measurements, in addition to generating a pixel-level separation of neighboring objects that can be used by other measurement algorithms via \hyperref[sec:acReplaceNeighborsWithNoise]{NeighborReplacement}.
 
 Deblending large objects is also closely related to \hyperref[sec:acBackgroundEstimation]{background estimation}.  Some science cases (focusing on small, rare objects) may prefer aggressive background subtraction that removes astrophysical backgrounds such as intra-cluster light or galactic cirrus, while other science cases obviously care about preserving these structures (as well as the wings of bright galaxies, which are frequently difficult to model parametrically).  Rather than produce independent catalogs with different realizations of the background, it makes more sense to include these smaller-scale astrophysical background features in the deblend tree, which already provides a way to express multiple interpretations of the sky.
 
@@ -297,7 +297,7 @@ While they may not be implemented this way, centroid algorithms should thus retu
 
 When run in the very first stages of processing, a full PSF model will not be available, making PSF correction impossible, and here centroid measurements will be expected to yield the raw centroid of the light.  Note that this must still be corrected for any weighting function used by the algorithm.
 
-Centroids will probably be run independently on each coadd during \hyperref[sec:acMultiCoaddMeasurement]{Multi-Coadd Measurement}, to allow for centroid shifts due to proper motion in short-period coadds.  Centroid measurements are superceded by \hyperref[sec:acMovingPointSourceModels]{Moving Point Source Models} and \hyperref[sec:acGalaxyModels]{Galaxy Models} in \hyperref[drpMultiFit]{MultiFit}, which impose different models for centroid differences between epochs that are consistent with morphology.  \hyperref[sec:ForcedMeasurement]{Forced Measurement} in production will never include centroid measurement, as the goal is explicitly to measure photometry at predetermined positions, but it may be useful to have the capability to centroid in forced measurement for diagnostic purposes.
+Centroids will probably be run independently on each coadd during \hyperref[sec:acMultiCoaddMeasurement]{Multi-Coadd Measurement}, to allow for centroid shifts due to proper motion in short-period coadds.  Centroid measurements are superceded by \hyperref[sec:acMovingPointSourceModels]{Moving Point Source Models} and \hyperref[sec:acGalaxyModels]{Galaxy Models} in \hyperref[sec:drpMultiFit]{MultiFit}, which impose different models for centroid differences between epochs that are consistent with morphology.  \hyperref[sec:acForcedMeasurement]{Forced Measurement} in production will never include centroid measurement, as the goal is explicitly to measure photometry at predetermined positions, but it may be useful to have the capability to centroid in forced measurement for diagnostic purposes.
 
 \paragraph{Pixel Flag Aggregation}
 \label{sec:acPixelFlags}
@@ -325,7 +325,7 @@ For aperture fluxes with radii close to the PSF size to be scientifically useful
 \paragraph{Static Point Source Photometry}
 \label{sec:acStaticPointSourceModels}
 
-In single-visit, difference image, and forced measurement, PSF fluxes will be measured with position held fixed at the valued determined by the \hyperref[ac:CentroidAlgorithms]{Centroid algorithm}, with only the amplitude allowed to vary.  We will not use per-pixel weights (as these can lead to bias as a function of magnitude when the PSF model is slightly incorrect) to fit for the amplitude, but we will use per-pixel variances to compute the uncertainty on the flux.  PSF fluxes will be aperture corrected (see Section~\ref{sec:acApCorr}).
+In single-visit, difference image, and forced measurement, PSF fluxes will be measured with position held fixed at the valued determined by the \hyperref[sec:acCentroidAlgorithms]{Centroid algorithm}, with only the amplitude allowed to vary.  We will not use per-pixel weights (as these can lead to bias as a function of magnitude when the PSF model is slightly incorrect) to fit for the amplitude, but we will use per-pixel variances to compute the uncertainty on the flux.  PSF fluxes will be aperture corrected (see Section~\ref{sec:acApCorr}).
 
 In multi-coadd measurement we may use either static point source models or moving point source models to estimate PSF fluxes; this depends on the number and depth of short-period coadds, and hence it is likely we will use static point source models for early data releases and moving point source models near the end of the survey.  In either case we expect these measurements to be entirely superceded for science purposes by multi-epoch fitting results using a moving point-source model; these measurements on coadds are largely for QA and to warm-start multi-epoch fitting.
 
@@ -762,7 +762,7 @@ In difference imaging a major contributor to the quality of the difference image
 The sub-band models of the DCR free scene will be used to realize an optimized template for the exposure in question.  Though the models will be expensive to produce, the algorithm for producing optimized templates will be much less so.  We expect to be able to run the tempate generation algorithm in real time.
 
 \subsection{PSF Matching}
-\label{sec:acPSFMatching}
+\label{sec:acPsfMatching}
 
 The essence of image subtraction is to astrometrically register the science image $S(x,y)$ and template image $T(x,y)$, and then match their point spread functions (PSFs) of so that they may be subtracted pixel by pixel. The PSFs are the time--averaged transfer functions of a point source through the Earth's atmosphere, telescope optics, and into the silicon of the detector before being read out.
 
@@ -820,7 +820,7 @@ In PSF-matched coaddition, input images are convolved by a kernel that matches t
 \label{sec:acCoaddition}
 
 Once images are on a common pixel grid (either via
-\hyperref[sec:spWarping]{Warping}, or naturally in the case of snaps within a
+\hyperref[sec:spWarp]{Warping}, or naturally in the case of snaps within a
 visit) and optionally \hyperref[sec:acPSFHomogenization]{PSF-homogenized},
 this algorithm is responsible for combining them into a single image.
 
@@ -1141,7 +1141,7 @@ Before running the main algorithmic pieces of \hyperref[sec:drpStandardJointCal]
 
 The solutions from \hyperref[sec:acSingleVisitAstrometricFit]{Per-Visit Astrometric Fitting} will be good enough that we will not need to worry about unknown offsets or distortions in this matching step; the main challenge is just dealing sensibly with ``disagreements'' between the visit-level source catalogs, primarily from differences in seeing that lead to differences in detection and/or deblending.  This will require some heuristic logic to reject cases where a source in one visit is deblended into multiple sources in another visit, but unlike the \hyperref[sec:acObjectGeneration]{Object Generation} case, here we can simply reject problematic sources from a match as long as the overall number and spatial coverage of the matches remains high.
 
-The scale of this matching problem is large enough that it will require an optimized implementation using spatial indices and careful management of memory and disk I/O.  Ideally, much of this work will be delegated to the \hyperref[spTablesNWayMatching]{N-Way Matching} software primitive.
+The scale of this matching problem is large enough that it will require an optimized implementation using spatial indices and careful management of memory and disk I/O.  Ideally, much of this work will be delegated to the \hyperref[sec:spTablesNWayMatching]{N-Way Matching} software primitive.
 
 \subsubsection{\DIAObject Generation}
 \label{sec:acDIAObjectGeneration}
