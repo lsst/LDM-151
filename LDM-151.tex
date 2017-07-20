@@ -1,38 +1,13 @@
 % vim: tw=0:wrap:linebreak
 \documentclass[DM,toc]{lsstdoc}
 
-\usepackage{comment}
 \usepackage{datetime}
 \usepackage{microtype}
 
 \newcommand{\microarcsec}{$\mu$as\xspace}
 \interfootnotelinepenalty=10000
 
-
 \setcounter{secnumdepth}{3}
-
-%%%%%%%%%%%%%%%%%%%%%
-% Introduce mechanism to turn on and off various annotations (\XXX command,
-% \begin{notes}, and anything else bracketed by \ifannotated ... \fi)
-%
-\newif\ifannotated
-\annotatedtrue
-\annotatedfalse	% uncomment this to hide all annotations (comments, notes, etc)
-
-\ifannotated
-	% leave things as-is
-\else
-	% hide all \XXX commands
-	\renewcommand{\XXX}{}
-
-	% hide all \begin{note}...\end{note} text
-	\renewenvironment{note}[1][Note]
-	{}
-	{}
-
-  \excludecomment{note}
-\fi
-%%%%%%%%%%%%%%%%%%%%%
 
 \title{Data Management Science Pipelines Design}
 \author{

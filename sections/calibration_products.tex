@@ -118,9 +118,9 @@ Sets of CBP images taken with a suitably-designed sparse mask to allow identific
 \subsubsection{Filter Transmission}\label{sec:CPP:inputs:filterTransmission}
 The transmission curves (transmission as a function of wavelength) for each filter, as a function of filter position. This is to be delivered by the filter vendors rather than the camera team, but is input data which will not be measured by DM. The required resolution is 1nm or better, in keeping with the resolution of the monochromatic flats.
 \alg None.
-\begin{note}
+\begin{draftnote}
 	We need to check what the proposed wavelength resolution and accuracy the vendors are proposing to use for this is. I spoke to Steve Ritz at the AHM and he seemed very positive about the vendor's proposal for this, but we should check what the plan is.
-\end{note}
+\end{draftnote}
 
 
 \subsubsection{Atmospheric Characterization}\label{sec:CPP:inputs:atmosphericData}
@@ -215,9 +215,9 @@ A set of master flats produced by taking the median of a set of a low-resolution
 \subsubsection{Pixel Sizes}\label{sec:CPP:output:pixelSizeMap}
 A map of the (effective) pixel-size distortions. At worst, this will be a {$n_{\mbox{width}}\times n_{\mbox{height}}\times 2$} datacube of floats. Pixel size distortions include small-scale quasi-random size variations, mask-stitching/tiling artifacts, tree-rings, and any other effects not dynamical in nature.
 \alg The algorithm to measure this is currently a (somewhat) unsolved problem. It has been claimed by Aaron Roodman, Michael Baumer and Christopher Davis that these can be measured from flat-fields, but the problem is under-constrained, and thus the stability (nay, validity?) of their measurements is questionable, despite seeming to work. Further thought is required to establish whether their method can be used, and if not, devise another one. It is not obvious how the problem can be made to be well constrained, but work is ongoing in the DESC Sensor Anomalies Working Group (SAWG) to investigate this which might help inform future thinking on the matter.
-\begin{note}
+\begin{draftnote}
 	Merlin knows that we are not allowed to \emph{rely} on DESC work in the project, and hopes that the last sentence is phrased in such a way that it is useful to inform readers where to look for work on the subject without making it sound like they're doing critical project work on which we will rely.
-\end{note}
+\end{draftnote}
 
 
 \subsubsection{Brighter-Fatter Coefficients}\label{sec:CPP:output:brighterFatterCoeffs}
@@ -228,9 +228,9 @@ The coefficients needed to model the \bfeffect. It is hoped that these are a sma
 \subsubsection{CTE Measurement}\label{sec:CPP:output:CTE}
 Measurement of the charge transfer efficiency for each amplifier/column in the camera. In the most simple case, where the dominant trap is close to the amplifier in the serial register and thus affects all columns equally, this would be a single number per amplifier. The next level of complexity would be a number per column, with the still more complex version involving characterizing the specific defects and their locations on the chips, in which case this becomes a per-pixel product, though this could be simplified with the use of bounding-boxes as with defect maps. The nominal case should likely be considered as per-column or per-amplifier, because if the number of columns with significant effects is small, these columns would most likely just be masked out rather than corrected.
 \alg Measurement of CTE is subtle, though several established methods exist for doing so. Using the \fefiftyfive method may not be possible due to the probable lack of a radioisotope source in the camera, but the \emph{extended pixel edge response} (EPER) method and flat-field correlation method would both be possible using the existing input data products. We expect to be able to reuse the measurement algorithms from the Camera Team once they have been ported to run within the DM framework.
-%\begin{note}[Backport to RHL's doc]
+%\begin{draftnote}[Backport to RHL's doc]
 %	CTE measurement and correction sections needs to be added to RHL's calibration documents. This is looking like it may not be a negligible effect for photometry, astrometry and shape measurement, and I don't think it's currently mentioned anywhere in those.
-%\end{note}
+%\end{draftnote}
 
 
 \subsubsection{Filter Transmission}\label{sec:CPP:output:filterTransmission}
@@ -239,21 +239,21 @@ Monitoring of filter transmission \emph{in-situ}. As well as the filter transmis
 Whilst the flat-top portion of the filter pass-band will be monitored, given the small expected gradient and minimal ringing, the transmission across the top becomes degenerate with gray extinction or mirror degradation and its monitoring is therefore of less importance than that of the filter edges. The evolution of the edges of the filter bandpasses will be monitored to the best of the ability of the photometric calibration hardware, with the limit likely imposed by the laser performance and ability to characterize its output spectrum.
 \alg Created from measurements in \secsymbol\ref{sec:CPP:inputs:CBP}.
 
-\begin{note}
+\begin{draftnote}
 	JIRA ticket \hyperref{https://jira.lsstcorp.org/browse/DM-9046}{}{}{\texttt{DM-9046}} has been filed to determine whether, given recent results from DESC showing that 0.1nm resolution on the evolution of the filter edges is required for SNIa cosmology with LSST, this will be added to the \SRD and the requirements flowed down to here.
-\end{note}
+\end{draftnote}
 
 
 \subsubsection{Ghost catalog}\label{sec:CPP:output:GhostCatalog}
 A catalog of the optical ghosts and glints which is available for use in other parts of the system. Detailed characterization of ghosts in the LSST system will only be possible once the system is operational. The baseline design therefore calls for this system to be prototyped using data from precursor instrumentation; we note that ghosts and ghoulies in \eg HSC are well-known and more significant than are expected in LSST.
-\begin{note}[Note from John Swinbank]
+\begin{draftnote}[Note from John Swinbank]
 It is not currently clear where the responsibility for characterizing ghosts and glints in the system lies. We assume it is outside this WBS. On realising this, RHL instructed that it be noted that this constitutes a possible new entry to the risk registry.
-\end{note}
-\begin{note}[Note from Merlin]
+\end{draftnote}
+\begin{draftnote}[Note from Merlin]
 Merlin has proposed a meeting between himself, Robert, John Swinbank, Chuck and anyone else the other attendees think would be advisable to invite, in order to discuss the status of and plan for the measurement and correction of ghosts in the system. Merlin has heard somewhat differing opinions as to how correctable these are, and whether or not we plan to correct for ghosted light for photometry, and during discussions it seemed like proposing a meeting with those with deeper knowledge of the subject was necessary to get a resolution.
 
 The plan, as it stands from Robert in an email, was that we would apply an oversize mask to glints, assuming they are rare, and ``if ghosts are well-characterised and only very bright stars matter we would probably subtract them. So basically, until we know what we're looking at I don't know what we'll do.''
-\end{note}
+\end{draftnote}
 
 
 
@@ -318,9 +318,9 @@ This section details the input data required to calibrate the \auxtelescope itse
 %	\subitem Assuming we have a previous CBP version available, this will be measured by comparing spot fluxes...
 \end{itemize}
 
-\begin{note}
+\begin{draftnote}
 	Should the contents of this document be strictly limited to the current design plan even when this has not been finalised? If so I will move the part about grism/blazing transmission to a comment to be re-included in the future if/when the aux telescope design is finalised. I thought this was probably OK for now though.
-\end{note}
+\end{draftnote}
 
 Further to these standard camera calibration data products, an illumination/ghost correction will also be required, which will either be derived from star field observations or using the final CBP prototype for direct measurement.
 

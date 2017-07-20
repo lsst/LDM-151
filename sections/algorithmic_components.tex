@@ -82,9 +82,9 @@ Flat fielding will be performed as for DRP, but because the \hyperref[sec:CPP:au
 
 
 
-\begin{note}
+\begin{draftnote}
 	Does AP plan on performing \bfeffect and tree-ring corrections? No reason why it shouldn't I don't think (and it would likely need to if they were of DECam's magnitude), I am just not sure and should include here if it won't.
-\end{note}
+\end{draftnote}
 
 
 
@@ -115,11 +115,11 @@ where $i$ runs over the stationary ghost models and $j$ runs over the sources co
 I^\prime = I - I_g
 \]
 
-\begin{note}[Point source ghosting]
+\begin{draftnote}[Point source ghosting]
 It may not be possible to do point source ghost correction in alert production.  We will know the model of the
 point source ghosts, but we will not know the location of the bright sources in other chips.  Since point
 source ghosts can appear at significant separations, this may be a source of spurious detections.
-\end{note}
+\end{draftnote}
 
 \subsubsection{Linear feature detection and removal}
 \label{sec:acLinearFeatureDetection}
@@ -283,9 +283,9 @@ The driver for Forced Measurement is passed an input/output \hyperref[sec:spTabl
 
 Forced measurement is used by the DRP \hyperref[sec:drpForcedPhotometry]{ForcedPhotometry} pipeline and numerous pipelines in AP.
 
-\begin{note}[TODO]
+\begin{draftnote}[TODO]
 Add references to specific AP pipelines that will use forced measurement.
-\end{note}
+\end{draftnote}
 
 \subsubsection{Algorithms}
 \label{sec:acMeasurementAlgorithms}
@@ -346,9 +346,9 @@ Measuring the Kron radius itself is difficult in the presence of noise; as with 
 \paragraph{Petrosian Photometry}
 \label{sec:acPetrosianPhotometry}
 
-\begin{note}
+\begin{draftnote}
 Need to get RHL to write this section.
-\end{note}
+\end{draftnote}
 
 \begin{itemize}
 \item Compute Petrosian radius.
@@ -376,9 +376,9 @@ Challenges in galaxy modeling are not limited to sampling; the effective number 
 
 Galaxy models may be fit simultaneously to multiple objects (see \hyperref[sec:acSimultaneousFitting]{Simultaneous Fitting}) as well as fit to individual objects after \hyperref[sec:acReplaceNeighborsWithNoise]{replacing neighbors with noise}.  In simultaneous fitting, it will sometimes be inappropriate to fit all objects in a blend with galaxy models.  Fitting \hyperref[sec:acHybridModels]{Hybrid Models} that can transition smoothly between a galaxy model and a \hyperref[sec:acMovingPointSourceModels]{Moving Point Source Model} is one approach to avoid fitting all permutations of model types to a blend.
 
-\begin{note}[TODO]
+\begin{draftnote}[TODO]
 Cite Lensfit paper for restricted bulge-disk model.  Cite Hogg and Lang, Bosch 2010 for Gaussian/Shapelet approximation.
-\end{note}
+\end{draftnote}
 
 \paragraph{Moving Point Source Models}
 \label{sec:acMovingPointSourceModels}
@@ -387,16 +387,16 @@ In the \hyperref[sec:acMultiEpochMeasurement]{Multi-Epoch Measurement}, all obje
 
 Bayesian priors may be used in the fit (making this ``maximum posterior'' instead of ``maximum likelihood''), if necessary to ensure robustness when fitting for faint objects or if they significantly improve the quality of the results.   These will generally be global and relatively uninformative (reflecting e.g. the expected distribution of proper motion of stars as a function of apparent magnitude), but may be highly informative for stars that can be unambiguously associated with the Gaia catalog, if including Gaia and LSST astrometric solutions at the catalog level proves inconsistent with this (more rigorous) Bayesian approach to including Gaia data at the pixel level.  All priors will be reported, but unlike Monte Carlo samples, results from a fit with a greedy optimizer cannot be reweighted to change to a user-provided prior except in a perturbative, first-order sense.  Monte Carlo sampling with moving point source models is not included in the baseline plan, but will be considered if it proves important for joint fitting of blended stars and galaxies (see \hyperref[sec:acHybridModels]{Hybrid Models}, below) or \hyperref[sec:acObjectClassification]{Star/Galaxy Classification}, and it can be done without significantly affecting the compute budget.
 
-\begin{note}[TODO]
+\begin{draftnote}[TODO]
 Cite Lang+Hogg paper that did this in Stripe 82.
-\end{note}
+\end{draftnote}
 
 \paragraph{Trailed Point Source Models}
 \label{sec:acTrailedPointSourceModels}
 
-\begin{note}
+\begin{draftnote}
 Need to find someone (probably on AP team) to write this section.
-\end{note}
+\end{draftnote}
 
 \begin{itemize}
 \item Fit PSF convolved with line segment to individual images
@@ -422,9 +422,9 @@ Note that deblending dipole sources is a complicated process and we do not inten
 \paragraph{Spuriousness}
 \label{sec:acSpuriousnessAlgorithms}
 
-\begin{note}
+\begin{draftnote}
 Need to find someone (probably on AP team) to write this section.
-\end{note}
+\end{draftnote}
 
 \begin{itemize}
 \item Some per-source measure of likelhood the detection is junk (in a difference image).
@@ -538,10 +538,10 @@ In the case of Alert Production, there will be no full focalplane model since we
 
 If there are so few un-masked pixels in the entire focalplane that even a low order global background is impossible to model, background modeling may need to be iterated with a procedure that models and subtracts stars (for example, see the \hyperref[sec:drpBootstrapImChar]{BootstrapImChar pipeline in DRP}).
 
-\begin{note}[Crowded fields and composition]
+\begin{draftnote}[Crowded fields and composition]
 Requirements include working in crowded fields.  I think estimating a full focalplane model is the best we can do.  If there are no unmasked pixels in the entire FoV, I don't think there is much we can do.
 I didn't explicitly talk about composition of background models, but this takes that into account by allowing a global model to be subtracted from the single chip image before a higher order model is fit.
-\end{note}
+\end{draftnote}
 
 \subsubsection{Coadd Background Estimation}
 \label{sec:acCoaddBackgroundEstimation}
@@ -610,7 +610,7 @@ P = \Sigma_n c_n\Psi_n
 where $\Psi_n$ is the $n^{th}$ basis function, and $c_n$ is the coefficient for that basis function.  We can solve for the coefficients for each PSF candidate in a least squares sense along with a model for the spatial variation of the PSF
 across the CCD.
 
-\begin{note}{JFB}
+\begin{draftnote}{JFB}
     This algorithm is unlikely to work in crowded fields, where are no
     isolated stars and hence it will probably be impossible to perform a PCA
     of star images, and there's no way to separate kernel image fitting from
@@ -622,7 +622,7 @@ across the CCD.
     differencing code between the science image and the model image to
     generate an update to the PSF model (this is RHL's idea; I'm just stating
     it).
-\end{note}
+\end{draftnote}
 
 \subsubsection{Wavefront Sensor PSF Estimation}
 \label{sec:acWavefrontSensorPSF}
@@ -677,9 +677,9 @@ We can project the per-chip coordinates onto the surface of a unit sphere.
 This will take out the bulk of the optical distortion.
 We will then match the science and template sources and fit a distortion model to minimize the residual positional offsets.
 
-\begin{note}[Dependency]
+\begin{draftnote}[Dependency]
 This introduces a dependency on DRP's internal reference catalog not captured elsewhere.
-\end{note}
+\end{draftnote}
 
 \subsubsection{Single Visit}
 \label{sec:acSingleVisitAstrometricFit}
@@ -1070,9 +1070,9 @@ QSO similarity metrics, as defined by Butler \& Bloom \cite{2011AJ....141...93B}
 \label{sec:acStellarMotionFitting}
 Every time we observe another apparition of a \DIAObject, we have an opportunity to update/improve the proper motion and parallax models.  The \DIASources are associated with the current best model from the \DIAObject.  The proper motion and parallax are then refit using the new observation.
 
-\begin{note}[Do we actually want to do this]
+\begin{draftnote}[Do we actually want to do this]
 I had a conversation about this with Colin.  In reqlity we can't do as good a job with proper motion and parallax in nightly processing as we can in DRP.  It's true that we would have no estimate of the proper motion or parallax until the first release if we do not calculate it in nightly, but I'd argue that before the first release we don't have the baseline to calculate an accurate anyway.  Further, the measurement in DRP can be much better since we can do it as part of joint astrometric fitting.  If we don't measure pm and parallax in nightly, we could still use the DRP measurement in the associated DRP object for association.
-\end{note}
+\end{draftnote}
 
 \subsection{Association and Matching}
 \label{sec:acMatching}
@@ -1174,9 +1174,9 @@ The process of calibrating raw measurements (in units of e.g. pixels or ADUs) to
     \item While some measurements (like fluxes and centroids) can be calibrated in a generic way, other measured quantities are highly algorithm-dependent.  Because the set of algorithms is itself a dynamic, configurable part of our system, the algorithmic framework must provide a generic interface that allows each algorithm to define its own calibration procedure when a generic one will not suffice.
 \end{itemize}
 
-\begin{note}[JFB]
+\begin{draftnote}[JFB]
     We need to make sure the requirement that we be able to recalibrate photometry inside the database and/or science platform is recognized by the teams responsible for those components as well.
-\end{note}
+\end{draftnote}
 
 \subsection{Ephemeris Calculation}
 \label{sec:acEphemerisCalculation}

@@ -92,7 +92,9 @@ The SFM pipeline will be implemented as a flexible framework where new processin
 \label{sec:apSFMinput}
 
 \paragraph*{Raw Camera Images:} Amplifier images that have been corrected for crosstalk and bias by the camera software. All images from a visit should be available to the task (including snaps). An approximate WCS is assumed to be available as metadata derived from the Telescope Control System with an absolute pointing uncertainty (for a full focal plane) of 2 arcseconds \ossreq{0298}\reqparam{absPointErr} and the field rotation known to an accuracy of 32 arcseconds \citedsp{LTS-206}.
-%\begin{note} question into Steve R about Camera operations - DM to provide request for operations on images that camera team will undertake \end{note}
+%\begin{draftnote}
+%  question into Steve R about Camera operations - DM to provide request for operations on images that camera team will undertake
+%\end{draftnote}
 
 \paragraph*{Reference Database:} A full-sky astrometric and photometric reference catalog of stars derived either from an external dataset (e.g.\ Gaia) or from the Data Release Processing. Given the current Gaia data release timeline the initial reference catalog is expected to have an astrometric uncertainty of $<0.5$ milliarcseconds and a photometric uncertainty of $<$20 millimag (for a $V=19$ G2V star). The expected release of these calibration catalogs is 2018 and will be derived from the Gaia spectrophotometric observations of non-variable sources.
 
@@ -146,7 +148,9 @@ The iterative process for PSF and background estimation comprises,
 \end{itemize}
 
 The default expectation is that all tasks within this procedure would iterate until convergence.  There maybe significant speed optimizations to be gained by excluding the \Source detection step after an initial detection if the number of sources does not change significantly with updates to the background model.
-%\begin{note} Treatment of covariance \end{note}
+%\begin{draftnote}
+%  Treatment of covariance
+%\end{draftnote}
 
 \subsubsection{Source measurement}
 \label{sec:apSourcemeasurement}
@@ -159,7 +163,9 @@ For the \Source catalog generated in \ref{sec:apPSFBackground}, source propertie
 \item PSF photometry given in \ref{sec:acStaticPointSourceModels} assuming a static PSF model fit
 \item  An aperture correction estimated assuming a static PSF model and measurement of the curve of growth for  detected sources as given in \ref{sec:acApCorr}
 \end{itemize}
-%\begin{note} why only one or two radii \end{note}
+%\begin{draftnote}
+%  why only one or two radii
+%\end{draftnote}
 
 \subsubsection{Photometric and Astrometric calibration}
 
@@ -368,16 +374,18 @@ Forced photometry is not required prior to alert generation. Completion of the p
 \end{center}
 \end{figure}
 
-\begin{note}
-  For ZI: I moved the precovery to a single pipeline
-\end{note}
+\begin{draftnote}[For ZI]
+  I moved the precovery to a single pipeline
+\end{draftnote}
 \subsubsection{Input Data}
 
 \paragraph*{Difference images:} A cache of DiffExps within a finite time interval (default 30 days) of the previous nights observations (inclusive of the previous nights data)
 
 \paragraph*{DIAObject Database:} All \DIAObjects with a \DIASource detection within the last 12 months and all unassociated (new) \DIAObjects observed within the previous night
 
-%\begin{note} We associate (measure forward) for 12 months but look back for 30 days\end{note}
+%\begin{draftnote}
+%  We associate (measure forward) for 12 months but look back for 30 days
+%\end{draftnote}
 
 \subsubsection{Output Data}
 
@@ -470,7 +478,9 @@ Tracklets are matched and merged with existing \SSObjects and removed from the T
 \item Return all tracklets identified within a given night of observations
 \item Return the footprints of each visit and the time of the observation
 \item Extract \SSObjects from the \SSObject database and propagated those orbits to the position and time of a visit. Details of this orbit propagation for precovery are described in \ref{sec:acEphemerisCalculation}.
-%\begin{note}What are the numbers for the \SSObject propagation and number of tracklets per visit\end{note}
+%\begin{draftnote}
+%  What are the numbers for the \SSObject propagation and number of tracklets per visit
+%\end{draftnote}
 \item Merge (precovery) the tracklets with the projected \SSObject trajectories and refit  the \SSObject orbit model. \DIASources previously associated with an \SSObject may no longer fit the updated \SSObject orbits. These \DIASources will be removed from the \SSObject and returned as unassociated \DIAObjects to the level 1 database. All tracklets associated with these \DIAObjects will be  returned to the tracklet database. Details of this attribution and precovery are described in \ref{sec:acAttributionAndPrecovery}
 \end{itemize}
 
