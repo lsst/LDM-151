@@ -1,26 +1,20 @@
 sudo: true
-language: python
 dist: trusty
-matrix:
-  include:
-    - python: "3.5"
-      env: LTD_MASON_BUILD=true
+services:
+  - docker
+language: python
+python:
+  - '3.5'
 before_install:
-  - "sudo apt-get update && sudo apt-get install -y --no-install-recommends texlive-fonts-recommended texlive-latex-extra texlive-fonts-extra dvipng texlive-latex-recommended latexmk poppler-utils latex-xcolor lmodern texlive-xetex texlive-generic-recommended texlive-math-extra pgf texlive-full"
-install:
-  - pip install "ltd-mason>=0.2,<0.3"
-  - git clone https://github.com/lsst/lsst-texmf.git
+  - "pip install 'lander>=0.1.0,<0.2'"
 script:
-  - export TEXMFLOCAL=lsst-texmf/texmf
-  - latexmk -bibtex -pdf -f LDM-151.tex
+  # Compile PDF using containerized lsst-texmf
+  - "docker run --rm -v `pwd`:/workspace -w /workspace lsstsqre/lsst-texmf:latest sh -c 'make'"
 after_success:
-  - cp LDM-151.pdf deployment/LDM-151.pdf
-  - ltd-mason-travis --html-dir deployment
+  # Deploy website. See https://github.com/lsst-sqre/lander for CLI options
+  - "lander --pdf LDM-151.pdf --upload --lsstdoc LDM-151.tex --env=travis --ltd-product ldm-151"
 env:
   global:
-    - LTD_MASON_BUILD=false  # disable builds in regular text matrix
-    - LTD_MASON_PRODUCT="ldm-151"
-    # travis encrypt "LTD_MASON_AWS_ID=... LTD_MASON_AWS_SECRET=..." --add env.global
-    - secure: "RIpSD83vWi85ef7vUVqkpYpd7RKQWm8rp4OqapnsIKhAU8e25lqwgC5lPCfXVnoqU9XSwdQxQvoHcSDuLhEnHVv5HnqqKEzRmNzdha+CHfhWDT48IEpguyLAREK2jVl4EfcbX5GQql6YCWyECw+W2PkkB3ThhylzRBbYQNzRlpurOD2G1rMrHgZHxBDX/+0ZOw4JClXu9MgR9hQuH3atRDGTXWpyNoAHVEZkVOukPdpX/L5GiKed6ghyYp+vCbcm/s0PMTKU8DqJOAkP5KEUyK0o3mgLzWfZ0eTG3FCAjU2RrcY7R/25bHIWg0hipsMKlJfAar/EWGLCRm6YkQLU90m2tAJBmHkPEYXmvPALxExemmRTOhmpWClsPGTPMFLEGPzO5ApexYyktxgjzyhqn3E++Koegr8eTVWAsN2yhus/bLOjDdgFk+oALTXZ2OOmWynkBjXesNFRiR2nG27x+W/wnPTvPTQYRrl6Dwv2VxTk9QT9JAhD/hz7vRBJJPwo2klbhmzFtO3v4GZOoo38qKyL0HN8ZwjDNCY5nBGHynCQHYnSiaC7uDnnGIe8DqlYst9Nb+bnFlfB4IyrrzejQUG6tdgJONyJxCA8k3wHQ493G4GPJzKZWn+/Bv6X5myvNiPTXgO3FTiQoLuuv57K0PV1/a/GbBajvgD3lD4ZRNo="
-    # travis encrypt "LTD_KEEPER_URL=... LTD_KEEPER_USER=... LTD_KEEPER_PASSWORD=..." --add env.global
-    - secure: "ABdjO8Yfz31zhMKmFUTebXOp+dtq/GIM3D4S/+Nr6lUxKg0WbBBUYARK7BYZ3ngOgmigD/8tSdQda5hk8ls7N+iHnik/GhTruZlqgJTWkhJ7girfEN+1rvfL/Khn8kc0TtSHLcpNU7GcGBO/VQY7g91iR9FR9IclM40Or76qJyvYkzt1s4aZxj4n+krWfI79hvc1Bs6vblnKbjOt7cL0XgcVIz7Api3zY8xCjIYkFLvqV4mT7rdvdqcVx0B+2mhhvP51rsVWhH4hXgFAfWsIQZ9kQ7UytOMTVgLQJAOb79sUWrKaXTPQ/M3K99Vxx4KlcRmxw5bWtQJ3GG7R8GvhN2ATgl4sTcGmhZ5r21RaPvVrIxorqZcTgWzrDf4JKuQxmLEEDGvj/PYqSKDzLIiDR3gQzxlJLh8HO6O0PcZVBVzgsW+A1nTEmiuz/4eN3+dppuJP4Sx8G/rqQ2Ja3oMSYt+FibJTkfNZLCzMkRa3VVsoaLFl28EvrLFjpXGkGx4azZYD+8owWeSm/86Xmed3j15NxM2ytMvTJ7WR1lruAoBh8JnltwKfWYKwvPoHnOCwOVoyQVW/oHc9Ee4xK0MlPdfh/dmngc0zP//90TRTNmB6Ss+izTfFcL8bBW9Im5kn2WHUrp0tqk14tVFZzcaac+HB+6c/6VBvG32YGVaE5g8="
+    # LSST the Docs credentials
+    - secure: "lvUvTK7/cfmBVyhon8FklumGf0T+Fa/zT1xFmNQ5+2y6Lv8oGejUdqrSlGR+8osIwgklTydsawfnPSWcGh0FK7ATXQJkg1BRXqcznV26CN22RbwFZO4w+bEwVWVpTUhGxnl2thsINGxDrj0DZf2ic647Lw3QgViKVIeMJK56hub20A/SMLhbFqZnjmTYIrgBORHKaAOKVHMGTKHIs1pTaFhwU9EeTbhagj8kdJPZWZ16ut00h/UXrJFU8QdzjCDOLOUaz5SKrEpJOmeHgHxi2qo0/i7hvqa/4RPA5A3Lb7fEgiL93TOHTtiP+soNLHKDLddGnq5rJcVBafHabL+Jm5C6KLvGbsj9xFtp2H5v0LUU/pzgZrX8PJjCxQ+h7HdMBxgSu5hexZUoh6m1VwODYuRYhPMwVR5fJr6O6rlSgbdRGeMfAOxZmDd/mebdbx4Bi5sze914GnL9Gz23t2U/zJpGUu9MyPVKZrxpIfD4F6iCDSdi6+C6S8RtwktLpK/8VBAAmXNOKv8WA82cXTydrxwY5M0b6sbgTqOEg/cKRZCL2KY2CKuGlTDIevpqYZ6rl+EI69BTDS4qGXfG2wr7hkGGgYRffoGK7p3oIN995rxrhb+po8KJU663nr8Z8c+IOvz0wjuCGaB0KXQAj3zmjJk+W6RZhjTtSaiw/51NCxY="
+    - secure: "QmYFiUEBxyJElpM62kuwrjA0gTUKaZAS6zr9TxbIdh11KwddlC7XgNMu7SaFqz7zFe16GSkaBG5LMAM2ILc8ARc3bfbM6ZORt1pXF1KaG179HlKCuUFVGnZt9Epk/89K+n5q+77rcaquOOIBeguIzk8fHyksW7O7shLYNAN1Q0gv+EaGURL/hGRJ5WNzybzkl4s3zXfaGYbGH7CIkvM62iYrClnfHMxlkHk0/NnCqLqvXhWIPpvA4EIzrl+r05E9fYufHuYwdKFDnR1LEa3lUaNw1gXOZpfKUOJpHJ32HenrjNVZyer+VG74Rp/L/d8gWTv0M8wQNFSmkMBZIf2mWCcrDpAPeKSIIudLWyT66kQ6SMR8nyA7ICY57kn8QTVCH1HC9BiafXCyU9ZCsUs6KXLQxuEbZwc550I0/JzE9ELIc0KKS5Q+w9vxcAn0CZ7ZkvcEL01CqU/PNiyGWRtQtDXx4X3oGA2+MNa231ryWEFj89Hfu+FRavW+XxJvHIG3GmVPpodYMTymf+MdMmnf+Od0ZbVGp/SORbTCLJlsBdj7q/OgRXYtv578G3mcLgPcXsmUR+Bb5YM3FnOjUK+e81c1NhCQGR12YnnNv2GkNzQkjz1Vn+ymieTwotweTjRo9wI2lgAtEEW2+Dehd/QxaI+9b+MwjZLMI68BtkozzEE="
