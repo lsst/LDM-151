@@ -22,7 +22,7 @@ Alert Production is run each night to produce catalogs and images for sources th
   Flux measurements on each difference image at the position of a \DIAObject. \\
   \hline
   \SSObject & Stored &
-  Solar system objects derived by associating \DIASources and inferring their orbits. \\
+  Solar system object derived by associating \DIASources and inferring their orbits. \\
   \hline
   CalExp & Stored &
   Calibrated exposure images for each CCD/visit (sum of two snaps) and associated metadata (e.g.\ WCS and estimated background). \\
@@ -423,12 +423,12 @@ Updated forced photometry table for all new \DIAObjects
 
 
 
-\subsection{Moving Object Pipeline (\wbsMOPS)}
+\subsection{Solar System Pipeline (\wbsMOPS)}
 \label{sec:apMovingObjectPipeline}
 
-The Moving Object Pipeline (MOPS) is responsible for generating and managing the Solar System data products. These are Solar System objects with associated Keplerian orbits, errors, and detected \DIASources. Quantitatively, it shall be capable of detecting 95\% \reqparam{orbitCompleteness} of all Solar System objects that meet the criteria specified in the \OSS\@ \ossreq{0159} (i.e.\ the observations required to define an orbit). Each visit within 10 degrees of the Ecliptic will detect approximately 4,000 asteroids.
+The Solar System Pipeline (SSP) is responsible for generating and managing the Solar System data products. These are catalogs of Solar System objects with associated Keplerian orbits, physical properties, errors, and detected \DIASources. Quantitatively, the linking element of the pipeline shall be capable of detecting 95\% \reqparam{orbitCompleteness} of all Solar System objects that meet the criteria specified in the \OSS\@ \ossreq{0159} (i.e.\ the observations required to define an orbit). Each visit within 10 degrees of the Ecliptic will detect approximately 4,000 asteroids.
 
-Components of MOPS are run during and separately from nightly processing (see Figure~\ref{fig:apMOPS}). MOPS for nightly processing is described in \ref{sec:apSourceAssoc} as part of source association. ``Day MOPS'' processes newly detected \DIAObjects to search for candidate asteroid tracks. The procedure for Day-MOPS is to link \DIASource detections within a night (called tracklets), to link these tracklets across multiple nights (into tracks), to fit the tracks with an orbital model to identify those tracks that are consistent with an asteroid orbit, to match these new orbits with existing \SSObjects, and to update the \SSObject table. By its nature this process is iterative with \DIASources being associated and disassociated with \SSObjects. It is expected that a frequency of one day for these iterations (i.e.\ the \SSObjects will be update each day) will be sufficient.
+Components of the SSP are run during and separately from nightly processing (see Figure~\ref{fig:apMOPS}). The element run in nightly processing performs association of observations with known \SSObjects, and is described in \ref{sec:apSourceAssoc}. Daytime elements cluster newly detected \DIAObjects to search for candidate asteroids. The procedure is to link \DIASource detections within a night (when on-sky motion is approximately linear) into {\em tracklets}, to link these tracklets across multiple nights (into tracks), to fit the tracks with an orbital model to identify those tracks that are consistent with an asteroid orbit, to report these candidate discoveries to the Minor Planet Center (MPC), update the \SSObject table based on the discovery confirmations from the MPC, and compute the physical properties (e.g., absolute magnitudes) of objects in the \SSObject table, and auxiliary per-observation information for individual observations. By its nature this process is iterative with \DIASources being associated and disassociated with \SSObjects. It is expected that a frequency of one day for these iterations (i.e.\ the \SSObjects will be update each day) will be sufficient.
 
 \begin{figure}[th]
 \begin{center}
@@ -439,20 +439,20 @@ Components of MOPS are run during and separately from nightly processing (see Fi
 
 \subsubsection{Input Data}
 
-\paragraph*{DIAObject Database: } Unassociated \DIASources from the previous night of observing.  This means \DIAObjects that were newly created during the previous night because they could not be associated with known \DIAObjects.  \DIASources associated with an \SSObject in the night are still passed through the MOPS machinery
+\paragraph*{DIAObject Database: } Unassociated \DIASources from the previous night of observing.  This means \DIAObjects that were newly created during the previous night because they could not be associated with known \DIAObjects.
 
-\paragraph*{SSObject Database: } The catalog of known solar system sources
+\paragraph*{SSObject Database: } The catalog orbits of known solar system sources. This catalog will be acquired from the Minor Planet Center, on a daily basis.
 
 \paragraph*{Exposure Metadata:} A description of the footprint of the observations including the positions of bright stars or a model for the detection threshold as a function of position on the sky (including gaps between chips)
 
 
 \subsubsection{Output Data}
 
-\paragraph*{SSObject Database: } An updated \SSObject database with \SSObjects both added and pruned as the orbital fits are refined
+\paragraph*{SSObject Database: } An updated \SSObject database with \SSObjects both added and pruned as new data is added. This database also contains the inferred physical and other characteristics of Solar System objects observed by the LSST.
 
 \paragraph*{DIASource Database:} A updated \DIASource database with \DIASources assigned and unassigned to \SSObjects
 
-\paragraph*{Tracklet Database:} A temporary database of tracklets measured during a night. This database will be persisted for at least a lunation.
+\paragraph*{Tracklet Database:} A temporary database of tracklets measured during a night. This database is internal to the Solar System Pipeline.
 
 \subsubsection{Tracklet identification}
 
