@@ -422,20 +422,20 @@ Updated forced photometry table for all new \DIAObjects
 
 
 
-\subsection{Solar System Pipeline (\wbsMOPS)}
+\subsection{Moving Object Processing System (\wbsMOPS)}
 \label{sec:apMovingObjectPipeline}
 
-The Solar System Pipeline (SSP) is responsible for generating and managing the Solar System data products. These are catalogs of Solar System objects with associated orbits, physical properties, errors, and detected \DIASources. Quantitatively, the linking element of the pipeline needs to be be capable of detecting 95\% \reqparam{orbitCompleteness} of all Solar System objects that meet the criteria specified in the \OSS\@ \ossreq{0159} (i.e.\ the number observations required to define an orbit). Each visit within 10 degrees of the Ecliptic is expected to detect approximately 4,000 asteroids.
+The LSST Moving Object Processing System (MOPS) is responsible for generating and managing the Solar System data products. These are catalogs of Solar System objects with associated orbits, physical properties, errors, and detected \DIASources. Quantitatively, the linking element of the pipeline needs to be be capable of detecting 95\% \reqparam{orbitCompleteness} of all Solar System objects that meet the criteria specified in the \OSS\@ \ossreq{0159} (i.e.\ the number observations required to define an orbit). Each visit within 10 degrees of the Ecliptic is expected to detect approximately 4,000 asteroids.
 
-Components of the SSP are run both during the nightly processing, and in daytime (see Figure~\ref{fig:apMOPS}). The SSP consists of the following components:
+Elements of MOPS are run both during the nightly processing, and in daytime (see Figure~\ref{fig:apMOPS}). It consists of the following components:
 %
 \begin{enumerate}
-	\item Attribution service
-	\item New object discovery pipeline (linking pipeline)
-	\item Precovery pipeline
-	\item Daily Data Products Production pipeline
-	\item Ephemeris cache precomputation pipeline
-	\item Minor Planet Center report submission service
+	\item Attribution service (night)
+	\item Linking pipeline (day)
+	\item Precovery pipeline (day)
+	\item Daily Data Products Production pipeline (day)
+	\item Ephemeris cache precomputation pipeline (day)
+	\item Minor Planet Center report submission service (day)
 \end{enumerate}
 %
 The attribution service is run in nightly processing and performs association of observations with known Solar System object entries from \MPCORB.
