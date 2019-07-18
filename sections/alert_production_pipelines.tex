@@ -425,20 +425,24 @@ Updated forced photometry table for all new \DIAObjects
 \subsection{Solar System Pipeline (\wbsMOPS)}
 \label{sec:apMovingObjectPipeline}
 
-The Solar System Pipeline (SSP) is responsible for generating and managing the Solar System data products. These are catalogs of Solar System objects with associated Keplerian orbits, physical properties, errors, and detected \DIASources. Quantitatively, the linking element of the pipeline shall be capable of detecting 95\% \reqparam{orbitCompleteness} of all Solar System objects that meet the criteria specified in the \OSS\@ \ossreq{0159} (i.e.\ the observations required to define an orbit). Each visit within 10 degrees of the Ecliptic will detect approximately 4,000 asteroids.
+The Solar System Pipeline (SSP) is responsible for generating and managing the Solar System data products. These are catalogs of Solar System objects with associated orbits, physical properties, errors, and detected \DIASources. Quantitatively, the linking element of the pipeline needs to be be capable of detecting 95\% \reqparam{orbitCompleteness} of all Solar System objects that meet the criteria specified in the \OSS\@ \ossreq{0159} (i.e.\ the number observations required to define an orbit). Each visit within 10 degrees of the Ecliptic is expected to detect approximately 4,000 asteroids.
 
-Components of the SSP are run during and separately from nightly processing (see Figure~\ref{fig:apMOPS}). The system consists of the following components:
+Components of the SSP are run both during the nightly processing, and in daytime (see Figure~\ref{fig:apMOPS}). The SSP consists of the following components:
 %
 \begin{enumerate}
 	\item Attribution service
-	\item Linking pipeline
+	\item New object discovery pipeline (linking pipeline)
 	\item Precovery pipeline
 	\item Daily Data Products Production pipeline
 	\item Ephemeris cache precomputation pipeline
-	\item MPC Submission queue and service
+	\item Minor Planet Center report submission service
 \end{enumerate}
 %
-The element run in nightly processing performs association of observations with known Solar System object entries from \MPCORB -- sometimes known as ``attribution'' in the context of Solar System objects (the attribution service). Daytime elements cluster newly detected \DIAObjects to search for candidate asteroids. The procedure is to link \DIASource detections within a night (when on-sky motion is approximately linear) into {\em tracklets}, to link these tracklets across multiple nights (into tracks), to fit the tracks with an orbital model to identify those tracks that are consistent with an asteroid orbit, to report these candidate discoveries to the Minor Planet Center (MPC), update the \MPCORB table based on the discovery confirmations from the MPC, and compute the physical properties (e.g., absolute magnitudes) of objects in the \SSObject table, and auxiliary per-observation information for individual observations. By its nature this process is iterative with \DIASources being associated and disassociated with \MPCORB entries. It is expected that a frequency of one day for these iterations (i.e.\ the Solar System objects will be update each day) will be sufficient.
+The attribution service is run in nightly processing and performs association of observations with known Solar System object entries from \MPCORB.
+
+The linking pipeline, run in daytime, clusters newly detected \DIAObjects to search for candidate asteroids. The high-level procedure is to link \DIASource detections within a night (when on-sky motion is approximately linear) into {\em tracklets}, to link these tracklets across multiple nights (into tracks) and to fit the tracks with an orbital model to identify those tracks that are consistent with an asteroid orbit.
+
+Candidate discoveries with high degree of certainty are reported to the Minor Planet Center (MPC), and updates to the \MPCORB table are made based on the discovery confirmations from the MPC. Following these updates, physical properties (e.g., absolute magnitudes) of objects in the \SSObject table are recomputed, as well as auxiliary per-observation information for individual observations. It is expected that a frequency of one day for these iterations (i.e.\ the Solar System objects will be update each day) will be sufficient.
 
 \begin{figure}[th]
 \begin{center}
@@ -449,7 +453,7 @@ The element run in nightly processing performs association of observations with 
 
 \subsubsection{Input Data}
 
-\paragraph*{DIAObject Database: } Unassociated \DIASources from previous 14 nights of observing.
+\paragraph*{DIAObject Database: } Unassociated \DIASources from previous 14 nights (stretch: 30 nights) of observing.
 
 \paragraph*{MPCORB Database: } The catalog orbits of known solar system sources. This catalog will be acquired from the Minor Planet Center, on a daily basis.
 
@@ -460,98 +464,105 @@ The element run in nightly processing performs association of observations with 
 
 \paragraph*{MPCORB Database: } An updated \MPCORB database acquired from the Minor Planet Center.
 
-\paragraph*{SSObject Database: } An updated \SSObject database with \SSObjects both added and pruned as new data is added. This database contains the inferred physical and other characteristics of Solar System objects observed by the LSST. The orbits are held in MPCORB (see above).
+\paragraph*{SSObject Database: } An updated \SSObject database with \SSObjects both added and pruned as new data is added. This database contains the inferred physical and other characteristics of Solar System objects observed by the LSST. The orbits are held in the \MPCORB database (see above).
 
-\paragraph*{DIASource Database:} A updated \DIASource database with \DIASources assigned and unassigned to \SSObjects
+\paragraph*{DIASource Database:} An updated \DIASource database with \DIASources assigned and unassigned to \SSObjects
 
-\paragraph*{Tracklet Database:} A temporary database of tracklets measured during a night. This database is internal to the Solar System Pipeline.
-
-
+%\paragraph*{Tracklet Database:} A temporary database of tracklets measured during a night. This database is internal to the Solar System Pipeline.
 
 \subsubsection{Attribution}
 
-Given new \DIASources not associated to \DIAObjects, attempt to attribute them to known SSOs contained in the \MPCORB. This service will be called into by the prompt processing pipelines via TBD APIs.
+Given new \DIASources not associated to \DIAObjects, attribute those due to known SSOs contained in the \MPCORB. This service will be called into by the prompt processing pipelines via TBD APIs.
 
 \paragraph{Pipeline Tasks}
 
 \begin{itemize}
-	\item Fetch the position and geometry of the visit.
-	\item Fetch all \DIASources with no \DIAObject counterpart in the visit.
+	\item Receive the position and geometry of the visit.
+	\item Receive \DIASources with no \DIAObject counterpart in the visit.
 	\item Probabilistically attribute the \DIASources above to predicted positions of solar system objects computed by the Ephemeris Cache pipeline, if the attribution probability exceeds a TBD threshold.
-	\item Return the attributions for use in the alert stream.
+	\item Return the attributions to the caller for dissemination in the alert stream.
 	\item Queue the attributions for submission to the Minor Planet Center
 \end{itemize}
 
-The attribution probability threshold will be tuned in commissioning to keep the number of false attributions at or below the level agreed upon with the MPC. %This level is not to exceed 0.1\% of incorrect attributions.
+The attribution probability threshold will be tuned in commissioning to keep the number of false attributions at or below the level agreed upon with the MPC.
 
-
-
-\subsubsection{Precovery}
-
-Single-detection \DIAObjects are attributed to solar system objects existing in \MPCORB and queued up for submission to the MPC.
-
-\paragraph{Pipeline Tasks}
-
-\begin{itemize}
-\item For each object in the \MPCORB database whose orbit has appreciably changed relative to last precovery:
-\item Fetch all single-detection \DIAObjects within TBD sigma of the predicted orbital path of the asteroid.
-\item Construct tracklets from the fetched observations.
-\item Assess whether the observations (tracklets or single detection) can be attributed to the object; if so, recompute the orbit and rerun the search.
-\item Queue new attributions for submission to the MPC.
-\end{itemize}
-
-
+Rather than queue the MPC submissions as a side-effect of attribution, it is also possible to split off the queuing of attributions for submission to the MPC and run it as an explicit pipeline element in daytime, feeding off of the Alerts Database. This may increase overall system robustness.
 
 \subsubsection{Linking}
 
-Given single-detection observation over a trailing window of time (default: 14 days), group together observations that attributable with high confidence the same solar system objects. Assume that the observations are not arbitrarily spaced, but follow the ``three pairs'' criteria laid out in \OSS\@ \ossreq{0159}. Queue up the resulting candidates for submission to the MPC.
+Given single-detection observation over a trailing window of time (design: 14 days, stretch: 30 days), group together observations attributable with high confidence to the same Solar System object. Assume that the observations are not arbitrarily spaced, but follow the ``three pairs'' criteria laid out in \OSS\@ \ossreq{0159}. Queue up the resulting candidates for submission to the MPC.
 
 \paragraph{Pipeline Tasks}
 
 \begin{itemize}
-\item Extract all single-detection \DIAObjects in a specified trailing window (default: 14 days) and construct tracklets.
+\item Extract all single-detection \DIAObjects in a specified trailing observation window and construct tracklets.
 \item Cluster tracklets into candidate tracks using the HelioLinC algorithm as implemented by {\tt pytrax} (\url{https://github.com/pytrax/pytrax}).
 \item Fit an initial orbit to each candidate track using a tool such as OpenOrb (\url{https://github.com/oorb/oorb}).
-\item Execute a precovery procedure to maximally increase the discovery arc.
+\item Execute a precovery procedure (see \ref{sec:mops:precovery}) to maximally extend the observing arc.
 \item Queue observations with higher than TBD probability to be attributable to the same solar system objects for submission to the MPC.
 \end{itemize}
 
 
 
-\subsubsection{Daily Data Products Production}
+\subsubsection{Precovery}
+\label{sec:mops:precovery}
 
-This pipeline encompasses downloading and ingesting the new MPCORB catalog from the Minor Planet Center, and rebuilding the \SSObject and \SSSource tables. It will be run on a preset daily cadence, or when a push-notification is received that new MPCORB data is available at the MPC.
+Attempt to associate older single-detection \DIAObjects to one or more Solar System objects existing in the \MPCORB, and queue up any candidate associations for submission to the MPC.
 
 \paragraph{Pipeline Tasks}
 
 \begin{itemize}
-	\item Download the new MPCORB catalog
+	\item For each object in the \MPCORB database whose orbit has appreciably changed relative to last precovery:
+	\begin{itemize}
+		\item Fetch all single-detection \DIAObjects within TBD sigma of the predicted on-sky positions of the asteroid, at times of LSST observations.
+		\item Construct tracklets from fetched observations, where possible.
+		\item Assess whether the observations (tracklets or single detections) can be attributed to the object; if so, recompute the orbit and rerun the search.
+	\end{itemize}
+	\item Queue new candidate attributions for submission to the MPC.
+\end{itemize}
+
+We will aim to derive this pipeline from the next-generation {\tt MPChecker} code being developed by the MPC.
+
+It is likely that for fast precovery it will be advantageous to build a specially indexed cache of all single-detection \DIAObjects. This will be investigated in the course of implementation of this pipeline.
+
+\subsubsection{Daily Data Products Production}
+
+This pipeline includes downloading and ingesting the new \MPCORB catalog and the reported LSST observation attribution information from the Minor Planet Center, and rebuilding the \SSObject and \SSSource tables based on these data. It will be run on a preset daily cadence, or when a push-notification is received that new MPCORB data is available at the MPC.
+
+\paragraph{Pipeline Tasks}
+
+\begin{itemize}
+	\item Download the new \MPCORB catalog
 	\item Download the data associating all prior LSST submissions to entries in the MPCORB catalog
 	\item Save the existing \MPCORB, \SSObject and \SSSource tables, and then in a single transaction:
-	\item Ingest the MPCORB catalog inti the \MPCORB table.
-	\item Re-create \DIASource-to-\MPCORB linkages based on the received information.
-	\item Re-create the \SSObject table based on new linkages.
-	\item Re-create the \SSSource table based on new linkages.
+	\begin{itemize}
+		\item Ingest the downloaded MPCORB catalog inti the \MPCORB table.
+		\item Re-create \DIASource-to-\MPCORB linkages based on the received information.
+		\item Re-create the \SSObject table based on new linkages.
+		\item Re-create the \SSSource table based on new linkages.
+	\end{itemize}
 	\item Commit transaction.
 \end{itemize}
 
+This pipeline logically contains all algorithms needed to compute the derived quantities required by the \SSObject and \SSSource schema.
 
 \subsubsection{Ephemeris cache precomputation task}
 
-Precompute any data necessary for rapid computation of ephemerides in night-time observing.
+Precompute any caches necessary for rapid computation of ephemerides in night-time observing.
 
 \paragraph{Pipeline Tasks}
 
 \begin{itemize}
 	\item Propagate the \MPCORB positions to the current epoch
-	\item Compute and store in an structure allowing for efficient lookup positions and uncertainties (parametrized as Gaussian covariance matrices in an appropriate coordinate frame) for all objects in the \MPCORB.
-	\item Replace prior nights' cache with the new cache.
+	\item Compute and store in a structure allowing for efficient lookup positions and uncertainties (parametrized as Gaussian covariance matrices in an appropriate coordinate frame) for all objects in the \MPCORB.
+	\item Replace prior night's cache with the new cache.
 \end{itemize}
 
+We will aim to derive this pipeline from the next-generation {\tt MPChecker} code being developed by the MPC.
 
 \subsubsection{MPC Submission Pipeline}
 
-This pipeline element collects the attributions of LSST observations to new or known solar system objects, formats them into the proper format, and submits them to the Minor Planet Center using appropriate APIs (per agreement with the MPC).
+This pipeline element collects the candidate attributions of LSST observations to new or known Solar System objects, formats them into the standard data exchange format (presently ADES), and submits them to the Minor Planet Center using appropriate APIs (per agreement with the MPC).
 
 It is likely to be implemented as a queue, with multiple producers writing data, and a single consumer to format and submit the data to the MPC.
 
