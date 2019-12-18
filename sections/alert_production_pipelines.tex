@@ -436,20 +436,25 @@ Components of the SSP are run both during the nightly processing, and in daytime
 	\item Daily Data Products Production pipeline
 	\item Ephemeris cache precomputation pipeline
 	\item Minor Planet Center report submission service
+	\item Minor Planet Center (external service)
 \end{enumerate}
 %
 The attribution service is run in nightly processing and performs association of observations with known Solar System object entries from \MPCORB.
 
 The linking pipeline, run in daytime, clusters newly detected \DIAObjects to search for candidate asteroids. The high-level procedure is to link \DIASource detections within a night (when on-sky motion is approximately linear) into {\em tracklets}, to link these tracklets across multiple nights (into tracks) and to fit the tracks with an orbital model to identify those tracks that are consistent with an asteroid orbit.
 
-Candidate discoveries with high degree of certainty are reported to the Minor Planet Center (MPC), and updates to the \MPCORB table are made based on the discovery confirmations from the MPC. Following these updates, physical properties (e.g., absolute magnitudes) of objects in the \SSObject table are recomputed, as well as auxiliary per-observation information for individual observations. It is expected that a frequency of one day for these iterations (i.e.\ the Solar System objects will be update each day) will be sufficient.
+Candidate discoveries with high degree of certainty are reported to the Minor Planet Center (MPC), and updates to the \MPCORB table are made based on the discovery confirmations from the MPC. Following these updates, physical properties (e.g., absolute magnitudes) of objects in the \SSObject table are recomputed, as well as auxiliary per-observation information for individual observations. It is expected that a frequency of one day for these iterations (i.e.\ the Solar System objects will be update each day) will be sufficient to enable most Solar System science cases requiring rapid response.
 
 \begin{figure}[th]
 \begin{center}
 \includegraphics[width=0.9\textwidth]{figures/solarsystempipeline.pdf}
-\caption{\label{fig:apMOPS} Detection, attribution, linking, submission and precovery of moving sources within the nightly data: The attribution is performed in real-time by the attribution service with resulting information attached to the alerts and queued for submission to the MPC. The linking is performed in daytime, with resulting links queued for submission to the MPC. Fetching of data from the MPC is performed at least once daily, triggering recomputation of physical properties and precovery runs. Any observations discovered by the precovery procedure are queued for submission to the MPC. The ephemeris cache is precomputed after the daily fetch of orbita information from the MPC, to enable fast attribution at nighttime.}
+\caption{\label{fig:apMOPS} Detection, attribution, linking, submission and precovery of moving sources within the nightly data: The attribution is performed in real-time by the attribution service with resulting information attached to the alerts and queued for submission to the MPC. The linking is performed in daytime, with resulting links queued for submission to the MPC. Fetching of data from the MPC is performed at least once daily, triggering recomputation of physical properties and precovery runs. Any observations discovered by the precovery procedure are queued for submission to the MPC. The ephemeris cache is precomputed after the daily fetch of orbit information from the MPC, to enable fast attribution at nighttime. All timings denote design goals. }
 \end{center}
 \end{figure}
+
+The the design goals for pipeline performance (execution time) are denoted on Figure~\ref{fig:apMOPS}. If needed, there is room for run time trades between different elements of the pipeline, with the only two non-to-exceed elements being the daily dataset publication deadline (24 hours after the end of the night), and the time window the Minor Planet Center requires to complete the processing of LSST data (4 hours, set by the LSST-MPC agreement). Other listed timings are based on measurements from prototype code and/or engineering judgment.
+
+For the underlying computational capacity, we follow Jones et al. (2017) and assume not more than 1,000 cores allocated to Solar System processing. We consider this a not-to-exceed number; engineering prototypes and extrapolations indicate a system with 100-200 cores may be sufficient but given the residual development uncertainty it would be premature to baseline at such a low number. Unless noted otherwise, the performance of all SSP is CPU bound and capable to run at low RAM-per-core ratios (e.g., 1GB/core).
 
 \subsubsection{Input Data}
 
@@ -470,6 +475,19 @@ Candidate discoveries with high degree of certainty are reported to the Minor Pl
 
 %\paragraph*{Tracklet Database:} A temporary database of tracklets measured during a night. This database is internal to the Solar System Pipeline.
 
+\subsubsection{Database Interfaces}
+
+The input to daily solar system processing is a collection of unassociated \DIASources observed over the prior 15 days. This dataset needs to be delivered promptly to the Solar System Pipelines, to meet the MPC submission and overall daily processing deadlines.
+
+At present, the expected implementation of the Prompt Processing database does not guarantee the performance needed to operate the Solar System Pipelines via direct selective queries to the database (Mueller 2019, priv. comm.). To work around this limitation, we treat the PPDB as a data warehouse and incrementally extract and transform the needed data into a more suitable spatially indexed format (internal to the Solar System Pipelines). We provide the outputs of Solar System Processing back to the Database as files (in TBD format), for publication into the L2DB.
+
+Under these assumptions, the database interface comprises of:
+\begin{itemize}
+	\item Core Input Data: Retrieving DIASources and DIAObjects updated or created since the previous retrieval (presumed daily). This query is expected to return $\sim$ O(15M) rows/day, and must finish in not longer than 15 minutes. The database will be responsible for exporting the required data. The SSP will be responsible for ingesting the generated file into its internal systems.
+
+	\item Core Output Data: Files with new version of the MPCORB, SSObject, and SSSource tables (to be ingested), as well as the list of changes to DIASource-SSObject associations. The SSP will be responsible for generating the output data. The Database will be responsible for publishing it to the users (ingesting into L2DB). The ingestion time is constrained by timings shown in \ref{fig:apMOPS}, but we recommend it be kept to the minimum (suggesting $\lesssim 1{\rm hr}$) to maximize scientific returns.
+\end{itemize}
+
 \subsubsection{Attribution}
 
 Given new \DIASources not associated to \DIAObjects, attribute those due to known SSOs contained in the \MPCORB. This service will be called into by the prompt processing pipelines via TBD APIs.
@@ -488,6 +506,8 @@ The attribution probability threshold will be tuned in commissioning to keep the
 
 Rather than queue the MPC submissions as a side-effect of attribution, it is also possible to split off the queuing of attributions for submission to the MPC and run it as an explicit pipeline element in daytime, feeding off of the Alerts Database. This may increase overall system robustness.
 
+{\bf Failure and Recovery:} If this component is unavailable, \DIASources will not be attributed to known \SSObjects in real-time, nor reported to the MPC. The end-users will not be able to identify \SSObject activity in real time. All missed attributions will be automatically recovered later in Precovery, and submitted to the MPC.
+
 \subsubsection{Linking}
 
 Given single-detection observation over a trailing window of time (design: 14 days, stretch: 30 days), group together observations attributable with high confidence to the same Solar System object. Assume that the observations are not arbitrarily spaced, but follow the ``three pairs'' criteria laid out in \OSS\@ \ossreq{0159}. Queue up the resulting candidates for submission to the MPC.
@@ -502,7 +522,7 @@ Given single-detection observation over a trailing window of time (design: 14 da
 \item Queue observations with higher than TBD probability to be attributable to the same solar system objects for submission to the MPC.
 \end{itemize}
 
-
+{\bf Failure and Recovery:} If this component is unavailable, no new discoveries will be made and submitted to the MPC within the proscribed time window. The unprocessed time windows will be placed into a backlog. Once the component is brought back online, it will process the backlog in the reverse chronological order, triggering precovery and MPC submission on any newly discovered objects.
 
 \subsubsection{Precovery}
 \label{sec:mops:precovery}
@@ -525,6 +545,8 @@ We will aim to derive this pipeline from the next-generation {\tt MPChecker} cod
 
 It is likely that for fast precovery it will be advantageous to build a specially indexed cache of all single-detection \DIAObjects. This will be investigated in the course of implementation of this pipeline.
 
+{\bf Failure and Recovery:} If this component is unavailable or too slow, older LSST observations of known objects will not be identified and submitted to the MPC. When the functionality is restored, the regular precovery pass will automatically find all associations that were previously missed. Other than re-establishing the service, no special handling is required in case of failure.
+
 \subsubsection{Daily Data Products Production}
 
 This pipeline includes downloading and ingesting the new \MPCORB catalog and the reported LSST observation attribution information from the Minor Planet Center, and rebuilding the \SSObject and \SSSource tables based on these data. It will be run on a preset daily cadence, or when a push-notification is received that new MPCORB data is available at the MPC.
@@ -546,6 +568,8 @@ This pipeline includes downloading and ingesting the new \MPCORB catalog and the
 
 This pipeline logically contains all algorithms needed to compute the derived quantities required by the \SSObject and \SSSource schema.
 
+{\bf Failure and Recovery:} If this component is unavailable (or too slow), the daily catalog will not be produced (or be late). If the component is too slow to sustain throughput needed to produce one catalog per day, some catalog productions may be skipped. When the functionality and/or performance is restored, next regular processing will generate an up-to-date catalog with current data. As the value of older daily catalogs diminishes rapidly, there is no plan to regenerate catalogs not produced due to failures or performance issues. Other than re-establishing the service, no special handling is required in case of failure.
+
 \subsubsection{Ephemeris cache precomputation task}
 
 Precompute any caches necessary for rapid computation of ephemerides in night-time observing.
@@ -559,6 +583,8 @@ Precompute any caches necessary for rapid computation of ephemerides in night-ti
 \end{itemize}
 
 We will aim to derive this pipeline from the next-generation {\tt MPChecker} code being developed by the MPC.
+
+{\bf Failure and Recovery:} If this component is unavailable (or too slow), the attribution component will use the caches computed for the previous night (we expect the nightly caches to be usable for up to a week). Extended unavailability of this component would lead to incomplete attribution, and have effects similar in nature to the failure of the attribution component. Other than re-establishing the service, no special handling is required in case of failure.
 
 \subsubsection{MPC Submission Pipeline}
 
@@ -576,6 +602,26 @@ It is likely to be implemented as a queue, with multiple producers writing data,
 \end{itemize}
 
 This component may also include some deduplication facility to allow for (say) the linking component and the precovery component to be submitting the same observations (which can happen if they're run in parallel).
+
+{\bf Failure and Recovery:} If this component is unavailable (or too slow), no new observations (or not all of them) will be submitted to the Minor Planet Center. Therefore, no new LSST observations would be associated with known orbits and figure in Daily Data Products Production. When the service is re-established, the backlog of old observations will be sent to the Minor Planet Center. This catch-up processing can occur in parallel with the regular nightly activities.
+
+\subsubsection{Minor Planet Center}
+
+This pipeline element takes care of the construction and maintenance of a catalog of orbits constructed from individual observations contributed by LSST but also other telescopes and projects. The element:
+\begin{itemize}
+	\item receives reported observations and likely attributions submitted by observers
+	\item verifies the attributions
+	\item computes the best available orbits and their covariances
+	\item publishes the catalog of orbits and associations incorporating submitted observations no later than 4~hrs after observation submission
+\end{itemize}
+
+This component will be implemented by utilizing the services of the IAU Minor Planet Center, as specified in the LSST-MPC MOU and ancillary documents.
+
+{\bf Failure and Recovery:} If this component is unavailable (or too slow), no new LSST observations would be associated with known orbits, and no updated orbit catalogs would be available. The Daily Data Products Production would not run, and new objects would not be attributed in the alert stream until the service is re-established. The last received version of the catalog would continue to be used to mitigate the impact.
+
+If the service returns corrupted or incomplete data (e.g., incorrect orbit solutions, known objects or associations are missing), and if these issues are undetected, the resultant daily catalogs would be incomplete and \SSObject attributions in the alert stream may be missing or incorrect. The impact will be mitigated by verifying the newly received catalogs are no worse than prior night's versions, refusing to use them otherwise.
+
+Once the functioning of the service is re-established, the backlog of old observations (if any) will be sent to the Minor Planet Center. This catch-up processing can occur in parallel with the regular activities. The most up-to-date orbit catalog will be downloaded, triggering Daily Data Products Production. Other than draining the MPC submission queue, no special action is needed to recover from failure or faulty operation of the MPC service.
 
 \subsubsection{Prototype Implementation}
 
