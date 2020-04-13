@@ -453,7 +453,7 @@ Candidate discoveries with high degree of certainty are reported to the Minor Pl
 \end{center}
 \end{figure}
 
-The the design goals for pipeline performance (execution time) are denoted on Figure~\ref{fig:apMOPS}. If needed, there is room for run time trades between different elements of the pipeline, with the only two non-to-exceed elements being the daily dataset publication deadline (24 hours after the end of the night), and the time window the Minor Planet Center requires to complete the processing of LSST data (4 hours, set by the LSST-MPC agreement). Other listed timings are based on measurements from prototype code and/or engineering judgment.
+The design goals for pipeline performance (execution time) are denoted on Figure~\ref{fig:apMOPS}. If needed, there is room for run time trades between different elements of the pipeline, with the only two non-to-exceed elements being the daily dataset publication deadline (24 hours after the end of the night), and the time window the Minor Planet Center requires to complete the processing of LSST data (4 hours, set by the LSST-MPC agreement). Other listed timings are based on measurements from prototype code and/or engineering judgment.
 
 For the underlying computational capacity, we follow Jones et al. (2017) and assume not more than 1,000 cores allocated to Solar System processing. We consider this a not-to-exceed number; engineering prototypes and extrapolations indicate a system with 100-200 cores may be sufficient but given the residual development uncertainty it would be premature to baseline at such a low number. Unless noted otherwise, the performance of all SSP is CPU bound and capable to run at low RAM-per-core ratios (e.g., 1GB/core).
 
@@ -478,9 +478,9 @@ For the underlying computational capacity, we follow Jones et al. (2017) and ass
 
 \subsubsection{Database Interfaces}
 
-The input to daily solar system processing is a collection of unassociated \DIASources observed over the prior 15 days. This dataset needs to be delivered promptly to the Solar System Pipelines, to meet the MPC submission and overall daily processing deadlines.
+The input to daily solar system processing is a collection of unassociated \DIASources observed over the prior 14 nights. This dataset needs to be delivered promptly to the Solar System Pipelines, to meet the MPC submission and overall daily processing deadlines.
 
-At present, the expected implementation of the Prompt Processing database does not guarantee the performance needed to operate the Solar System Pipelines via direct selective queries to the database (Mueller 2019, priv. comm.). To work around this limitation, we treat the PPDB as a data warehouse and incrementally extract and transform the needed data into a more suitable spatially indexed format (internal to the Solar System Pipelines). We provide the outputs of Solar System Processing back to the Database as files (in TBD format), for publication into the L2DB.
+At present, the expected implementation of the Prompt Processing database does not guarantee the performance needed to operate the Solar System Pipelines via direct selective queries to the database (Mueller 2019, priv. comm.). To work around this limitation, we treat the APDB as a data warehouse and incrementally extract and transform the needed data into a more suitable spatially indexed format (internal to the Solar System Pipelines). We provide the outputs of Solar System Processing back to the Database as files (in TBD format), for publication into the L2DB.
 
 Under these assumptions, the database interface comprises of:
 \begin{itemize}
@@ -523,7 +523,7 @@ Given single-detection observation over a trailing window of time (design: 14 da
 \item Queue observations with higher than TBD probability to be attributable to the same solar system objects for submission to the MPC.
 \end{itemize}
 
-{\bf Failure and Recovery:} If this component is unavailable, no new discoveries will be made and submitted to the MPC within the proscribed time window. The unprocessed time windows will be placed into a backlog. Once the component is brought back online, it will process the backlog in the reverse chronological order, triggering precovery and MPC submission on any newly discovered objects.
+{\bf Failure and Recovery:} If this component is unavailable, no new discoveries will be made and submitted to the MPC within the prescribed time window. The unprocessed time windows will be placed into a backlog. Once the component is brought back online, it will process the backlog in the reverse chronological order, triggering precovery and MPC submission on any newly discovered objects.
 
 \subsubsection{Precovery}
 \label{sec:mops:precovery}
