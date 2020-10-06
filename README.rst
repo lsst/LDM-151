@@ -29,16 +29,9 @@ The LSST Science Requirements Document (the `LSST SRD`_) specifies a set of data
 Building the PDF locally
 ========================
 
-To build the PDF from the Latex source you need to have the LSST tex styles available.
-The easiest way to do this is to clone the `lsst-texmf <https://github.com/lsst/lsst-texmf>`_ repository and set the ``$TEXMFHOME`` environment variable.
-
 From the root directory of the checkout of this repository::
 
-  git clone https://github.com/lsst/lsst-texmf
-  export TEXMFHOME=`pwd`/lsst-texmf/texmf
   make
-
-You can also put the ``lsst-texmf`` checkout in a more general location such that it can be shared across multiple documents.
 
 Continuous integration
 ======================
