@@ -109,8 +109,7 @@ The SFM pipeline will be implemented as a flexible framework where new processin
 
 \paragraph*{Source Databases:} A catalog of \Sources with measured features described in \ref{sec:apSourcemeasurement}.
 
-\paragraph*{OCS Database} A parameterization of the PSF, WCS, photometric zeropoint, and depth for each CCD in a visit. The PSF may be a simplified version (e.g.\ a single Gaussian) of that derived for the Alert production. These data will be made available to the Telescope Control System (TCS) to assess the success of each observation. A limited version of nightly SFM could be run on the summit to generate this information or the  data will be persisted within a database at the data center that will be accessible to the TCS.
-
+\paragraph*{Image Quality Feedback:} Characterization of the PSF, WCS, photometric zeropoint, and depth for each CCD in a visit. These values are provided to the OCS and the observers via the Telemetry Gateway, as described in \citeds{LSE-72}.
 
 \subsubsection{Instrumental Signature Removal}
 \label{sec:apISR}
