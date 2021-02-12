@@ -592,11 +592,11 @@ The only output of DeepDetect is the suite of CoaddSource tables (one for each d
 \subsubsection{DeepAssociate}
 \label{sec:drpDeepAssociate}
 
-In DeepAssociate, we perform a sophisticated spatial match of all CoaddSources and DIASources, generating tables of DIAObjects, Object candidates, and a table of unassociated DIASources that will be used to construct SSObjects in \hyperref[sec:drpMovingObjectPipeline]{MOPS}.
+In DeepAssociate, we perform a sophisticated spatial match of all CoaddSources and DIASources, generating tables of DIAObjects, Object candidates, and a table of unassociated DIASources that will be used to construct SSObjects in \hyperref[sec:drpSolarSystemPipeline]{SSP}.
 
 We do \emph{not} include the Source table in this merge, as virtually all Sources correspond to astrophysical objects better detected elsewhere.  Non-moving or slowly-moving astrophysical objects (even variable non-transient objects) will be detected at much higher significance in \hyperref[sec:drpDeepDetect]{DeepDetect} (as CoaddSources).  Transients and fast-moving objects will be detected at similar significance with significantly less blending (and much easier classification) in \hyperref[sec:drpDiffIm]{DiffIm} (as DIASources).  While a small number of transient/moving Sources near the detection limit may not be detected in difference images due to extra noise from the template, these will be nearly impossible to recover without a large false positive rate from a spatial match of the Source table.
 
-The baseline plan for association is to first associate DIASources into DIAObjects using the same approach used in Alert Production (i.e. the \hyperref[sec:acDIAObjectGeneration]{DIAObject Generation} algorithmic component), then associate DIAObjects with the multiple CoaddSource tables (using the \hyperref[sec:acObjectGeneration]{Object Generation} algorithmic component).  DIASources not associated into DIAObjects will be considered candidates for merging SSObjects, which will happen in the \hyperref[sec:drpMovingObjectPipeline]{MovingObjectPipeline} pipeline.
+The baseline plan for association is to first associate DIASources into DIAObjects using the same approach used in Alert Production (i.e. the \hyperref[sec:acDIAObjectGeneration]{DIAObject Generation} algorithmic component), then associate DIAObjects with the multiple CoaddSource tables (using the \hyperref[sec:acObjectGeneration]{Object Generation} algorithmic component).  DIASources not associated into DIAObjects will be considered candidates for merging SSObjects, which will happen in the \hyperref[sec:drpSolarSystemPipeline]{MovingObjectPipeline} pipeline.
 
 These association steps must be considerably more sophisticated than simple spatial matching; they must utilize the limited flux and classification information available from detection to decide whether to merge sources detected in different contexts.  This will require astrophysical models to be included in the matching algorithms at some level; for instance:
 \begin{itemize}
@@ -734,20 +734,32 @@ Aside from querying the Object table for the list of Objects overlapping the ima
 
 The pipelines in the postprocessing group may be run after nearly all image processing is complete, and with the possible exception of \hyperref[sec:drpMakeSelectionMaps]{MakeSelectionMaps}, include no image processing themselves.  While we do not expect that these pipelines will require significant new algorithm development, they include some of the least well-defined aspects of Data Release Production; many of these pipelines are essentially placeholders for work that may ultimately be split out into multiple new pipelines or included in existing ones.  Unlike the rest of DRP, a more detailed design here is blocked more by the lack of clear requirements and policies than a need for algorithmic research.
 
-\subsubsection{MovingObjectPipeline}
-\label{sec:drpMovingObjectPipeline}
+\subsubsection{SolarSystemPipeline}
+\label{sec:drpSolarSystemPipeline}
 
-The Moving Object Pipeline plays essentially the same role in DRP that it plays in AP: it builds the SSObject (Solar System Object) table from DIASources that have not already been associated with DIAObjects.  We will attempt to make its implementation as similar as possible to the \hyperref[sec:apMovingObjectPipeline]{AP Moving Object Pipeline}, but the fact that DRP will run on all DIASources in the survey at once (instead of incrementally) make this impossible in details.  The steps in MOPS are (with some iteration):
+The DRP Solar System Pipeline is used to generate two sets of data products:
+\begin{enumerate}
+	\item High-fidelity reprocessing: Catalogs derived from re-reductions of all survey data using improved calibrations and a single, well-characterized, software release. These could be thought of as a “gold” version of the daily catalog.
 
-\begin{itemize}
-\item Delegate to the \hyperref[sec:acMakeTracklets]{Make Tracklets} algorithmic component to combine unassociated DIASources into \emph{tracklets}.
-\item Delegate to the \hyperref[sec:acAttributionAndPrecovery]{Attribution and Precovery} algorithmic component to predict the positions of known solar system objects and associate them with tracklets.  The definition of a ``known'' solar system object clearly depends on the input catalog; this may be an external catalog or a snapshot of the Level 1 SSObject table.
-\item Delegate to the \hyperref[sec:acOrbitFitting]{Orbit Fitting} algorithmic component to merge unassociated tracklets into tracks and fit orbits for SSObjects where possible.
-\end{itemize}
+	\item The LSST Catalog of Solar System Objects ("LSSTORB"): A catalog, suitable for population studies, of objects detected by LSST with orbits estimated using only LSST data.This catalog does not use any external (i.e., non-LSST) observations.
+\end{enumerate}
 
-The choice of initial catalog largely depends on the false-object rate in the Level 1 SSObject; if the only improvements in data release production are slightly improved orbit and/or new SSObjects, using the Level 1 SSObject table could dramatically speed up processing -- but it may also remove the possibility of removing nonexistent objects.
+The high-fidelity reprocessing element can be achieved by re-running the AP SSP pipeline workflow, with small adjustments, on reprocessed \DIASource and \DIAObject catalog. The processing will be seeded by the most recent MPC catalog, and the end result will be submitted to the MPC.
 
-The DRP Moving Object Pipeline represents a full-survey sequence point in the production, but we expect that it will be a relatively easy one to implement, because it operates on relatively small inputs (unassociated DIASources) and produces a single new table (SSObject) as its only major output (though IDs linking DIASources and SSObjects must also be stored in either DIASource or a join table).  This should mean that it can be run after most other data products have already been ingested, while requiring little temporary storage as the rest of the processing proceeds tract-by-tract.
+The LSSTORB product will similarly re-use the AP SSP pipelines, but be seeded with an empty catalog. As no submissions to the MPC will be made for this processing, it will require a "mock MPC" component which will simulate the creation of a new MPCORB catalog from candidate submissions. This component is likely algorithmically straight-forward (i.e., a default may be to accept all candidates as real). An additional component may be required to link short-arc orbits between observing seasons (i.e., rediscoveries of a previously discovered object); the need for this component will be assessed based on simulations and early commissioning data.
+
+%
+%The Moving Object Pipeline plays essentially the same role in DRP that it plays in AP: it builds the SSObject (Solar System Object) table from DIASources that have not already been associated with DIAObjects.  We will attempt to make its implementation as similar as possible to the \hyperref[sec:apMovingObjectPipeline]{AP Moving Object Pipeline}, but the fact that DRP will run on all DIASources in the survey at once (instead of incrementally) make this impossible in details.  The steps in MOPS are (with some iteration):
+%
+%\begin{itemize}
+%\item Delegate to the \hyperref[sec:acMakeTracklets]{Make Tracklets} algorithmic component to combine unassociated DIASources into \emph{tracklets}.
+%\item Delegate to the \hyperref[sec:acAttributionAndPrecovery]{Attribution and Precovery} algorithmic component to predict the positions of known solar system objects and associate them with tracklets.  The definition of a ``known'' solar system object clearly depends on the input catalog; this may be an external catalog or a snapshot of the Level 1 SSObject table.
+%\item Delegate to the \hyperref[sec:acOrbitFitting]{Orbit Fitting} algorithmic component to merge unassociated tracklets into tracks and fit orbits for SSObjects where possible.
+%\end{itemize}
+%
+%The choice of initial catalog largely depends on the false-object rate in the Level 1 SSObject; if the only improvements in data release production are slightly improved orbit and/or new SSObjects, using the Level 1 SSObject table could dramatically speed up processing -- but it may also remove the possibility of removing nonexistent objects.
+%
+%The DRP Moving Object Pipeline represents a full-survey sequence point in the production, but we expect that it will be a relatively easy one to implement, because it operates on relatively small inputs (unassociated DIASources) and produces a single new table (SSObject) as its only major output (though IDs linking DIASources and SSObjects must also be stored in either DIASource or a join table).  This should mean that it can be run after most other data products have already been ingested, while requiring little temporary storage as the rest of the processing proceeds tract-by-tract.
 
 \subsubsection{ApplyCalibrations}
 \label{sec:drpApplyCalibrations}
