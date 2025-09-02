@@ -1,6 +1,53 @@
+DOCTYPE = LDM
+DOCNUMBER = 151
+DOCNAME = $(DOCTYPE)-$(DOCNUMBER)
+
+tex = $(filter-out $(wildcard *aglossary.tex) , $(wildcard *.tex */*tex))
+
+GITVERSION := $(shell git log -1 --date=short --pretty=%h)
+GITDATE := $(shell git log -1 --date=short --pretty=%ad)
+GITSTATUS := $(shell git status --porcelain)
+ifneq "$(GITSTATUS)" ""
+	GITDIRTY = -dirty
+endif
+
 export TEXMFHOME ?= lsst-texmf/texmf
 
-LDM-151.pdf:  LDM-151.tex sections/calibration_products.tex sections/data_release_production_pipelines.tex sections/alert_production_pipelines.tex sections/algorithmic_components.tex sections/introduction.tex sections/preface.tex sections/software_primitives.tex figures/DMS-Architecture.pdf figures/drp_summary.png figures/measurement-matrix.pdf figures/drp_coaddition_and_diffim.png
-	latexmk -bibtex -pdf -f -silent LDM-151.tex
+# Add aglossary.tex as a dependancy here if you want a glossary (and remove acronyms.tex)
+$(DOCNAME).pdf: $(tex) meta.tex local.bib authors.tex
+	xelatex  $(DOCNAME).tex
+	bibtex  $(DOCNAME)
+	xelatex  $(DOCNAME).tex
+	xelatex  $(DOCNAME).tex
+#	makeglossaries $(DOCNAME)
+#	xelatex $(DOCNAME)
+# For glossary uncomment the 2 lines above
 
-cover: LDM-151.pdf
+authors.tex:  authors.yaml
+	python3 $(TEXMFHOME)/../bin/db2authors.py -m lsstdoc > authors.tex
+
+# Acronym tool allows for selection of acronyms based on tags - you may want more than DM
+acronyms.tex: $(tex) myacronyms.txt
+	$(TEXMFHOME)/../bin/generateAcronyms.py -t "DM" $(tex)
+
+# If you want a glossary you must manually run generateAcronyms.py  -gu to put the \gls in your files.
+aglossary.tex :$(tex) myacronyms.txt
+	$(TEXMFHOME)/../bin/generateAcronyms.py  -t "DM" -g $(tex)
+
+
+.PHONY: clean
+clean:
+	latexmk -c
+	rm -f $(DOCNAME).{bbl,glsdefs,pdf}
+	rm -f meta.tex
+
+.FORCE:
+
+meta.tex: Makefile .FORCE
+	rm -f $@
+	touch $@
+	printf '%% GENERATED FILE -- edit this in the Makefile\n' >>$@
+	printf '\\newcommand{\\lsstDocType}{$(DOCTYPE)}\n' >>$@
+	printf '\\newcommand{\\lsstDocNum}{$(DOCNUMBER)}\n' >>$@
+	printf '\\newcommand{\\vcsRevision}{$(GITVERSION)$(GITDIRTY)}\n' >>$@
+	printf '\\newcommand{\\vcsDate}{$(GITDATE)}\n' >>$@
