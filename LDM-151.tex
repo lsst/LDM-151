@@ -12,24 +12,21 @@
 \setcounter{secnumdepth}{3}
 
 \title{Data Management Science Pipelines Design}
-\author{
-    J.D.~Swinbank,
-    T.~Axelrod,  A.C.~Becker, J.~Becla, E.~Bellm,
-    J.F.~Bosch,  H.~Chiang, D.R.~Ciardi,  A.J.~Connolly,  G.P.~Dubois-Felsmann,
-    F.~Economou, M.~Fisher-Levine, M.~Graham, \v{Z}. Ivezi\'c,  M.~Juri\'c,
-    T.~Jenness,  R.L.~Jones, J.~Kantor, S.~Krughoff, K-T.~Lim, R.H.~Lupton,
-    F.~Mueller,  D.~Petravick, P.A.~Price,  D.J.~Reiss, D.~Shaw, C.~Slater,
-    M.~Wood-Vasey, X.~Wu, P.~Yoachim,
-     \emph{for the LSST Data Management}
-}
+\input{authors}
 
 \setDocRef{LDM-151}
 \setDocCurator{J.D.~Swinbank}
-\date{\today}
+\setDocDOI{10.71929/rubin/2587108}
+
+% Keep the date of the release before we added the DOI. Changing the date
+% by five years to add one line to the first page was deemed to be too
+% confusing and would imply more changes than really happened.
+% Change back to \today if a real edit of content is done.
+\date{2020-11-10}
 
 \setDocAbstract{%
 The LSST Science Requirements Document (the LSST \SRD) specifies a set of data product guidelines, designed to support science goals envisioned to be enabled by the LSST observing program.
-Following these guidlines, the details of these data products have been described in the LSST Data Products Definition Document (\DPDD), and captured in a formal flow-down from the \SRD via the LSST System Requirements (\LSR), Observatory System Specifications (\OSS), to the Data Management System Requirements (\DMSR).
+Following these guidelines, the details of these data products have been described in the LSST Data Products Definition Document (\DPDD), and captured in a formal flow-down from the \SRD via the LSST System Requirements (\LSR), Observatory System Specifications (\OSS), to the Data Management System Requirements (\DMSR).
 The LSST Data Management subsystem's responsibilities include the design, implementation, deployment and execution of software pipelines necessary to generate these data products. This document describes the design of the scientific aspects of those pipelines.
 }
 
@@ -50,6 +47,7 @@ The LSST Data Management subsystem's responsibilities include the design, implem
 \addtohist{4.1}{2017-07-19}{Remove development commentary. This content was included erroneously and was not part of the approved baseline.}{Tim Jenness}
 \addtohist{4.2}{2019-01-30}{Adjust alert stream bandwidth numbers.  Approved in \jira{RFC-538}.}{K-T~Lim}
 \addtohist{4.3}{2020-11-10}{Redesign of Solar System data processing. Approved in \jira{RFC-620}.}{Mario Juric}
+\addtohist{4.3.1}{2025-09-01}{Add DOI of 10.71929/rubin/2587108 but to avoid confusion do not update the formal date in the front matter.}{Tim Jenness}
 }
 
 

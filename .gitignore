@@ -10,3 +10,5 @@
 *.fdb_latexmk
 LDM-151.pdf
 *~
+authors.tex
+meta.tex
